@@ -1,6 +1,6 @@
 
-/* Matin Studio V7 - Cloud Configuration */
+/* Matin Studio - Supabase Cloud Configuration */
 
-window.MATIN_CONFIG = {
-  functionUrl: "https://dakjfdlgmigeymxqnmqd.supabase.co/functions/v1/matin-courses"
+window.MATIN_CLOUD = {
+  supabaseUrl: "https://dakjfdlgmigeymxqnmqd.supabase.co"
 };
