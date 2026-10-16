@@ -339,7 +339,7 @@ button:active:not(:disabled){transform:scale(.985)}
     <div class="library-head"><div><span class="section-overline">PROJECT LIBRARY</span><h2>教师课程库 <span class="library-count" id="library-count">0</span></h2><p class="small-note">本地保存只是草稿；点击课程卡片上的「发布到学生端」才能正式同步到云端</p></div><div class="actions"><label class="search-box"><span>⌕</span><input id="project-search" type="search" placeholder="搜索项目名称、学科…" aria-label="搜索实训项目" /></label><button type="button" class="btn" id="export-all-button">⇩ 备份</button></div></div>
     <div class="category-chips" id="category-chips" aria-label="按学科筛选"></div>
     <div class="project-grid" id="projects-grid"></div>
-    <div class="publisher-help hidden" id="publish-help"><strong>离线课程库文件已生成：</strong>在 GitHub 的 <code>matin-studio</code> 仓库根目录上传并替换 <code>catalog.json</code>，提交更改（Commit changes）。几分钟后学生刷新首页即可选课。<br>注意：下载文件≠自动发布。只有能写入仓库的教师/管理员才可以修改学生实际读取的课程。<a href="https://github.com/krislyu916-star/matin-studio" target="_blank" rel="noopener">打开 GitHub 仓库 ↗</a></div>
+    <div class="publisher-help hidden" id="publish-help"><strong>离线课程库文件已生成：</strong>仅当网站使用离线课程库模式时，在 GitHub 的 <code>EduMatin/edu</code> 仓库根目录上传或替换 <code>catalog.json</code>，提交更改（Commit changes），待部署完成后学生刷新首页即可读取。<br>当前线上网站使用云端课程库；上传此文件不会更新云端课程，请通过教师端云端发布功能更新课程。下载文件不等于发布，只有具备相应权限的教师/管理员才能更新学生实际读取的课程。<a href="https://github.com/EduMatin/edu" target="_blank" rel="noopener">打开 EduMatin/edu 仓库 ↗</a></div>
     <p class="footer">教师草稿保存在此浏览器；课程发布成功后，学生端从 Supabase 自动读取云端课程。未配置云端时支持传统 catalog.json 离线发布。测试版发布口令不代表正式教师身份认证。</p>
   </section>
 
@@ -631,7 +631,7 @@ button:active:not(:disabled){transform:scale(.985)}
     downloadText('catalog.json',JSON.stringify(data,null,2));
     $('publish-help').classList.remove('hidden');
     $('publish-help').scrollIntoView({behavior:'smooth',block:'center'});
-    notify('已生成 catalog.json。下一步请上传 GitHub 仓库，学生才能看到课程。');
+    notify('已生成离线 catalog.json。云端课程需另行发布，具体操作见下方说明。');
   };
   const renderProjectSettings = () => {
     const p=currentProject();
