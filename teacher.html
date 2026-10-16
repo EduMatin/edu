@@ -340,12 +340,12 @@ button:active:not(:disabled){transform:scale(.985)}
     <div class="category-chips" id="category-chips" aria-label="按学科筛选"></div>
     <div class="project-grid" id="projects-grid"></div>
     <div class="publisher-help hidden" id="publish-help"><strong>离线课程库文件已生成：</strong>仅当网站使用离线课程库模式时，在 GitHub 的 <code>EduMatin/edu</code> 仓库根目录上传或替换 <code>catalog.json</code>，提交更改（Commit changes），待部署完成后学生刷新首页即可读取。<br>当前线上网站使用云端课程库；上传此文件不会更新云端课程，请通过教师端云端发布功能更新课程。下载文件不等于发布，只有具备相应权限的教师/管理员才能更新学生实际读取的课程。<a href="https://github.com/EduMatin/edu" target="_blank" rel="noopener">打开 EduMatin/edu 仓库 ↗</a></div>
-    <p class="footer">教师草稿保存在此浏览器；课程发布成功后，学生端从 Supabase 自动读取云端课程。未配置云端时支持传统 catalog.json 离线发布。测试版发布口令不代表正式教师身份认证。</p>
+    <p class="footer">登录后，草稿保存到自己的云端账号；发布后通过专属课程链接分享给学生。未配置云端的本机版本使用浏览器草稿。</p>
   </section>
 
   <section id="view-studio" class="hidden">
     <div class="panel toolbar">
-      <div class="left"><button type="button" class="btn back-strong" id="editor-back" aria-label="返回教师工作台">← 返回工作台</button><div><h2 id="studio-heading">剧本编辑器</h2><p class="small-note">亲自编写剧本 · 自动保存至本机浏览器</p></div></div>
+      <div class="left"><button type="button" class="btn back-strong" id="editor-back" aria-label="返回教师工作台">← 返回工作台</button><div><h2 id="studio-heading">剧本编辑器</h2><p class="small-note">亲自编写剧本 · 保存状态见侧栏提示</p></div></div>
       <div class="actions"><button type="button" class="btn ai-generate" id="ai-generate-open">✦ AI 一键生成剧本</button><button type="button" class="btn" id="export-project-button">⇩ 导出剧本</button><button type="button" class="btn" id="save-project-button">✓ 保存草稿</button><button type="button" class="btn primary" id="publish-editor-button">☁ 发布到学生端</button><button type="button" class="btn primary" id="preview-project-button">▷ 预览实训</button></div>
     </div>
     <div class="editor-grid">
@@ -400,8 +400,8 @@ button:active:not(:disabled){transform:scale(.985)}
 <div id="cloud-publish-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="cloud-title">
  <div class="modal" style="max-width:550px">
   <div class="modal-head"><h2 id="cloud-title">☁ 发布课程到学生端</h2><button type="button" class="btn tiny" id="cloud-close">✕ 关闭</button></div>
-  <div class="cloud-modal-help" id="cloud-summary">发布后学生刷新首页即可看到课程。保存草稿与发布课程是两个不同的操作。</div>
-  <div class="cloud-field"><label for="publish-token">临时教师发布口令（仅用于测试）</label><input type="password" id="publish-token" autocomplete="off" placeholder="输入 Supabase Edge Function 中配置的口令" /><p class="hint">仅保存在当前标签页内存，不写入 GitHub 或 localStorage。正式上线前请改用教师账号。</p></div>
+  <div class="cloud-modal-help" id="cloud-summary">发布后可复制课程链接给学生。保存草稿与发布课程是两个不同的操作。</div>
+  <div class="cloud-field hidden" id="student-share-box"><label for="student-share-link">学生课程链接（仅分享给本班学生）</label><input id="student-share-link" readonly><button type="button" class="btn" id="copy-student-link">复制链接</button><button type="button" class="btn" id="rotate-student-link">更换链接</button></div>
   <div class="cloud-modal-status" id="cloud-status" role="status"></div>
   <div class="actions" style="justify-content:flex-end;flex-wrap:wrap"><button type="button" class="btn" id="cloud-cancel">取消</button><button type="button" class="btn primary" id="cloud-confirm">立即发布</button></div>
  </div>
@@ -424,17 +424,21 @@ button:active:not(:disabled){transform:scale(.985)}
   </div>
   <div class="ai-model-info"><span>◎</span><span id="ai-gen-model-info">使用当前「AI 模型设置」中的模型，优先使用你已有的 Gemini Key。生成会消耗模型配额，不会自动发布到学生端。</span></div>
   <p id="ai-gen-status" class="ai-status" role="status" aria-live="polite"></p>
-  <div class="ai-preview hidden" id="ai-gen-preview"><h3 id="ai-gen-preview-heading">待应用的剧本</h3><div id="ai-gen-preview-list" class="ai-preview-grid"></div><div class="ai-preview-note">AI 内容可能有知识性错误。请检查课程依据、评分标准和安全要求，再考虑发布到学生端。生成结果先保存在本机，不会自动覆盖云端版本。</div></div>
+  <div class="ai-preview hidden" id="ai-gen-preview"><h3 id="ai-gen-preview-heading">待应用的剧本</h3><div id="ai-gen-preview-list" class="ai-preview-grid"></div><div class="ai-preview-note">AI 内容可能有知识性错误。请检查课程依据、评分标准和安全要求，再考虑发布到学生端。应用生成结果后保存为草稿，不会自动更新学生发布版本。</div></div>
   <div class="ai-modal-actions"><button type="button" class="btn" id="ai-gen-cancel">取消</button><button type="button" class="btn primary" id="ai-gen-run">✦ 开始生成</button><button type="button" class="btn hidden" id="ai-gen-replace">覆盖当前项目的节点</button><button type="button" class="btn primary hidden" id="ai-gen-copy">✓ 新建项目副本（推荐）</button></div>
  </div>
 </div>
 
+<script src="./matin-account.js"></script>
 <script>
-(() => {
+(async () => {
   'use strict';
+  const account=await window.MatinAccount.ready();
+  const initial=account?await window.MatinAccount.api():null;
+  if(account&&!Array.isArray(initial.courses))throw Error('课程接口尚未升级，请部署新版 matin-courses。');
   const STORE_KEY = 'matin_studio_projects_v3';
   const LEGACY_KEY = 'matin_studio_projects_v2';
-  const PREF_KEY = 'matin_studio_model_pref_v2';
+  const PREF_KEY = 'matin_studio_model_pref_v2'+(account?':'+account.id:'');
   const fields = ['name','roleName','persona','context','studentTask','greeting','rubric','keywords','hints','scriptRules','passScore'];
   const POS_W=236, POS_H=145;
   const makeEdge=(from,to,condition='always',keyword='',label='')=>({id:uid('edge'),from,to,condition,keyword,label});
@@ -492,6 +496,7 @@ button:active:not(:disabled){transform:scale(.985)}
     return {id:preserveIds&&typeof raw.id==='string'&&raw.id.length<=100?raw.id:uid('proj'),published:raw.published!==false,title:tf(raw.title,'未命名项目')||'未命名项目',desc:tf(raw.desc),category:tf(raw.category,'自定义'),objective:tf(raw.objective),updatedAt:preserveIds&&typeof raw.updatedAt==='string'?raw.updatedAt:stamp(),startNodeId:idMap.get(raw.startNodeId)||nodes[0].id, nodes,edges};
   };
   const loadProjects = () => {
+    if(account)return initial.courses.map(r=>normalizeProject(r.project,true));
     try {
       const raw = localStorage.getItem(STORE_KEY) || localStorage.getItem(LEGACY_KEY);
       if (raw) {
@@ -499,7 +504,7 @@ button:active:not(:disabled){transform:scale(.985)}
         if (Array.isArray(parsed) && parsed.length) return parsed.slice(0,100).map(p=>normalizeProject(p,true));
       }
     } catch(e) { console.warn('项目数据无法读取',e); }
-    return demoProjects().map(normalizeProject);
+    return demoProjects().map(p=>normalizeProject(p));
   };
   let projects = loadProjects();
   let projectId = projects[0]?.id;
@@ -528,10 +533,10 @@ button:active:not(:disabled){transform:scale(.985)}
   try { const saved=JSON.parse(localStorage.getItem(PREF_KEY) || '{}'); if (providers.includes(saved.provider)) config.provider=saved.provider; if(typeof saved.model==='string') config.model=saved.model; if(typeof saved.url==='string') config.url=saved.url; if(typeof saved.classroomUrl==='string') config.classroomUrl=saved.classroomUrl; } catch {}
   const currentProject = () => projects.find(p=>p.id===projectId) || projects[0];
   const currentNode = () => currentProject()?.nodes.find(n=>n.id===selectedNodeId) || currentProject()?.nodes[0];
-  const store = () => { try {localStorage.setItem(STORE_KEY,JSON.stringify(projects)); $('save-status').textContent='✓ 已保存在本机'; return true;} catch(e) {$('save-status').textContent='⚠ 本机存储失败';notify('浏览器保存失败，请立即导出 JSON 备份。');return false;} };
+  const store = () => { if(account)return saveCloud(); try {localStorage.setItem(STORE_KEY,JSON.stringify(projects)); $('save-status').textContent='✓ 已保存在本机'; return true;} catch(e) {$('save-status').textContent='⚠ 本机存储失败';notify('浏览器保存失败，请立即导出 JSON 备份。');return false;} };
   let storeTimer;
   const scheduleSave = () => { $('save-status').textContent='保存中…'; clearTimeout(storeTimer);storeTimer=setTimeout(store,230); };
-  const flushSave = () => {clearTimeout(storeTimer);store();};
+  const flushSave = () => {clearTimeout(storeTimer);storeTimer=null;return store();};
   const updateProject = () => {const p=currentProject();if(p){p.updatedAt=stamp();scheduleSave();}};
   const cancelPending = () => { runtimeGeneration++; abortRequest?.abort(); abortRequest=null;sending=false; $('send-button').disabled=false; $('send-button').textContent='发送 ↗'; };
   const showView = next => {
@@ -546,54 +551,80 @@ button:active:not(:disabled){transform:scale(.985)}
     window.scrollTo(0,0);
   };
 
-  // Cloud publishing (server-side token verification only; no admin key in client).
-  const CLOUD_SYNC_KEY='matin_v7_cloud_sync_meta';
-  let syncMeta={};
-  try{syncMeta=JSON.parse(localStorage.getItem(CLOUD_SYNC_KEY)||'{}')||{};}catch{syncMeta={};}
-  const cloudBase=String(window.MATIN_CLOUD?.supabaseUrl||'').trim().replace(/\/+$/,'');
-  const cloudEndpoint=cloudBase?cloudBase+'/functions/v1/matin-courses':'';
+  // Owner-scoped cloud drafts and published snapshots.
+  const cloudEndpoint=account?'configured':'';
   const snapshot=p=>JSON.stringify(p);
-  const saveSyncMeta=()=>{try{localStorage.setItem(CLOUD_SYNC_KEY,JSON.stringify(syncMeta));}catch{}};
+  let syncMeta={};
+  const remoteRows=new Map();
+  const savedDrafts=new Map();
+  const deleting=new Set();
+  let cloudChain=Promise.resolve(), cloudBlocked=false, cloudPending=0;
+  function rememberRow(row){
+    remoteRows.set(row.id,row);
+    if(row.is_published&&row.published_project)syncMeta[row.id]=snapshot(normalizeProject(row.published_project,true));
+    else delete syncMeta[row.id];
+  }
+  if(account) for(const row of initial.courses){rememberRow(row);savedDrafts.set(row.id,snapshot(projects.find(p=>p.id===row.id)));}
+  const dirty=()=>account&&projects.some(p=>savedDrafts.get(p.id)!==snapshot(p));
+  window.MatinAccount.canLeave=()=>!account||(!dirty()&&!cloudPending)||confirm('还有未保存到云端的更改。请取消并先保存或导出备份；继续会丢弃这些更改。');
+  function runCloud(job){
+    cloudPending++;
+    const result=cloudChain.then(()=>{if(cloudBlocked)throw Error('存在版本冲突，请先导出当前草稿，再重新加载云端。');return job();});
+    cloudChain=result.catch(()=>{});
+    return result.catch(e=>{if(e.status===409)cloudBlocked=true;throw e;}).finally(()=>cloudPending--);
+  }
+  function saveCloud(){
+    return runCloud(async()=>{
+      for(const p of [...projects]){
+        if(deleting.has(p.id)||!projects.includes(p))continue;
+        const sent=JSON.parse(snapshot(p)), fingerprint=snapshot(sent);
+        if(savedDrafts.get(p.id)===fingerprint)continue;
+        const data=await window.MatinAccount.api({action:'save',id:p.id,revision:remoteRows.get(p.id)?.revision||0,project:sent});
+        rememberRow(data.course);savedDrafts.set(p.id,fingerprint);
+      }
+      $('save-status').textContent=dirty()?'更改待同步…':'✓ 已保存到云端';
+      return true;
+    }).catch(e=>{$('save-status').textContent='⚠ 未保存到云端';notify(e.message);return false;});
+  }
   const cloudBadge=p=>{
-    if(p.published===false)return {className:'draft',label:'仅本地草稿'};
-    if(!cloudEndpoint)return {className:'cloud-ready',label:'尚未连接云端'};
-    if(!syncMeta[p.id])return {className:'cloud-ready',label:'待发布'};
-    return syncMeta[p.id]===snapshot(p)?{className:'cloud-published',label:'✓ 云端已发布'}:{className:'cloud-updated',label:'● 有未发布更改'};
+    if(!account)return {className:'draft',label:'本机草稿'};
+    if(!syncMeta[p.id])return {className:'cloud-ready',label:savedDrafts.has(p.id)?'云端私有草稿':'等待保存'};
+    return syncMeta[p.id]===snapshot(p)?{className:'cloud-published',label:'✓ 已发布给学生'}:{className:'cloud-updated',label:'● 有未发布更改'};
   };
   let pendingCloudAction=null;
   const cloudNotice=msg=>{$('cloud-status').textContent=msg;};
+  const shareLink=id=>{
+    const row=remoteRows.get(id);
+    if(!row?.is_published||!row.student_access_token)return '';
+    const url=new URL('./index.html',location.href);url.hash='course='+row.student_access_token;return url.href;
+  };
+  function showShare(id){const link=shareLink(id);$('student-share-link').value=link;$('student-share-box').classList.toggle('hidden',!link);}
   const openCloudPublish=(id,action='publish')=>{
     const p=projects.find(p=>p.id===id);if(!p)return;
-    if(!cloudEndpoint){alert('还没有连接 Supabase。\n请先按照 V7 使用说明，在 matin-config.js 中填写 Supabase Project URL 并部署 Edge Function。');return;}
+    if(!account){notify('本机离线模式不发布云端课程。');return;}
     pendingCloudAction={id,action};
-    $('cloud-title').textContent=action==='unpublish'?'☁ 下架已发布课程':'☁ 发布课程到学生端';
-    $('cloud-summary').textContent=action==='unpublish'?`确认下架「${p.title}」吗？下架后学生端不再显示这门课程，教师端本地草稿仍保留。`:`即将把「${p.title}」的当前剧本上传到 Supabase。发布成功后学生刷新选课页面即可看到。`;
-    cloudNotice('这是临时口令测试版，不是正式教师账号认证。');
-    $('cloud-confirm').textContent=action==='unpublish'?'确认下架':'☁ 确认发布';
-    $('cloud-publish-modal').classList.remove('hidden');
+    $('cloud-title').textContent=action==='unpublish'?'下架学生课程':action==='rotate'?'更换学生链接':'发布课程给学生';
+    $('cloud-summary').textContent=action==='unpublish'?`下架「${p.title}」后旧链接失效，云端草稿保留。`:action==='rotate'?'更换后旧链接立即失效，请重新向学生分享。':`发布「${p.title}」的当前版本。只有获得课程链接的人才能打开；请仅分享给本班学生。`;
+    cloudNotice('登录账号拥有这门课程。保存草稿不会改变学生正在使用的发布版本。');
+    $('cloud-confirm').disabled=false;$('cloud-confirm').textContent=action==='unpublish'?'确认下架':action==='rotate'?'更换链接':'确认发布';
+    showShare(id);$('cloud-publish-modal').classList.remove('hidden');
   };
   const closeCloudPublish=()=>{$('cloud-publish-modal').classList.add('hidden');pendingCloudAction=null;};
   const confirmCloudPublish=async()=>{
-    if(!pendingCloudAction){closeCloudPublish();return;}if(!cloudEndpoint)return;
-    const {id,action}=pendingCloudAction,p=projects.find(x=>x.id===id);if(!p)return;
-    const token=$('publish-token').value.trim();if(!token){cloudNotice('请先填写在 Supabase 设置的临时发布口令。');return;}
-    if(action==='publish' && p.published===false){if(!confirm('此课程当前是私有草稿。确认标记为可发布并立即上传云端？'))return;p.published=true;updateProject();flushSave();}
-    if(action==='publish'&&(!p.title.trim()||!p.nodes?.length)){cloudNotice('课程至少需要标题和一个任务节点。');return;}
-    const button=$('cloud-confirm');button.disabled=true;button.textContent=action==='unpublish'?'下架中…':'发布中…';
-    cloudNotice('正在连接 Supabase，请稍候…');
+    if(!pendingCloudAction)return closeCloudPublish();
+    const {id,action}=pendingCloudAction;
+    const p=projects.find(p=>p.id===id);
+    if(action==='publish'&&p?.published===false){if(!confirm('将当前私有草稿发布给持有课程链接的学生？'))return;p.published=true;}
+    const button=$('cloud-confirm');button.disabled=true;cloudNotice('正在保存并处理…');
     try{
-      flushSave();
-      const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),18000);
-      let res;try{res=await fetch(cloudEndpoint,{method:'POST',headers:{'Content-Type':'application/json','x-matin-publish-token':token},body:JSON.stringify({action,id,project:action==='publish'?p:undefined}),signal:ctrl.signal});}finally{clearTimeout(timer);}
-      const data=await res.json().catch(()=>({}));if(!res.ok||!data.ok)throw new Error(data.error||'HTTP '+res.status);
-      if(action==='publish')syncMeta[id]=snapshot(p);else{delete syncMeta[id];p.published=false;flushSave();}
-      saveSyncMeta();renderDashboard();
-      cloudNotice(action==='unpublish'?'✅ 下架成功。学生端刷新后不再显示课程。':'✅ 已成功发布到 Supabase！学生端刷新后即可选课。');
-      notify(action==='unpublish'?'课程已从学生端下架':'课程发布成功，学生端可以读取！');
-      button.textContent='完成';button.disabled=false;
-      pendingCloudAction=null;
-    }catch(e){cloudNotice('❌ 操作失败：'+(e.name==='AbortError'?'请求超时':e.message)+'。请检查 Edge Function、口令及网络。');button.textContent=action==='unpublish'?'重试下架':'重试发布';button.disabled=false;}
+      clearTimeout(storeTimer);
+      if(!await saveCloud())throw Error('草稿未保存，操作已停止。');
+      await runCloud(async()=>{const data=await window.MatinAccount.api({action,id,revision:remoteRows.get(id).revision});rememberRow(data.course);});
+      renderDashboard();showShare(id);cloudNotice(action==='unpublish'?'已下架。旧链接已失效。':'操作成功。复制下方链接分享给学生。');
+      pendingCloudAction=null;button.textContent='完成';
+    }catch(e){cloudNotice(e.message);button.textContent='重试';}finally{button.disabled=false;}
   };
+
   const renderDashboard = () => {
     $('metric-projects').textContent=String(projects.length);
     $('metric-nodes').textContent=String(projects.reduce((sum,p)=>sum+p.nodes.length,0));
@@ -608,7 +639,7 @@ button:active:not(:disabled){transform:scale(.985)}
     $('projects-grid').innerHTML=list.map((p,i)=>`<article class="project-card" data-tone="${i%4}">
       <div class="project-head"><div class="project-top"><span class="project-pill">✦ ${esc(p.category||'自定义')}</span><span class="publish-status ${cloudBadge(p).className}">${cloudBadge(p).label}</span><span class="project-index">${String(i+1).padStart(2,'0')}</span></div><div class="project-monogram">${esc((p.title||'M').slice(0,1))}</div><h3>${esc(p.title)}</h3></div>
       <div class="project-body"><div class="card-label">LEARNING SCENARIO</div><p>${esc(p.desc||'还没有项目简介，快去构建你的第一个教学场景。')}</p><div class="meta"><span class="meta-stat">◇ ${p.nodes.length} 个节点</span><span class="meta-stat">⌁ ${(p.edges||[]).length} 条连线</span><span class="meta-date">${esc(p.updatedAt||'')}</span></div></div>
-      <div class="project-foot"><button class="btn flat tiny" type="button" data-card="edit" data-id="${esc(p.id)}">⌘ 编辑剧本</button><div class="actions"><details class="card-menu"><summary aria-label="更多项目操作">···</summary><div class="menu-panel"><button type="button" data-card="copy" data-id="${esc(p.id)}">复制项目</button><button type="button" data-card="unpublish" data-id="${esc(p.id)}">下架云端课程</button><button class="danger" type="button" data-card="delete" data-id="${esc(p.id)}">删除本地项目</button></div></details><button class="btn tiny" type="button" data-card="run" data-id="${esc(p.id)}">▷ 教师预览</button><button class="btn tiny card-publish" type="button" data-card="publish" data-id="${esc(p.id)}">${syncMeta[p.id] && p.published!==false?'☁ 更新发布':'☁ 发布到学生端'}</button></div></div>
+      <div class="project-foot"><button class="btn flat tiny" type="button" data-card="edit" data-id="${esc(p.id)}">⌘ 编辑剧本</button><div class="actions"><details class="card-menu"><summary aria-label="更多项目操作">···</summary><div class="menu-panel"><button type="button" data-card="copy" data-id="${esc(p.id)}">复制项目</button><button type="button" data-card="unpublish" data-id="${esc(p.id)}">下架云端课程</button><button class="danger" type="button" data-card="delete" data-id="${esc(p.id)}">删除课程</button></div></details><button class="btn tiny" type="button" data-card="run" data-id="${esc(p.id)}">▷ 教师预览</button><button class="btn tiny card-publish" type="button" data-card="publish" data-id="${esc(p.id)}">${syncMeta[p.id] && p.published!==false?'☁ 更新发布':'☁ 发布到学生端'}</button></div></div>
     </article>`).join('');
     if(!list.length)$('projects-grid').innerHTML='<div class="empty-library"><div>⌕</div><h3>没有匹配的项目</h3><p>换个关键词或分类试试，也可以创建新的教学剧本。</p></div>';
   };
@@ -619,7 +650,7 @@ button:active:not(:disabled){transform:scale(.985)}
   const inputField = (label,key,val,opts={}) => `<div class="field"><label for="field-${key}">${esc(label)}</label>${opts.rows?`<textarea id="field-${key}" data-field="${key}" rows="${opts.rows}" placeholder="${esc(opts.placeholder||'')}">${esc(val)}</textarea>`:`<input type="${key==='passScore'?'number':'text'}" ${key==='passScore'?'min="0" max="100" step="1"':''} id="field-${key}" data-field="${key}" value="${esc(val)}" placeholder="${esc(opts.placeholder||'')}"/>`}${opts.hint?`<p class="hint">${esc(opts.hint)}</p>`:''}</div>`;
   const projectField = (label,key,val,rows=0) => `<div class="field"><label for="project-${key}">${esc(label)}</label>${rows?`<textarea id="project-${key}" rows="${rows}" data-project-field="${key}">${esc(val)}</textarea>`:`<input id="project-${key}" data-project-field="${key}" value="${esc(val)}"/>`}</div>`;
   // Teacher-only subject shortcuts. Retain past custom subjects for quick reuse.
-  const SUBJECT_STORE='matin_v6_recent_subjects';
+  const SUBJECT_STORE='matin_v6_recent_subjects'+(account?':'+account.id:'');
   const subjectHistory=()=>{let list=[];try{list=JSON.parse(localStorage.getItem(SUBJECT_STORE)||'[]');}catch{};return Array.isArray(list)?list.filter(s=>typeof s==='string'):[];};
   const subjectChoices=()=>[...new Set([...projects.map(p=>(p.category||'').trim()),...subjectHistory()].filter(x=>x&&x!=='自定义'))].slice(0,24);
   const rememberSubject=value=>{const x=String(value||'').trim().slice(0,70);if(!x||x==='自定义')return;try{localStorage.setItem(SUBJECT_STORE,JSON.stringify([x,...subjectHistory().filter(s=>s!==x)].slice(0,40)));}catch{}};
@@ -636,7 +667,7 @@ button:active:not(:disabled){transform:scale(.985)}
   };
   const renderProjectSettings = () => {
     const p=currentProject();
-    $('editor-fields').innerHTML=`<div class="group"><div class="group-title"><span class="dot">项目</span> 编写实训项目介绍</div><div class="form-grid">${projectField('项目名称','title',p.title)}${projectField('所属学科 / 分类（可自由输入）','category',p.category)}</div><div class="subject-suggest"><p class="hint">✦ 最近使用的学科 · 点击标签快速填入，也可以直接输入新学科</p><div id="teacher-subject-pills" class="subject-pills"></div></div>${projectField('项目描述（在项目库展示）','desc',p.desc,3)}${projectField('总体教学目标','objective',p.objective,3)}<label class="publish-check"><input id="project-published" type="checkbox" ${p.published!==false?'checked':''}> <span><strong>允许发布到学生端</strong><small>勾选后仍需点击「发布到学生端」；单纯勾选不会自动上线。</small></span></label><p class="notice">学科名称可以自行输入；已有分类会显示为快捷标签。更改项目先自动保存在浏览器中。要让学生看到修改，请点击「发布到学生端」。</p></div><div class="actions"><button class="btn primary" data-go-node="yes">继续编写任务节点 →</button></div>`;
+    $('editor-fields').innerHTML=`<div class="group"><div class="group-title"><span class="dot">项目</span> 编写实训项目介绍</div><div class="form-grid">${projectField('项目名称','title',p.title)}${projectField('所属学科 / 分类（可自由输入）','category',p.category)}</div><div class="subject-suggest"><p class="hint">✦ 最近使用的学科 · 点击标签快速填入，也可以直接输入新学科</p><div id="teacher-subject-pills" class="subject-pills"></div></div>${projectField('项目描述（在项目库展示）','desc',p.desc,3)}${projectField('总体教学目标','objective',p.objective,3)}<label class="publish-check"><input id="project-published" type="checkbox" ${p.published!==false?'checked':''}> <span><strong>允许发布到学生端</strong><small>勾选后仍需点击「发布到学生端」；单纯勾选不会自动上线。</small></span></label><p class="notice">学科名称可以自行输入；已有分类会显示为快捷标签。登录后更改自动保存为云端私有草稿。要让学生看到修改，请点击「发布到学生端」。</p></div><div class="actions"><button class="btn primary" data-go-node="yes">继续编写任务节点 →</button></div>`;
     renderSubjectPills();
   };
   const renderNodeEditor = () => {
@@ -687,7 +718,11 @@ button:active:not(:disabled){transform:scale(.985)}
   };
   const selectProject = (id,target) => {const p=projects.find(x=>x.id===id);if(!p)return; projectId=p.id;selectedNodeId=p.nodes[0].id;editorMode='node';selectedEdgeId=null;linkSourceId=null;if(target==='studio') showView('studio');else startRuntime();};
   const copyProject = id => {const src=projects.find(p=>p.id===id);if(!src)return;const copy=normalizeProject(src);copy.title+='（副本）';copy.published=false;projects.unshift(copy);projectId=copy.id;selectedNodeId=copy.nodes[0].id;flushSave();renderDashboard();notify('项目已复制。');};
-  const deleteProject = id => {const p=projects.find(x=>x.id===id);if(!p||!confirm(`删除项目「${p.title}」？此操作无法撤销，请先导出备份。`))return;projects=projects.filter(x=>x.id!==id);if(!projects.length)projects=demoProjects();projectId=projects[0].id;selectedNodeId=projects[0].nodes[0].id;flushSave();renderDashboard();notify('项目已删除。');};
+  const deleteProject = async id => {
+    const p=projects.find(x=>x.id===id);if(!p||!confirm(`删除「${p.title}」及其学生发布版本？请先导出备份。`))return;
+    if(account){deleting.add(id);try{await runCloud(async()=>{const r=remoteRows.get(id);if(r)await window.MatinAccount.api({action:'delete',id,revision:r.revision});});}catch(e){deleting.delete(id);notify(e.message);return;}deleting.delete(id);remoteRows.delete(id);savedDrafts.delete(id);delete syncMeta[id];}
+    projects=projects.filter(x=>x.id!==id);if(!projects.length&&!account)projects=demoProjects();projectId=projects[0]?.id;selectedNodeId=projects[0]?.nodes[0]?.id;flushSave();renderDashboard();notify('项目已删除。');
+  };
   const processNodeAction = (action,id) => {
     const p=currentProject();const i=p.nodes.findIndex(n=>n.id===id);if(i<0)return;
     if(action==='select'){selectedNodeId=id;selectedEdgeId=null;editorMode='node';renderStudio();return;}
@@ -1256,10 +1291,12 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
     if(b.dataset.nav==='runtime'){if(view==='runtime'){showView('runtime');}else startRuntime();}
     else {if(view==='studio')flushSave();showView(b.dataset.nav);}
   }));
-  $('cloud-help-button').addEventListener('click',()=>alert('V7 云端发布：\n1. 在 matin-config.js 配置 Supabase URL；\n2. 部署 matin-courses Edge Function，并设置长随机口令；\n3. 在课程卡片点击「发布到学生端」。\n\n详细步骤见压缩包内使用说明。'));
+  $('cloud-help-button').addEventListener('click',()=>alert('登录账号后自动保存云端草稿。\n发布课程后，复制课程链接给学生。\n其他电脑登录同一账号可继续编辑；编辑前请重新加载云端。'));
   $('cloud-close').addEventListener('click',closeCloudPublish);
   $('cloud-cancel').addEventListener('click',closeCloudPublish);
   $('cloud-confirm').addEventListener('click',confirmCloudPublish);
+  $('copy-student-link').onclick=async()=>{try{await navigator.clipboard.writeText($('student-share-link').value);cloudNotice('链接已复制。');}catch{$('student-share-link').select();cloudNotice('请按 Ctrl+C 复制链接。');}};
+  $('rotate-student-link').onclick=()=>{const id=projects.find(p=>shareLink(p.id)===$('student-share-link').value)?.id;if(id)openCloudPublish(id,'rotate');};
   $('cloud-publish-modal').addEventListener('click',e=>{if(e.target===$('cloud-publish-modal'))closeCloudPublish();});
   $('publish-editor-button').addEventListener('click',()=>{flushSave();openCloudPublish(currentProject().id,'publish');});
   $('preview-to-dashboard').addEventListener('click',()=>{flushSave();showView('dashboard');});
@@ -1302,7 +1339,7 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
   });
   $('editor-fields').addEventListener('click',e=>{const chip=e.target.closest('[data-subject-pick]');if(chip){const subject=chip.dataset.subjectPick;currentProject().category=subject;const field=$('project-category');if(field)field.value=subject;rememberSubject(subject);renderSubjectPills();updateProject();}if(e.target.closest('[data-go-node]')){editorMode='node';renderStudio();}if(e.target.closest('[data-edge-delete]'))deleteEdge(selectedEdgeId);if(e.target.closest('[data-set-start]')){currentProject().startNodeId=selectedNodeId;updateProject();renderGraph();notify('已设置为实训入口。');}});
   $('editor-fields').addEventListener('change',e=>{if(e.target.id==='project-published'){currentProject().published=e.target.checked;updateProject();notify(e.target.checked?'已开启发布资格；还需点击「发布到学生端」才能同步':'已标记为本地草稿；若之前已上线，请手动下架云端课程');return;}if(e.target.dataset.projectField==='category'){const subject=e.target.value.trim();if(subject){currentProject().category=subject;rememberSubject(subject);updateProject();renderSubjectPills();}else notify('学科名称不可为空');return;}const field=e.target.dataset.edgeField;if(!field)return; updateEdgeProperty(field,e.target.value);});
-  $('save-project-button').addEventListener('click',()=>{flushSave();notify('剧本已保存到当前浏览器。');});
+  $('save-project-button').addEventListener('click',async()=>{if(await flushSave())notify(account?'草稿已保存到云端，可在其他电脑登录继续编辑。':'剧本已保存到当前浏览器。');});
   $('export-project-button').addEventListener('click',exportProject);
   $('preview-project-button').addEventListener('click',()=>{flushSave();startRuntime();});
   $('runtime-to-editor').addEventListener('click',()=>{editorMode='node';selectedEdgeId=null;showView('studio');});
@@ -1343,11 +1380,11 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
   $('import-file').addEventListener('change',async e=>{
     const file=e.target.files[0];e.target.value='';if(!file)return;
     if(file.size>1024*1024)return notify('文件大于 1MB，请拆分导入。');
-    try{const parsed=JSON.parse(await file.text());let raw=Array.isArray(parsed.projects)?parsed.projects:parsed.project?[parsed.project]:[parsed];if(!raw.length||raw.length>100)throw new Error('项目数量应为 1～100');const imported=raw.map(normalizeProject);projects=[...imported,...projects].slice(0,100);projectId=imported[0].id;selectedNodeId=imported[0].nodes[0].id;flushSave();renderDashboard();notify(`成功导入 ${imported.length} 个项目。`);}catch(err){notify(`导入失败：${err.message}`);}
+    try{const parsed=JSON.parse(await file.text());let raw=Array.isArray(parsed.projects)?parsed.projects:parsed.project?[parsed.project]:[parsed];if(!raw.length||raw.length>100)throw new Error('项目数量应为 1～100');const imported=raw.map(p=>normalizeProject(p));projects=[...imported,...projects].slice(0,100);projectId=imported[0].id;selectedNodeId=imported[0].nodes[0].id;flushSave();renderDashboard();notify(`成功导入 ${imported.length} 个项目。`);}catch(err){notify(`导入失败：${err.message}`);}
   });
-  window.addEventListener('beforeunload',()=>{if(storeTimer)store();});
+  window.addEventListener('beforeunload',e=>{if(account&&(dirty()||cloudPending)){e.preventDefault();e.returnValue='';}else if(!account&&storeTimer)store();});
   store();showView('dashboard');
-})();
+})().catch(error=>window.MatinAccount.fatal(error));
 </script>
 </body>
 </html>
