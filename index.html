@@ -64,10 +64,14 @@ async function loadCatalog(){
 const cloudUrl=String(window.MATIN_CLOUD?.supabaseUrl||'').trim().replace(/\/+$/,'');
 if(cloudUrl){
 try{
-const token=new URLSearchParams(location.hash.slice(1)).get('course')||'';
+const params=new URLSearchParams(location.hash.slice(1));
+const isHome=params.has('teacher');
+const token=params.get(isHome?'teacher':'course')||'';
 if(!/^[a-f0-9]{64}$/.test(token)){courses=[];$('catalog-status').textContent='请使用教师分享的课程链接进入。这里不展示公开课程列表。';$('catalog-status').className='status-line';renderLibrary();return;}
-const resp=await fetch(cloudUrl+'/functions/v1/matin-courses',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'student',token}),cache:'no-store',signal:AbortSignal.timeout(20000)});
-const data=await resp.json();if(!resp.ok||!data.ok||!Array.isArray(data.projects))throw Error(data.error||'课程加载失败');courses=data.projects.map(normalize).filter(Boolean);$('catalog-status').textContent='已打开教师分享的课程 · 内容以教师发布的版本为准';$('catalog-status').className='status-line';
+const resp=await fetch(cloudUrl+'/functions/v1/matin-courses',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:isHome?'teacher_home':'student',token}),cache:'no-store',signal:AbortSignal.timeout(20000)});
+const data=await resp.json();if(!resp.ok||!data.ok||!Array.isArray(data.projects))throw Error(data.error||'课程加载失败');courses=data.projects.map(normalize).filter(Boolean);$('catalog-status').textContent=isHome?'教师课程主页 · 仅展示这位教师已发布的课程':'已打开教师分享的课程 · 内容以教师发布的版本为准';
+ document.querySelector('.page-intro h1').textContent=isHome?'教师课程主页':'探索你的学习空间';
+ document.querySelector('.brand').href='./index.html'+location.hash;$('catalog-status').className='status-line';
 }catch(e){courses=[];$('catalog-status').textContent='无法打开课程：'+e.message+'。请联系教师取得有效链接。';$('catalog-status').className='status-line warning';}
 renderLibrary();return;}
 try{const resp=await fetch('./catalog.json',{cache:'no-store'});if(!resp.ok)throw Error('HTTP '+resp.status);const file=await resp.json();if(file.format!=='matin-studio-catalog'||!Array.isArray(file.projects)||file.projects.length>100)throw Error('课程文件格式错误');courses=file.projects.filter(p=>p&&p.published!==false).map(normalize).filter(Boolean);$('catalog-status').textContent='当前为离线课程库模式；启用 Supabase 后教师可一键发布，无需再上传 catalog.json。';$('catalog-status').className='status-line';}
@@ -75,7 +79,7 @@ catch(e){courses=demoCatalog.map(normalize).filter(Boolean);$('catalog-status').
 const subjects=()=>['全部',...new Set(courses.map(c=>c.category))];
 function renderLibrary(){let all=subjects();if(!all.includes(category))category='全部';$('subject-total').textContent=(all.length-1)+' 类';$('subject-list').innerHTML=all.map(s=>`<button type="button" class="subject-item ${s===category?'active':''}" data-subject="${esc(s)}"><span>${s==='全部'?'▦ ': '◇ '}${esc(s)}</span><span class="subject-count">${courses.filter(c=>s==='全部'||c.category===s).length}</span></button>`).join('');
 const term=search.toLocaleLowerCase();const list=courses.filter(c=>(category==='全部'||c.category===category)&&(!term||[c.title,c.category,c.desc,c.objective].some(x=>x.toLocaleLowerCase().includes(term))));$('course-title').textContent=category==='全部'?'全部实训课程':category;$('course-subtitle').textContent=`共 ${list.length} 门课程 · 根据自己的兴趣开始学习`;
-$('course-grid').innerHTML=list.map((c,i)=>{let p=progress(c.id);return `<article class="course-card"><div class="course-cover"><div class="cover-top"><span class="cover-tag">◇ ${esc(c.category)}</span><span>SCENARIO ${String(i+1).padStart(2,'0')}</span></div><strong>${esc(c.title)}</strong></div><div class="course-body"><p class="course-desc">${esc(c.desc||c.objective||'跟随 AI 导师完成课程情境学习。')}</p><div class="course-meta"><span>◎ ${c.nodes.length} 个任务节点</span><span>⌁ ${c.edges.length} 条学习路径</span></div><div class="course-foot"><span class="progress-text">${p?'最近学习：'+esc(p.nodeName):'尚未开始'}</span><button class="btn primary tiny" data-open-course="${esc(c.id)}">${p?'重新学习':'开始学习'} ↗</button></div></div></article>`;}).join('')||'<div class="empty">目前这个分类还没有课程，可以尝试其他学科或搜索关键词。</div>';
+$('course-grid').innerHTML=list.map((c,i)=>{let p=progress(c.id);return `<article class="course-card"><div class="course-cover"><div class="cover-top"><span class="cover-tag">◇ ${esc(c.category)}</span><span>SCENARIO ${String(i+1).padStart(2,'0')}</span></div><strong>${esc(c.title)}</strong></div><div class="course-body"><p class="course-desc">${esc(c.desc||c.objective||'跟随 AI 导师完成课程情境学习。')}</p><div class="course-meta"><span>◎ ${c.nodes.length} 个任务节点</span><span>⌁ ${c.edges.length} 条学习路径</span></div><div class="course-foot"><span class="progress-text">${p?'最近学习：'+esc(p.nodeName):'尚未开始'}</span><button class="btn primary tiny" data-open-course="${esc(c.id)}">${p?'重新学习':'开始学习'} ↗</button></div></div></article>`;}).join('')||'<div class="empty">当前没有可显示的课程。教师发布课程后，点击「同步最新课程」；也可清空搜索或切换分类。</div>';
 }
 function progress(id){try{return JSON.parse(localStorage.getItem('matin_v6_progress_'+id)||'null')}catch{return null}}
 function rememberProgress(){if(!active||!runNode)return;try{localStorage.setItem('matin_v6_progress_'+active.id,JSON.stringify({nodeName:runNode.name,at:Date.now(),visited:visited.length,finished:completion}))}catch{}}

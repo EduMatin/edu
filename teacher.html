@@ -312,6 +312,7 @@ button:active:not(:disabled){transform:scale(.985)}
 .ai-generator-shortcut{margin-top:14px;font-size:11px;color:#7c8aa5;line-height:1.65}
 @media(max-width:680px){.ai-modal{padding:18px 15px}.ai-grid,.ai-preview-grid{grid-template-columns:1fr}.ai-span-2{grid-column:auto}.ai-modal-actions .btn{flex:1;justify-content:center}.ai-modal-head h2{font-size:18px}}
 
+#teacher-home-modal p{margin:12px 0;line-height:1.8;color:#596a8b}#teacher-home-modal .actions{gap:8px;margin-top:12px;flex-wrap:wrap}#teacher-home-modal .modal{max-width:600px}
 </style>
 </head>
 <body>
@@ -325,18 +326,18 @@ button:active:not(:disabled){transform:scale(.985)}
     <button type="button" data-nav="studio"><span class="nav-icon">⌘</span> 剧本编辑器</button>
 
   </nav>
-  <div class="topright"><span class="topnote" id="save-status">本机浏览器保存</span><a class="btn" href="./index.html" target="_blank" rel="noopener">↗ 查看学生端</a><button class="btn" id="settings-open" type="button">✦ AI 模型设置</button></div>
+  <div class="topright"><span class="topnote" id="save-status">本机浏览器保存</span><a class="btn" id="student-entry" href="./index.html" target="_blank" rel="noopener">↗ 查看学生端</a><button class="btn" id="settings-open" type="button">✦ AI 模型设置</button></div>
 </header>
 <main class="container">
   <section id="view-dashboard">
     <div class="dash-kicker"><span class="activity-dot"></span> MATIN · TEACHER STUDIO <span class="kicker-right">TEACHER WORKSPACE · V8.0</span></div>
     <div class="dashboard-hero">
-      <div class="hero-copy"><div class="hero-eyebrow">✦ AI-POWERED LEARNING DESIGN</div><h1>设计专业课程，<br><em>发布给每一位学生。</em></h1><p>自主创建学科和课程，编辑角色、剧情与智能评价；点击课程卡片的「发布」按钮即可同步到学生端；本地保存和云端发布分开管理。</p>
-      <div class="actions"><button type="button" class="btn hero-action" id="new-project-button">＋ 创建新剧本 <span>↗</span></button><button type="button" class="btn hero-secondary" id="import-button">⇧ 导入已有项目</button><button type="button" class="btn hero-secondary" id="cloud-help-button">☁ 云端发布说明</button><button type="button" class="btn hero-secondary" id="publish-catalog-button">⇩ 离线导出课程库</button></div></div>
+      <div class="hero-copy"><div class="hero-eyebrow">✦ AI-POWERED LEARNING DESIGN</div><h1>设计专业课程，<br><em>发布给每一位学生。</em></h1><p>自主创建学科和课程，编辑角色、剧情与智能评价；点击课程卡片的「发布」按钮即可同步到学生端；草稿保存与学生发布分开管理。</p>
+      <div class="actions"><button type="button" class="btn hero-action" id="new-project-button">＋ 创建新剧本 <span>↗</span></button><button type="button" class="btn hero-secondary" id="import-button">⇧ 导入已有项目</button><button type="button" class="btn hero-secondary" id="cloud-help-button">☁ 云端发布说明</button><button type="button" class="btn hero-secondary" id="teacher-home-open">↗ 教师课程主页</button><button type="button" class="btn hero-secondary" id="publish-catalog-button">⇩ 离线导出课程库</button></div></div>
       <div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="hero-glow"></div><div class="hero-node hero-node-a"><b>◇</b><span>故事设计</span></div><div class="hero-node hero-node-b"><b>✦</b><span>AI 对话</span></div><div class="hero-node hero-node-c"><b>◎</b><span>智能评估</span></div><svg viewBox="0 0 340 255"><path d="M70 118 C132 118 125 64 181 88 S245 154 287 164" fill="none" stroke="#b9d3ff" stroke-width="2" stroke-dasharray="6 7" opacity=".7"/><path d="M78 140 C155 155 185 202 257 176" fill="none" stroke="#90a5ff" stroke-width="2" stroke-dasharray="6 7" opacity=".6"/></svg></div>
     </div>
     <div class="stats-grid"><div class="metric-card"><span class="metric-icon indigo">▦</span><div><div class="metric-value" id="metric-projects">0</div><div class="metric-label">实训项目</div></div><span class="metric-foot">PROJECTS</span></div><div class="metric-card"><span class="metric-icon cyan">◇</span><div><div class="metric-value" id="metric-nodes">0</div><div class="metric-label">剧情节点</div></div><span class="metric-foot">SCENES</span></div><div class="metric-card"><span class="metric-icon emerald">⌁</span><div><div class="metric-value" id="metric-branches">0</div><div class="metric-label">流程连线</div></div><span class="metric-foot">BRANCHES</span></div><div class="metric-card metric-ai"><span class="metric-icon amber">✦</span><div><div class="metric-value" id="metric-model">离线</div><div class="metric-label">当前 AI 引擎</div></div><span class="metric-foot">MODEL</span></div></div>
-    <div class="library-head"><div><span class="section-overline">PROJECT LIBRARY</span><h2>教师课程库 <span class="library-count" id="library-count">0</span></h2><p class="small-note">本地保存只是草稿；点击课程卡片上的「发布到学生端」才能正式同步到云端</p></div><div class="actions"><label class="search-box"><span>⌕</span><input id="project-search" type="search" placeholder="搜索项目名称、学科…" aria-label="搜索实训项目" /></label><button type="button" class="btn" id="export-all-button">⇩ 备份</button></div></div>
+    <div class="library-head"><div><span class="section-overline">PROJECT LIBRARY</span><h2>教师课程库 <span class="library-count" id="library-count">0</span></h2><p class="small-note">登录后草稿自动保存到云端；点击「发布到学生端」才会向学生开放课程</p></div><div class="actions"><label class="search-box"><span>⌕</span><input id="project-search" type="search" placeholder="搜索项目名称、学科…" aria-label="搜索实训项目" /></label><button type="button" class="btn" id="export-all-button">⇩ 备份</button></div></div>
     <div class="category-chips" id="category-chips" aria-label="按学科筛选"></div>
     <div class="project-grid" id="projects-grid"></div>
     <div class="publisher-help hidden" id="publish-help"><strong>离线课程库文件已生成：</strong>仅当网站使用离线课程库模式时，在 GitHub 的 <code>EduMatin/edu</code> 仓库根目录上传或替换 <code>catalog.json</code>，提交更改（Commit changes），待部署完成后学生刷新首页即可读取。<br>当前线上网站使用云端课程库；上传此文件不会更新云端课程，请通过教师端云端发布功能更新课程。下载文件不等于发布，只有具备相应权限的教师/管理员才能更新学生实际读取的课程。<a href="https://github.com/EduMatin/edu" target="_blank" rel="noopener">打开 EduMatin/edu 仓库 ↗</a></div>
@@ -396,6 +397,17 @@ button:active:not(:disabled){transform:scale(.985)}
 <div id="toast" class="hidden" role="status"></div>
 <script src="./matin-config.js"></script>
 <script src="./matin-math.js"></script>
+
+<div id="teacher-home-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="teacher-home-title">
+ <div class="modal">
+  <h2 id="teacher-home-title">教师课程主页</h2>
+  <p>一个链接展示你所有已发布课程，之后发布的新课程也会自动加入。学生点击「同步最新课程」即可更新列表；草稿和其他教师的课程不会展示。</p>
+  <p>持有链接的人都可以查看主页中的已发布课程，请仅分享给需要的学生。</p>
+  <div class="cloud-field hidden" id="teacher-home-link-box"><label for="teacher-home-link">我的主页链接</label><input id="teacher-home-link" readonly><div class="actions"><button type="button" class="btn" id="teacher-home-copy">复制主页链接</button><a class="btn" id="teacher-home-visit" target="_blank" rel="noopener">打开主页 ↗</a></div></div>
+  <p id="teacher-home-status" role="status"></p>
+  <div class="actions" style="flex-wrap:wrap"><button type="button" class="btn primary" id="teacher-home-create">开启主页</button><button type="button" class="btn hidden" id="teacher-home-rotate">更换主页链接</button><button type="button" class="btn hidden" id="teacher-home-disable">关闭主页</button><button type="button" class="btn" id="teacher-home-close">关闭窗口</button></div>
+ </div>
+</div>
 
 <div id="cloud-publish-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="cloud-title">
  <div class="modal" style="max-width:550px">
@@ -605,10 +617,47 @@ button:active:not(:disabled){transform:scale(.985)}
     pendingCloudAction={id,action};
     $('cloud-title').textContent=action==='unpublish'?'下架学生课程':action==='rotate'?'更换学生链接':'发布课程给学生';
     $('cloud-summary').textContent=action==='unpublish'?`下架「${p.title}」后旧链接失效，云端草稿保留。`:action==='rotate'?'更换后旧链接立即失效，请重新向学生分享。':`发布「${p.title}」的当前版本。只有获得课程链接的人才能打开；请仅分享给本班学生。`;
-    cloudNotice('登录账号拥有这门课程。保存草稿不会改变学生正在使用的发布版本。');
+    cloudNotice('登录账号拥有这门课程。保存草稿不会改变学生正在使用的发布版本。开启教师课程主页后，本次发布也会更新主页中的课程。');
     $('cloud-confirm').disabled=false;$('cloud-confirm').textContent=action==='unpublish'?'确认下架':action==='rotate'?'更换链接':'确认发布';
     showShare(id);$('cloud-publish-modal').classList.remove('hidden');
   };
+  let homeToken=null, homeBusy=false;
+  const homeControls=['teacher-home-create','teacher-home-rotate','teacher-home-disable','teacher-home-copy','teacher-home-close'];
+  function renderHome(token){
+    homeToken=token;
+    const url=new URL('./index.html',location.href);url.hash='teacher='+token;
+    $('teacher-home-link').value=token?url.href:'';
+    $('teacher-home-visit').href=token?url.href:'#';
+    $('teacher-home-link-box').classList.toggle('hidden',!token);
+    $('teacher-home-create').classList.toggle('hidden',!!token);
+    for(const id of ['teacher-home-rotate','teacher-home-disable'])$(id).classList.toggle('hidden',!token);
+  }
+  async function homeRequest(action){
+    if(homeBusy)return;
+    homeBusy=true;homeControls.forEach(id=>$(id).disabled=true);
+    $('teacher-home-status').textContent='正在处理…';
+    // Clear stale links until the server confirms the current state.
+    renderHome(null);
+    try{
+      const data=await window.MatinAccount.api({action});renderHome(data.token);
+      $('teacher-home-status').textContent=data.token?'主页已开启。已发布课程会自动出现在此链接中。':'主页未开启。关闭主页不会下架课程，原有单门课程链接仍然有效。';
+    }catch(e){
+      $('teacher-home-status').textContent=e.message+'。请关闭窗口后重新打开确认状态。';
+      // Do not offer activation when the existing state could not be read.
+      $('teacher-home-create').classList.add('hidden');
+    }finally{homeBusy=false;homeControls.forEach(id=>$(id).disabled=false);}
+  }
+  $('teacher-home-open').onclick=()=>{
+    if(!account){notify('请在已配置云端的教师端登录后使用课程主页。');return;}
+    $('teacher-home-modal').classList.remove('hidden');homeRequest('home_get');
+  };
+  $('student-entry').onclick=e=>{if(account){e.preventDefault();$('teacher-home-open').click();}};
+  $('teacher-home-create').onclick=()=>homeRequest('home_create');
+  $('teacher-home-rotate').onclick=()=>{if(confirm('更换后，旧主页链接将失效。需要重新向学生分享新链接。继续？'))homeRequest('home_rotate');};
+  $('teacher-home-disable').onclick=()=>{if(confirm('关闭后，学生将无法通过主页链接读取课程。单门课程链接仍有效。继续？'))homeRequest('home_disable');};
+  $('teacher-home-close').onclick=()=>{if(!homeBusy)$('teacher-home-modal').classList.add('hidden');};
+  $('teacher-home-copy').onclick=async()=>{if(!homeToken)return;try{await navigator.clipboard.writeText($('teacher-home-link').value);$('teacher-home-status').textContent='主页链接已复制。';}catch{$('teacher-home-link').select();$('teacher-home-status').textContent='请按 Ctrl+C 复制主页链接。';}};
+  $('teacher-home-modal').onclick=e=>{if(e.target===$('teacher-home-modal')&&!homeBusy)$('teacher-home-modal').classList.add('hidden');};
   const closeCloudPublish=()=>{$('cloud-publish-modal').classList.add('hidden');pendingCloudAction=null;};
   const confirmCloudPublish=async()=>{
     if(!pendingCloudAction)return closeCloudPublish();
