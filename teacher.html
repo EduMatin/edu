@@ -395,6 +395,7 @@ button:active:not(:disabled){transform:scale(.985)}
 <input id="import-file" type="file" accept="application/json,.json" hidden />
 <div id="toast" class="hidden" role="status"></div>
 <script src="./matin-config.js"></script>
+<script src="./matin-math.js"></script>
 
 <div id="cloud-publish-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="cloud-title">
  <div class="modal" style="max-width:550px">
@@ -699,6 +700,7 @@ button:active:not(:disabled){transform:scale(.985)}
   const addNode = () => {const p=currentProject();if(p.nodes.length>=50)return notify('每个项目最多 50 个节点。');const tail=p.nodes[p.nodes.length-1];const n=makeNode({name:`阶段${p.nodes.length+1}：新任务`,x:(tail.x||70)+315,y:tail.y||120});p.nodes.push(n);if(!p.edges.some(e=>e.from===tail.id))p.edges.push(makeEdge(tail.id,n.id));selectedNodeId=n.id;selectedEdgeId=null;editorMode='node';updateProject();renderStudio();notify('新节点已加入。拖动卡片可调整位置，连线可编辑分支。');};
   // Render a small safe Markdown subset. HTML is escaped before any formatting is added.
   const safeMarkdown = value => {
+    if(window.MatinMath) return MatinMath.format(value,{bullets:true});
     const inline = str => esc(str).replace(/`([^`\n]{1,120})`/g,'<code>$1</code>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g,'<em>$1</em>');
     return String(value??'').split(/\r?\n/).map(line=>{
       const bullet=line.match(/^\s*[-•]\s+(.+)/);
@@ -739,8 +741,8 @@ button:active:not(:disabled){transform:scale(.985)}
   };
   const exportReport = () => {
     const p=currentProject();if(!p)return;
-    const rows=runEvaluations.map((e,i)=>`<section><h3>${i+1}. ${esc(e.nodeName)} · AI 建议分 ${e.score}/100</h3><p>${esc(e.feedback)}</p><p><strong>改进建议：</strong>${esc(e.nextStep)}</p><ul>${e.criteria.map(c=>`<li>${esc(c.name)}：${c.met?'有证据':'需完善'} · ${esc(c.comment)}</li>`).join('')}</ul></section>`).join('')||'<p>本次尚未生成 AI 辅助评分。</p>';
-    const msg=chatHistory.map(m=>`<div class="line"><strong>${esc(m.sender||'学生')}：</strong><div>${esc(m.text).replace(/\n/g,'<br>')}</div></div>`).join('');
+    const rows=runEvaluations.map((e,i)=>`<section><h3>${i+1}. ${esc(e.nodeName)} · AI 建议分 ${e.score}/100</h3><p>${safeMarkdown(e.feedback)}</p><p><strong>改进建议：</strong>${safeMarkdown(e.nextStep)}</p><ul>${e.criteria.map(c=>`<li>${esc(c.name)}：${c.met?'有证据':'需完善'} · ${safeMarkdown(c.comment)}</li>`).join('')}</ul></section>`).join('')||'<p>本次尚未生成 AI 辅助评分。</p>';
+    const msg=chatHistory.map(m=>`<div class="line"><strong>${esc(m.sender||'学生')}：</strong><div>${safeMarkdown(m.text)}</div></div>`).join('');
     const html=`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>Matin 实训报告</title><style>body{font-family:system-ui,"Microsoft YaHei",sans-serif;max-width:850px;margin:36px auto;padding:20px;color:#263858;line-height:1.8}h1{color:#354cc2}h2{margin-top:32px;border-bottom:1px solid #ccd6e7;padding-bottom:8px}section,.line{padding:12px 16px;margin:12px 0;border:1px solid #e5eaf4;border-radius:12px}small{color:#738198}</style></head><body><h1>Matin AI Studio · 实训报告</h1><p><strong>项目：</strong>${esc(p.title)}</p><p><strong>生成时间：</strong>${esc(new Date().toLocaleString('zh-CN'))}</p><p><strong>访问路径：</strong>${runVisited.map(id=>esc(graphNode(id)?.name||'已移除节点')).join(' → ')}</p><small>报告由浏览器本地导出，AI 评分仅作为教学辅助，不能替代教师审核或正式认定。</small><h2>阶段评价</h2>${rows}<h2>实训对话记录</h2>${msg}</body></html>`;
     downloadText(nameSafe(p.title)+'-实训报告.html',html,'text/html');notify('实训报告已导出，可用浏览器打开或打印为 PDF。');
   };
