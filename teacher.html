@@ -334,11 +334,11 @@ button:active:not(:disabled){transform:scale(.985)}
     <div class="dash-kicker"><span class="activity-dot"></span> MATIN · TEACHER STUDIO <span class="kicker-right">TEACHER WORKSPACE · V8.0</span></div>
     <div class="dashboard-hero">
       <div class="hero-copy"><div class="hero-eyebrow">✦ AI-POWERED LEARNING DESIGN</div><h1>设计专业课程，<br><em>发布给每一位学生。</em></h1><p>自主创建学科和课程，编辑角色、剧情与智能评价；点击课程卡片的「发布」按钮即可同步到学生端；草稿保存与学生发布分开管理。</p>
-      <div class="actions"><button type="button" class="btn hero-action" id="new-project-button">＋ 创建新剧本 <span>↗</span></button><button type="button" class="btn hero-secondary" id="import-button">⇧ 导入已有项目</button><button type="button" class="btn hero-secondary" id="cloud-help-button">☁ 云端发布说明</button><button type="button" class="btn hero-secondary" id="teacher-home-open">↗ 教师课程主页</button><button type="button" class="btn hero-secondary" id="publish-catalog-button">⇩ 离线导出课程库</button></div></div>
+      <div class="actions"><button type="button" class="btn hero-action" id="new-course-button">＋ 新建课程</button><button type="button" class="btn hero-action hidden" id="new-project-button">＋ 在此课程新建项目</button><button type="button" class="btn hero-secondary" id="import-button">⇧ 导入已有项目</button><button type="button" class="btn hero-secondary" id="cloud-help-button">☁ 云端发布说明</button><button type="button" class="btn hero-secondary" id="teacher-home-open">↗ 教师课程主页</button><button type="button" class="btn hero-secondary" id="publish-catalog-button">⇩ 离线导出课程库</button></div></div>
       <div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="hero-glow"></div><div class="hero-node hero-node-a"><b>◇</b><span>故事设计</span></div><div class="hero-node hero-node-b"><b>✦</b><span>AI 对话</span></div><div class="hero-node hero-node-c"><b>◎</b><span>智能评估</span></div><svg viewBox="0 0 340 255"><path d="M70 118 C132 118 125 64 181 88 S245 154 287 164" fill="none" stroke="#b9d3ff" stroke-width="2" stroke-dasharray="6 7" opacity=".7"/><path d="M78 140 C155 155 185 202 257 176" fill="none" stroke="#90a5ff" stroke-width="2" stroke-dasharray="6 7" opacity=".6"/></svg></div>
     </div>
     <div class="stats-grid"><div class="metric-card"><span class="metric-icon indigo">▦</span><div><div class="metric-value" id="metric-projects">0</div><div class="metric-label">实训项目</div></div><span class="metric-foot">PROJECTS</span></div><div class="metric-card"><span class="metric-icon cyan">◇</span><div><div class="metric-value" id="metric-nodes">0</div><div class="metric-label">剧情节点</div></div><span class="metric-foot">SCENES</span></div><div class="metric-card"><span class="metric-icon emerald">⌁</span><div><div class="metric-value" id="metric-branches">0</div><div class="metric-label">流程连线</div></div><span class="metric-foot">BRANCHES</span></div><div class="metric-card metric-ai"><span class="metric-icon amber">✦</span><div><div class="metric-value" id="metric-model">离线</div><div class="metric-label">当前 AI 引擎</div></div><span class="metric-foot">MODEL</span></div></div>
-    <div class="library-head"><div><span class="section-overline">PROJECT LIBRARY</span><h2>教师课程库 <span class="library-count" id="library-count">0</span></h2><p class="small-note">登录后草稿自动保存到云端；点击「发布到学生端」才会向学生开放课程</p></div><div class="actions"><label class="search-box"><span>⌕</span><input id="project-search" type="search" placeholder="搜索项目名称、学科…" aria-label="搜索实训项目" /></label><button type="button" class="btn" id="export-all-button">⇩ 备份</button></div></div>
+    <div class="library-head"><div><span class="section-overline">PROJECT LIBRARY</span><h2><span id="library-title">我的课程</span> <span class="library-count" id="library-count">0</span></h2><p class="small-note">登录后草稿自动保存到云端；点击「发布到学生端」才会向学生开放课程</p></div><div class="actions"><label class="search-box"><span>⌕</span><input id="project-search" type="search" placeholder="搜索项目名称、学科…" aria-label="搜索实训项目" /></label><button type="button" class="btn" id="export-all-button">⇩ 备份</button></div></div>
     <div class="category-chips" id="category-chips" aria-label="按学科筛选"></div>
     <div class="project-grid" id="projects-grid"></div>
     <div class="publisher-help hidden" id="publish-help"><strong>离线课程库文件已生成：</strong>仅当网站使用离线课程库模式时，在 GitHub 的 <code>EduMatin/edu</code> 仓库根目录上传或替换 <code>catalog.json</code>，提交更改（Commit changes），待部署完成后学生刷新首页即可读取。<br>当前线上网站使用云端课程库；上传此文件不会更新云端课程，请通过教师端云端发布功能更新课程。下载文件不等于发布，只有具备相应权限的教师/管理员才能更新学生实际读取的课程。<a href="https://github.com/EduMatin/edu" target="_blank" rel="noopener">打开 EduMatin/edu 仓库 ↗</a></div>
@@ -353,6 +353,7 @@ button:active:not(:disabled){transform:scale(.985)}
     <div class="editor-grid">
       <aside class="stage-list">
         <div class="section-caption">项目与任务阶段</div>
+        <div id="editor-folder-info" class="project-folder-info"></div>
         <div id="editor-class-info" data-course-classes=""></div>
         <button type="button" class="btn soft" id="editor-project-settings" style="width:100%;margin-bottom:14px">⚙ 编辑项目基本信息</button>
         <div id="stage-items"></div>
@@ -445,6 +446,7 @@ button:active:not(:disabled){transform:scale(.985)}
 
 <script src="./matin-account.js"></script>
 <script src="./matin-classes.js"></script>
+<script src="./matin-course-outline.js"></script>
 <script>
 (async () => {
   'use strict';
@@ -686,7 +688,7 @@ button:active:not(:disabled){transform:scale(.985)}
     if(!categories.includes(dashboardCategory))dashboardCategory='全部';
     $('category-chips').innerHTML=categories.map(c=>`<button class="chip ${c===dashboardCategory?'active':''}" data-filter="${esc(c)}" type="button">${esc(c)}</button>`).join('');
     const needle=dashboardSearch.trim().toLocaleLowerCase();
-    const list=projects.filter(p=>(dashboardCategory==='全部'||p.category===dashboardCategory)&&(!needle||[p.title,p.desc,p.category,p.objective].some(v=>String(v||'').toLocaleLowerCase().includes(needle))));
+    const list=projects.filter(p=>(!window.MatinCourseOutline.controller||window.MatinCourseOutline.controller.visible(p))&&(dashboardCategory==='全部'||p.category===dashboardCategory)&&(!needle||[p.title,p.desc,p.category,p.objective].some(v=>String(v||'').toLocaleLowerCase().includes(needle))));
     $('library-count').textContent=String(list.length);
     $('projects-grid').innerHTML=list.map((p,i)=>`<article class="project-card" data-tone="${i%4}">
       <div class="project-head"><div class="project-top"><span class="project-pill">✦ ${esc(p.category||'自定义')}</span><span class="publish-status ${cloudBadge(p).className}">${cloudBadge(p).label}</span><span class="project-index">${String(i+1).padStart(2,'0')}</span></div><div class="project-monogram">${esc((p.title||'M').slice(0,1))}</div><h3>${esc(p.title)}</h3></div>
@@ -696,6 +698,7 @@ button:active:not(:disabled){transform:scale(.985)}
     if(!list.length)$('projects-grid').innerHTML='<div class="empty-library"><div>⌕</div><h3>没有匹配的项目</h3><p>换个关键词或分类试试，也可以创建新的教学剧本。</p></div>';
     $('projects-grid').querySelectorAll('.project-body').forEach((body,i)=>{const info=document.createElement('div');info.dataset.courseClasses=list[i].id;body.append(info);});
     window.MatinClasses.renderCourseInfo?.();
+    window.MatinCourseOutline.controller?.render(dashboardSearch);
   };
   const renderStageList = () => {
     const p=currentProject();
@@ -748,6 +751,8 @@ button:active:not(:disabled){transform:scale(.985)}
     if(!currentProject().nodes.some(n=>n.id===selectedNodeId)) selectedNodeId=currentProject().nodes[0].id;
     if(editorMode==='edge'&&!currentProject().edges.some(e=>e.id===selectedEdgeId))editorMode='node';
     $('studio-heading').textContent=currentProject().title;
+    $('editor-folder-info').dataset.projectFolder=currentProject().id;
+    $('editor-folder-info').textContent='所属课程：'+(window.MatinCourseOutline.controller?.name(currentProject().id)||'未归类项目');
     $('editor-class-info').dataset.courseClasses=currentProject().id;
     window.MatinClasses.renderCourseInfo?.();
     renderStageList();
@@ -768,12 +773,13 @@ button:active:not(:disabled){transform:scale(.985)}
   const nameSafe = s=> (s||'Matin-剧本').replace(/[\\/:*?"<>|\r\n]/g,'_').slice(0,60);
   const exportProject = () => {flushSave();const p=currentProject();if(p)downloadText(nameSafe(p.title)+'.json',JSON.stringify({format:'matin-studio',version:5,project:p},null,2));};
   const exportAll = () => {flushSave();downloadText('Matin-Studio-全部剧本备份.json',JSON.stringify({format:'matin-studio',version:5,projects},null,2));};
-  const newProject = () => {
+  const newProject = async () => {
+    const target=window.MatinCourseOutline.controller?.current();
     const p=normalizeProject({title:'新建实训项目',desc:'请在项目设置里编写项目介绍。',category:'自定义',objective:'',published:false,nodes:[makeNode({name:'阶段一：开始实训',context:'',studentTask:'',greeting:'你好，欢迎开始实训。'})]});
-    projects.unshift(p);projectId=p.id;selectedNodeId=p.nodes[0].id;editorMode='project';selectedEdgeId=null;linkSourceId=null;flushSave();showView('studio');notify('新项目已创建，可从右侧开始编写。');
+    projects.unshift(p);projectId=p.id;selectedNodeId=p.nodes[0].id;editorMode='project';selectedEdgeId=null;linkSourceId=null;const saved=await flushSave();const grouped=saved&&await window.MatinCourseOutline.controller?.created(p.id,target);showView('studio');if(saved&&grouped!==false)notify('新项目已创建，可从右侧开始编写。');
   };
   const selectProject = (id,target) => {const p=projects.find(x=>x.id===id);if(!p)return; projectId=p.id;selectedNodeId=p.nodes[0].id;editorMode='node';selectedEdgeId=null;linkSourceId=null;if(target==='studio') showView('studio');else startRuntime();};
-  const copyProject = id => {const src=projects.find(p=>p.id===id);if(!src)return;const copy=normalizeProject(src);copy.title+='（副本）';copy.published=false;projects.unshift(copy);projectId=copy.id;selectedNodeId=copy.nodes[0].id;flushSave();renderDashboard();notify('项目已复制。');};
+  const copyProject = async id => {const src=projects.find(p=>p.id===id);if(!src)return;const target=window.MatinCourseOutline.controller?.current();const copy=normalizeProject(src);copy.title+='（副本）';copy.published=false;projects.unshift(copy);projectId=copy.id;selectedNodeId=copy.nodes[0].id;const saved=await flushSave();const grouped=saved&&await window.MatinCourseOutline.controller?.created(copy.id,target);renderDashboard();if(saved&&grouped!==false)notify('项目已复制。');};
   const deleteProject = async id => {
     const p=projects.find(x=>x.id===id);if(!p||!confirm(`删除「${p.title}」及其学生发布版本？请先导出备份。`))return;
     if(account){deleting.add(id);try{await runCloud(async()=>{const r=remoteRows.get(id);if(r)await window.MatinAccount.api({action:'delete',id,revision:r.revision});});}catch(e){deleting.delete(id);notify(e.message);return;}deleting.delete(id);remoteRows.delete(id);savedDrafts.delete(id);delete syncMeta[id];}
@@ -1442,6 +1448,7 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
   });
   window.addEventListener('beforeunload',e=>{if(account&&(dirty()||cloudPending)){e.preventDefault();e.returnValue='';}else if(!account&&storeTimer)store();});
   window.MatinClasses.init({account,getCourses:()=>projects,beforeOpen:flushSave});
+  window.MatinCourseOutline.init({account,getProjects:()=>projects,beforeWrite:flushSave,notify,redraw:(reset=false)=>{if(reset){dashboardSearch='';dashboardCategory='全部';$('project-search').value='';}renderDashboard();}});
   store();showView('dashboard');
 })().catch(error=>window.MatinAccount.fatal(error));
 </script>
