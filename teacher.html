@@ -353,6 +353,7 @@ button:active:not(:disabled){transform:scale(.985)}
     <div class="editor-grid">
       <aside class="stage-list">
         <div class="section-caption">项目与任务阶段</div>
+        <div id="editor-class-info" data-course-classes=""></div>
         <button type="button" class="btn soft" id="editor-project-settings" style="width:100%;margin-bottom:14px">⚙ 编辑项目基本信息</button>
         <div id="stage-items"></div>
         <button type="button" class="btn soft" id="add-node-button" style="width:100%">＋ 添加一个任务节点</button><button type="button" class="btn ai-generate ai-generate-card" id="ai-generate-side">✦ 使用 AI 生成完整流程</button>
@@ -693,6 +694,8 @@ button:active:not(:disabled){transform:scale(.985)}
       <div class="project-foot"><button class="btn flat tiny" type="button" data-card="edit" data-id="${esc(p.id)}">⌘ 编辑剧本</button><div class="actions"><details class="card-menu"><summary aria-label="更多项目操作">···</summary><div class="menu-panel"><button type="button" data-card="copy" data-id="${esc(p.id)}">复制项目</button><button type="button" data-card="unpublish" data-id="${esc(p.id)}">下架云端课程</button><button class="danger" type="button" data-card="delete" data-id="${esc(p.id)}">删除课程</button></div></details><button class="btn tiny" type="button" data-card="run" data-id="${esc(p.id)}">▷ 教师预览</button><button class="btn tiny card-publish" type="button" data-card="publish" data-id="${esc(p.id)}">${syncMeta[p.id] && p.published!==false?'☁ 更新发布':'☁ 发布到学生端'}</button></div></div>
     </article>`).join('');
     if(!list.length)$('projects-grid').innerHTML='<div class="empty-library"><div>⌕</div><h3>没有匹配的项目</h3><p>换个关键词或分类试试，也可以创建新的教学剧本。</p></div>';
+    $('projects-grid').querySelectorAll('.project-body').forEach((body,i)=>{const info=document.createElement('div');info.dataset.courseClasses=list[i].id;body.append(info);});
+    window.MatinClasses.renderCourseInfo?.();
   };
   const renderStageList = () => {
     const p=currentProject();
@@ -745,6 +748,8 @@ button:active:not(:disabled){transform:scale(.985)}
     if(!currentProject().nodes.some(n=>n.id===selectedNodeId)) selectedNodeId=currentProject().nodes[0].id;
     if(editorMode==='edge'&&!currentProject().edges.some(e=>e.id===selectedEdgeId))editorMode='node';
     $('studio-heading').textContent=currentProject().title;
+    $('editor-class-info').dataset.courseClasses=currentProject().id;
+    window.MatinClasses.renderCourseInfo?.();
     renderStageList();
     renderGraph();
     if(editorMode==='project') renderProjectSettings(); else if(editorMode==='edge') renderEdgeEditor(); else renderNodeEditor();
@@ -835,6 +840,8 @@ button:active:not(:disabled){transform:scale(.985)}
   const renderRuntime = () => {
     const p=currentProject();const n=p.nodes[runIndex]||p.nodes[0];if(!n)return;
     $('run-project-title').textContent=p.title;
+    let classInfo=$('runtime-class-info');if(!classInfo){classInfo=document.createElement('div');classInfo.id='runtime-class-info';$('run-project-title').parentElement.append(classInfo);}
+    classInfo.dataset.courseClasses=p.id;window.MatinClasses.renderCourseInfo?.();
     $('run-stage-caption').textContent=`当前节点：${n.name}（流程中共 ${p.nodes.length} 个节点）`;
     $('run-role-name').textContent=n.roleName;
     $('run-role-persona').textContent=n.persona;

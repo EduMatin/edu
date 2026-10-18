@@ -9,6 +9,7 @@
    <div class="actions"><h2 id="classes-title" style="margin-right:auto">班级管理</h2><button type="button" class="btn" id="classes-close">关闭</button></div>
    <p>管理自己的专业、年级和班级。一个班级可关联多门课程，同一课程也可用于多个班级。</p>
    <p class="notice">授课课程关联用于教师备课管理，暂不限制学生访问。现有教师主页仍展示全部已发布课程。</p>
+   <p id="classes-context" class="notice" hidden></p>
    <p id="classes-status" role="status" aria-live="polite"></p>
    <div class="classes-layout"><section><div class="actions"><input id="classes-search" aria-label="搜索班级" placeholder="搜索专业、年级、班级"><button type="button" class="btn" id="classes-refresh">刷新列表</button><button type="button" class="btn" id="classes-new">新建班级</button></div><p id="classes-count"></p><div id="classes-list"></div></section>
    <form id="class-form"><h3 id="class-heading">新建班级</h3>
@@ -20,7 +21,19 @@
    </form></div></div>`;
   const style=document.createElement('style');style.textContent=`#classes-modal .classes-panel{width:min(1100px,96vw);max-width:1100px;max-height:90vh;overflow:auto}#classes-modal p{line-height:1.7}#classes-modal .classes-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}#classes-modal .actions{flex-wrap:wrap;gap:8px}#classes-search{min-width:120px;flex:1;padding:10px;border:1px solid #ccd5e7;border-radius:10px}#classes-list{max-height:55vh;overflow:auto}#classes-modal .class-card{padding:16px;margin:10px 0;border:1px solid #dce3f1;border-radius:14px;background:#f8faff;overflow-wrap:anywhere}#classes-modal fieldset{border:1px solid #dce3f1;border-radius:12px;margin:14px 0;padding:12px}#class-courses{max-height:210px;overflow:auto}#class-courses label{display:flex;gap:10px;align-items:flex-start;padding:8px}#class-courses input{width:auto;flex-shrink:0}#classes-status{min-height:26px;color:#4c539d}#classes-modal h3{margin:4px 0 12px}@media(max-width:760px){#classes-modal .classes-layout{grid-template-columns:1fr}#classes-list{max-height:220px}}`;
   document.head.append(style);document.body.append(root);
-  const $=id=>document.getElementById(id);let rows=[],current=null,busy=false,changed=false,loaded=false;
+  const $=id=>document.getElementById(id);let rows=[],current=null,busy=false,changed=false,loaded=false,loadError='',courseContext=null;
+  const infoStyle=document.createElement('style');infoStyle.textContent=`.course-class-info{margin:14px 0;padding:12px;border:1px solid #e0e5f4;border-radius:12px;background:#f7f9ff;overflow-wrap:anywhere}.course-class-info strong{font-size:12px;color:#42547b}.course-class-info ul{padding-left:18px;margin:8px 0;font-size:12px;color:#566787;line-height:1.7}.course-class-info .class-message{font-size:12px;color:#697995;margin:8px 0}.course-class-info .btn{margin-top:6px}`;document.head.append(infoStyle);
+  function renderCourseInfo(){
+   document.querySelectorAll('[data-course-classes]').forEach(target=>{
+    const id=target.dataset.courseClasses;target.classList.add('course-class-info');target.replaceChildren();
+    const heading=document.createElement('strong');heading.textContent='授课班级';target.append(heading);
+    const linked=rows.filter(r=>(r.matin_class_courses||[]).some(c=>c.course_id===id));
+    if(account&&loaded&&linked.length){const list=document.createElement('ul');for(const row of linked){const li=document.createElement('li');li.textContent=[row.major,row.grade,row.name].filter(Boolean).join(' · ');list.append(li);}target.append(list);}
+    const note=document.createElement('div');note.className='class-message';note.textContent=!account?'登录云端教师账号后管理班级':loadError?'班级信息读取失败，请打开班级管理刷新'+(loaded?'（上方为上次加载结果）':''):!loaded?'正在加载班级…':!linked.length?'尚未关联班级':'已关联 '+linked.length+' 个班级';target.append(note);
+    if(account){const manage=document.createElement('button');manage.type='button';manage.className='btn tiny';manage.textContent='管理授课班级';manage.onclick=()=>open(id);target.append(manage);}
+   });
+  }
+  window.MatinClasses.renderCourseInfo=renderCourseInfo;
   const oldCanLeave=window.MatinAccount.canLeave;
   window.MatinAccount.canLeave=()=>{if(busy){alert('班级操作正在处理中，请稍候。');return false;}return oldCanLeave()&&(!changed||confirm('班级资料尚未保存，确定离开？'));};
   window.addEventListener('beforeunload',e=>{if(changed||busy){e.preventDefault();e.returnValue='';}});
@@ -29,7 +42,7 @@
   function edit(row=null){
    current=row;changed=false;$('class-heading').textContent=row?'编辑班级':'新建班级';
    for(const key of ['name','major','grade','notes'])$('class-'+key).value=row?.[key]||'';
-   const chosen=new Set((row?.matin_class_courses||[]).map(c=>c.course_id));const target=$('class-courses');target.replaceChildren();
+   const chosen=new Set(row?(row.matin_class_courses||[]).map(c=>c.course_id):(courseContext?[courseContext]:[]));const target=$('class-courses');target.replaceChildren();
    for(const p of getCourses()){
     const label=document.createElement('label'),input=document.createElement('input'),span=document.createElement('span');
     input.type='checkbox';input.value=p.id;input.checked=chosen.has(p.id);span.textContent=p.title;label.append(input,span);target.append(label);
@@ -37,6 +50,7 @@
    if(!target.children.length)target.textContent='还没有课程。可以先保存班级，创建课程后再回来关联。';
   }
   function render(){
+   renderCourseInfo();
    const q=$('classes-search').value.trim().toLowerCase();const visible=rows.filter(r=>[r.name,r.major,r.grade].join(' ').toLowerCase().includes(q));
    $('classes-count').textContent=`共 ${rows.length} 个班级 · 当前显示 ${visible.length} 个`;
    const list=$('classes-list');list.replaceChildren();
@@ -56,8 +70,9 @@
    }
   }
   async function request(fn){lock(true);$('classes-status').textContent='正在处理…';try{$('classes-status').textContent=await fn();}catch(e){$('classes-status').textContent=e.message;}finally{lock(false);}}
-  async function refresh(){await request(async()=>{const data=await window.MatinAccount.api({action:'classes_list'});if(!Array.isArray(data.classes))throw Error('班级接口尚未升级');rows=data.classes;loaded=true;edit();render();return '已加载此账号的云端班级。';});}
-  button.onclick=async()=>{if(busy)return;if(!account){alert('班级管理需要登录云端教师账号，请使用线上教师端。');return;}if(beforeOpen&&!await beforeOpen())return;root.classList.remove('hidden');if(!changed)await refresh();$('classes-close').focus();};
+  async function refresh(){await request(async()=>{try{const data=await window.MatinAccount.api({action:'classes_list'});if(!Array.isArray(data.classes))throw Error('班级接口尚未升级');rows=data.classes;loaded=true;loadError='';edit();render();return '已加载此账号的云端班级。';}catch(e){loadError=e.message;renderCourseInfo();throw e;}});}
+  async function open(courseId=null){if(busy)return;if(!account){alert('班级管理需要登录云端教师账号，请使用线上教师端。');return;}if(beforeOpen&&!await beforeOpen())return;courseContext=courseId;$('classes-context').hidden=!courseId;$('classes-context').textContent=courseId?'当前课程：'+(getCourses().find(p=>p.id===courseId)?.title||'当前项目')+'。点击班级的“编辑”，勾选或取消该课程后保存；新建班级时已预选该课程。':'';$('classes-search').value='';root.classList.remove('hidden');if(!changed)await refresh();$('classes-close').focus();}
+  button.onclick=()=>open();
   $('classes-close').onclick=()=>{if(!busy&&discard()){changed=false;root.classList.add('hidden');button.focus();}};
   root.addEventListener('keydown',e=>{
    if(e.key==='Escape')$('classes-close').click();
@@ -84,6 +99,6 @@
     rows=rows.filter(x=>x.id!==row.id);rows.push(row);edit(row);render();return '班级已保存到云端。课程关联不会自动发布课程或限制学生访问。';
    });
   };
-  edit();lock(false);
+  edit();lock(false);if(account)refresh();else renderCourseInfo();
  }};
 })();
