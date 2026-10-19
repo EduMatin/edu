@@ -17,7 +17,7 @@
     <div class="form-grid"><div class="field"><label for="class-major">专业</label><input id="class-major" maxlength="80" placeholder="例如：光电信息科学与工程"></div><div class="field"><label for="class-grade">年级</label><input id="class-grade" maxlength="40" placeholder="例如：2026级"></div></div>
     <div class="field"><label for="class-notes">备注</label><textarea id="class-notes" maxlength="500" rows="2" placeholder="教学安排等备注"></textarea></div>
     <fieldset><legend>授课课程（可多选）</legend><p>选择课程后，其下现有和以后新增的项目均沿用该班级。</p><div id="class-courses"></div></fieldset><fieldset id="class-legacy-box" hidden><legend>旧版未归类项目关联</legend><p>这些项目尚未归入课程，暂时保留旧关联。请先在工作台把项目归入课程，再回来保存班级；取消勾选可移除旧关联。</p><div id="class-legacy"></div></fieldset>
-    <div class="actions"><button type="submit" class="btn primary" id="class-save">保存班级</button><button type="button" class="btn" id="class-cancel">取消编辑</button></div>
+    <div class="actions"><button type="submit" class="btn primary" id="class-save">保存班级</button><button type="button" class="btn" id="class-cancel">取消并关闭</button></div>
    </form></div></div>`;
   const style=document.createElement('style');style.textContent=`#classes-modal .classes-panel{width:min(1100px,96vw);max-width:1100px;max-height:90vh;overflow:auto}#classes-modal p{line-height:1.7}#classes-modal .classes-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}#classes-modal .actions{flex-wrap:wrap;gap:8px}#classes-search{min-width:120px;flex:1;padding:10px;border:1px solid #ccd5e7;border-radius:10px}#classes-list{max-height:55vh;overflow:auto}#classes-modal .class-card{padding:16px;margin:10px 0;border:1px solid #dce3f1;border-radius:14px;background:#f8faff;overflow-wrap:anywhere}#classes-modal fieldset{border:1px solid #dce3f1;border-radius:12px;margin:14px 0;padding:12px}#class-courses{max-height:210px;overflow:auto}#class-legacy label,#class-courses label{display:flex;gap:10px;align-items:flex-start;padding:8px}#class-legacy input,#class-courses input{width:auto;flex-shrink:0}#classes-status{min-height:26px;color:#4c539d}#classes-modal h3{margin:4px 0 12px}@media(max-width:760px){#classes-modal .classes-layout{grid-template-columns:1fr}#classes-list{max-height:220px}}`;
   document.head.append(style);document.body.append(root);
@@ -94,7 +94,8 @@
    $('classes-search').value='';root.classList.remove('hidden');if(!changed)await refresh();$('classes-close').focus();}
   window.MatinClasses.openCourse=id=>open(id,true);
   button.onclick=()=>open();
-  $('classes-close').onclick=()=>{if(!busy&&discard()){changed=false;root.classList.add('hidden');button.focus();}};
+  function close(){if(busy||!discard())return;changed=false;current=null;root.classList.add('hidden');button.focus();}
+  $('classes-close').onclick=close;
   root.addEventListener('keydown',e=>{
    if(e.key==='Escape')$('classes-close').click();
    if(e.key==='Tab'){
@@ -105,7 +106,7 @@
    }
   });
   $('classes-new').onclick=()=>{if(discard()){edit();$('class-name').focus();}};
-  $('class-cancel').onclick=()=>{if(discard())edit();};
+  $('class-cancel').onclick=close;
   $('classes-refresh').onclick=()=>{if(discard())refresh();};
   $('classes-search').oninput=render;
   $('class-form').oninput=()=>{changed=true;};
