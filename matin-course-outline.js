@@ -13,7 +13,7 @@
   const belongs=(id,group)=>group==='ungrouped'?!layout.groups.some(g=>g.id===groupOf(id)):groupOf(id)===group;
   const groupName=id=>layout.groups.find(g=>g.id===groupOf(id))?.name||'未归类项目';
   function btn(text,fn){const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=text;b.disabled=busy;b.onclick=fn;return b;}
-  function update(){redraw();document.querySelectorAll('[data-project-folder]').forEach(el=>{el.textContent='所属课程：'+groupName(el.dataset.projectFolder);});}
+  function update(){redraw();window.MatinClasses.renderCourseInfo?.();document.querySelectorAll('[data-project-folder]').forEach(el=>{el.textContent='所属课程：'+groupName(el.dataset.projectFolder);});}
   const previousCanLeave=window.MatinAccount.canLeave;
   window.MatinAccount.canLeave=()=>{if(busy){notify('课程目录正在保存或读取，请稍候。');return false;}return previousCanLeave()&&(dialog.classList.contains('hidden')||confirm('课程目录编辑尚未提交，确定离开？'));};
   window.addEventListener('beforeunload',e=>{if(busy||!dialog.classList.contains('hidden')){e.preventDefault();e.returnValue='';}});
@@ -49,6 +49,8 @@
   async function remove(group){if(busy||!confirm(`删除课程目录“${group.name}”？其中的项目会回到“未归类项目”，项目内容、班级关联和发布状态会保留。`))return;const next=structuredClone(layout);next.groups=next.groups.filter(g=>g.id!==group.id);next.members=next.members.filter(m=>m.group_id!==group.id);try{await save(next);selected=null;update();}catch(e){notify(e.message);}}
   const api={
    current:()=>selected,
+   snapshot:()=>{if(!ready||error)throw Error(error||'课程目录尚未加载');return {layout:structuredClone(layout),revision};},
+   reload:load,
    visible:p=>ready&&selected!==null&&belongs(p.id,selected),
    name:groupName,
    enter,
@@ -58,12 +60,12 @@
     $('project-search').placeholder=isRoot?'搜索课程名称…':'搜索本课程中的项目…';$('project-search').setAttribute('aria-label',isRoot?'搜索课程':'搜索实训项目');
     $('library-title').textContent=isRoot?'我的课程':selected==='ungrouped'?'未归类项目':layout.groups.find(g=>g.id===selected)?.name||'课程';
     bar.replaceChildren();bar.append(btn('刷新课程目录',load));if(!isRoot){bar.prepend(btn('← 返回课程列表',()=>enter(null)));const group=layout.groups.find(g=>g.id===selected);if(group)bar.append(btn('编辑课程与项目',()=>edit(group)));else bar.append(btn('新建课程并归入项目',()=>edit()));}
-    const status=document.createElement('span');status.setAttribute('role','status');status.textContent=error||(!ready?'正在加载课程目录…':isRoot?'先选择课程，再查看其中的实训项目。':'项目单独保存与发布；班级关联仍按项目管理。');bar.append(status);
+    const status=document.createElement('span');status.setAttribute('role','status');status.textContent=error||(!ready?'正在加载课程目录…':isRoot?'先选择课程，再查看其中的实训项目。':'项目单独保存与发布；授课班级沿用所属课程。');bar.append(status);
     if(!isRoot)return;
     root.replaceChildren();if(!ready){$('library-count').textContent='—';return;}
     const groups=[...layout.groups,{id:'ungrouped',name:'未归类项目'}].filter(g=>g.name.toLocaleLowerCase().includes(needle.trim().toLocaleLowerCase()));$('library-count').textContent=String(layout.groups.length);
-    for(const group of groups){const projects=getProjects().filter(p=>belongs(p.id,group.id));const card=document.createElement('article');card.className='course-folder-card';card.dataset.folder=group.id;const h=document.createElement('h3');h.textContent=group.name;const p=document.createElement('p');p.textContent=projects.length+' 个实训项目';const actions=document.createElement('div');actions.className='actions';const open=btn('进入课程 →',()=>enter(group.id));open.dataset.courseOpen=group.id;if(group.id==='ungrouped')open.textContent='整理未归类项目 →';actions.append(open);if(group.id!=='ungrouped')actions.append(btn('编辑',()=>edit(group)),btn('删除目录',()=>remove(group)));card.append(h,p,actions);root.append(card);}
-    if(!groups.length)root.textContent='没有匹配的课程。';
+    for(const group of groups){const projects=getProjects().filter(p=>belongs(p.id,group.id));const card=document.createElement('article');card.className='course-folder-card';card.dataset.folder=group.id;const h=document.createElement('h3');h.textContent=group.name;const p=document.createElement('p');p.textContent=projects.length+' 个实训项目';const actions=document.createElement('div');actions.className='actions';const open=btn('进入课程 →',()=>enter(group.id));open.dataset.courseOpen=group.id;if(group.id==='ungrouped')open.textContent='整理未归类项目 →';actions.append(open);if(group.id!=='ungrouped')actions.append(btn('编辑',()=>edit(group)),btn('删除目录',()=>remove(group)));card.append(h,p,actions);if(group.id!=='ungrouped'){const info=document.createElement('div');info.dataset.courseGroupClasses=group.id;card.append(info);}root.append(card);}
+    if(!groups.length)root.textContent='没有匹配的课程。';window.MatinClasses.renderCourseInfo?.();
    }
   };
   window.MatinCourseOutline.controller=api;$('new-course-button').onclick=()=>edit();load();return api;
