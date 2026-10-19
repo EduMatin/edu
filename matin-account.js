@@ -20,6 +20,7 @@
   }
   function adopt(data){if(!data.access_token||!data.refresh_token||!data.user?.id)throw Error('登录响应不完整');
     persist({...data,expires_at:data.expires_at||Math.floor(Date.now()/1000)+data.expires_in});}
+  async function checkTeacher(){const data=await api({action:'membership',op:'me',data:{}});if(!data.is_teacher){persist(null);throw Error('此账号没有教师权限，请使用学生端或联系项目管理员。');}}
   async function token(){
     if(!session)throw Error('请重新登录');
     if(session.expires_at*1000<Date.now()+60000){
@@ -39,9 +40,9 @@
     if(!enabled)return null;
     panel();
     if(!cfg.publishableKey){status().textContent='缺少公开连接配置，请先更新 matin-config.js。';document.getElementById('teacher-login').disabled=true;return new Promise(()=>{});}
-    try{session=JSON.parse(sessionStorage.getItem(storageKey)||'null');if(session){const user=await auth('user',null,await token());if(user.id!==session.user.id)throw Error('会话不匹配');session.user=user;return unlock();}}catch{persist(null);}
+    try{session=JSON.parse(sessionStorage.getItem(storageKey)||'null');if(session){const user=await auth('user',null,await token());if(user.id!==session.user.id)throw Error('会话不匹配');session.user=user;await checkTeacher();return unlock();}}catch(e){persist(null);status().textContent=e.message;}
     await new Promise(resolve=>{document.getElementById('account-form').onsubmit=async e=>{e.preventDefault();const button=document.getElementById('teacher-login');button.disabled=true;status().textContent='正在登录…';
-      try{adopt(await auth('token?grant_type=password',{email:document.getElementById('teacher-email').value.trim(),password:document.getElementById('teacher-password').value}));document.getElementById('teacher-password').value='';resolve();}
+      try{adopt(await auth('token?grant_type=password',{email:document.getElementById('teacher-email').value.trim(),password:document.getElementById('teacher-password').value}));await checkTeacher();document.getElementById('teacher-password').value='';resolve();}
       catch(e){status().textContent=e.message;}finally{button.disabled=false;}};});
     return unlock();
   }

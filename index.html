@@ -34,7 +34,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 </section>
 <section id="screen-runtime" class="hidden">
  <div class="runtime-header"><div><span class="eyebrow">INTERACTIVE TRAINING</span><h2 id="run-project-title">实训课程</h2><small id="run-subject"></small></div><button type="button" class="btn" id="back-courses">← 返回选课</button></div>
- <div class="runtime-layout"><aside class="runtime-left"><div class="slot"><div class="section-label">当前学习阶段</div><h3 id="run-node-name"></h3><p id="run-student-task"></p></div><div class="slot"><div class="section-label">AI 角色导师</div><div class="role-card"><h3 id="run-role-name"></h3><p id="run-role-persona"></p></div></div><div class="slot"><div class="section-label">学习路径</div><div class="progress-nodes" id="run-progress"></div></div><div class="slot"><div class="section-label">✦ 本阶段学习评价</div><div class="score-panel" id="score-panel"><p>完成回答后可请求 AI 评价，评分仅作为学习建议。</p></div><button type="button" class="btn soft" style="width:100%;margin-top:10px" id="evaluate-button">✦ 获取 AI 学习反馈</button></div><div class="slot"><div class="section-label">下一步学习路线</div><div id="run-branches" class="branches"></div></div><div class="slot"><button type="button" class="btn" id="export-report" style="width:100%">⇩ 导出我的学习报告</button><p class="help" style="margin-top:9px">当前节点、完整对话、阶段评价和完成状态自动保存在当前浏览器；不会跨设备同步，共用浏览器会共用记录。AI 评分不构成正式考试成绩；在线实验不替代教师或现场安全规程。</p></div></aside><section class="chat-shell"><div class="chat-top"><div class="chat-title"><div class="chat-avatar">✦</div><div><strong>AI 情境学习舱</strong><small id="run-model-tag">离线剧情体验</small></div></div><button type="button" class="btn tiny" id="restart-run">↻ 重新开始</button></div><p id="learning-save-status" class="help" role="status" style="padding:8px 20px;margin:0"></p><div class="chat-feed" id="chat-feed" aria-live="polite"></div><form class="chat-form" id="chat-form"><div class="input-row"><textarea rows="2" id="chat-input" placeholder="输入你的回答，或向导师提问……" maxlength="5000" aria-label="学生回答"></textarea><button class="btn primary" id="send-button" type="submit">发送 ↗</button></div><p class="input-note">Enter 发送 · Shift+Enter 换行。AI 会根据教师剧本引导学习，必要时请核对专业知识与安全要求。</p></form></section></div>
+ <div class="runtime-layout"><aside class="runtime-left"><div class="slot"><div class="section-label">当前学习阶段</div><h3 id="run-node-name"></h3><p id="run-student-task"></p></div><div class="slot"><div class="section-label">AI 角色导师</div><div class="role-card"><h3 id="run-role-name"></h3><p id="run-role-persona"></p></div></div><div class="slot"><div class="section-label">学习路径</div><div class="progress-nodes" id="run-progress"></div></div><div class="slot"><div class="section-label">✦ 本阶段学习评价</div><div class="score-panel" id="score-panel"><p>完成回答后可请求 AI 评价，评分仅作为学习建议。</p></div><button type="button" class="btn soft" style="width:100%;margin-top:10px" id="evaluate-button">✦ 获取 AI 学习反馈</button></div><div class="slot"><div class="section-label">下一步学习路线</div><div id="run-branches" class="branches"></div></div><div class="slot"><button type="button" class="btn" id="export-report" style="width:100%">⇩ 导出我的学习报告</button><p class="help" style="margin-top:9px">当前节点、完整对话、阶段评价和完成状态自动保存在当前浏览器；不会跨设备同步。登录后按账号隔离，未登录时共用访客记录。AI 评分不构成正式考试成绩；在线实验不替代教师或现场安全规程。</p></div></aside><section class="chat-shell"><div class="chat-top"><div class="chat-title"><div class="chat-avatar">✦</div><div><strong>AI 情境学习舱</strong><small id="run-model-tag">离线剧情体验</small></div></div><button type="button" class="btn tiny" id="restart-run">↻ 重新开始</button></div><p id="learning-save-status" class="help" role="status" style="padding:8px 20px;margin:0"></p><div class="chat-feed" id="chat-feed" aria-live="polite"></div><form class="chat-form" id="chat-form"><div class="input-row"><textarea rows="2" id="chat-input" placeholder="输入你的回答，或向导师提问……" maxlength="5000" aria-label="学生回答"></textarea><button class="btn primary" id="send-button" type="submit">发送 ↗</button></div><p class="input-note">Enter 发送 · Shift+Enter 换行。AI 会根据教师剧本引导学习，必要时请核对专业知识与安全要求。</p></form></section></div>
 </section>
 </main>
 <footer class="student-foot">MATIN AI STUDIO · 学生学习中心。课程由教师发布，个人 API Key 不会保存在浏览器本地存储。</footer>
@@ -42,6 +42,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 <div id="toast" class="toast hidden" role="status"></div>
 <script src="./matin-config.js"></script>
 <script src="./matin-math.js"></script>
+<script src="./matin-student.js"></script>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -55,7 +56,7 @@ const demoCatalog=[
 {id:'sample-auto',title:'电机控制与 SVPWM 实训',category:'自动化/控制',desc:'在电机低速振动情境下，逐步分析 PWM 死区、输出电压偏差和验证思路。',objective:'掌握控制系统问题分析与技术表达。',startNodeId:'auto-1',nodes:[{id:'auto-1',name:'SVPWM 死区效应分析',roleName:'控制算法导师·李博士',persona:'鼓励学生先提出假设再进行验证。',context:'逆变器低速运行时出现转矩脉动。',studentTask:'解释死区时间对输出电压的潜在影响，并提出排查思路。',greeting:'电机低速运行时出现明显抖动，你觉得我们应该先关注哪一个控制参数？',rubric:'死区时间、电压误差、验证方法',passScore:'75',hints:'可以从互补开关管的死区设置入手。'}],edges:[]}
 ];
 let courseGroups=[],selectedGroup=null,homeMode=false;
-let courses=[],category='全部',search='',active=null,runNode=null,visited=[],messages=[],evalResult=null,completion=false,busy=false,evalBusy=false,controller=null,visitId=0,evaluationController=null,evaluations=[],pendingRequest='',saveFailed=false;
+let courses=[],category='全部',search='',active=null,runNode=null,visited=[],messages=[],evalResult=null,completion=false,busy=false,evalBusy=false,controller=null,visitId=0,evaluationController=null,evaluations=[],pendingRequest='',saveFailed=false,activeLearningKey=null;
 const safeText=(v,limit=12000)=>typeof v==='string'?v.slice(0,limit):'';
 function normalize(raw){if(!raw||typeof raw!=='object'||!Array.isArray(raw.nodes)||!raw.nodes.length||raw.nodes.length>50)return null;
 const nodes=raw.nodes.filter(n=>n&&typeof n==='object').slice(0,50).map((n,i)=>({id:safeText(n.id,100)||'node-'+i,name:safeText(n.name,150)||'任务阶段',roleName:safeText(n.roleName,150)||'AI 导师',persona:safeText(n.persona,1200),context:safeText(n.context,2500),studentTask:safeText(n.studentTask,1800),greeting:safeText(n.greeting,1800),rubric:safeText(n.rubric,2500),hints:safeText(n.hints,1800),keywords:safeText(n.keywords,500),scriptRules:safeText(n.scriptRules,4000),passScore:Math.max(0,Math.min(100,Number(n.passScore)||75))}));
@@ -65,6 +66,19 @@ async function loadCatalog(){
 courseGroups=[];homeMode=false;
 const cloudUrl=String(window.MATIN_CLOUD?.supabaseUrl||'').trim().replace(/\/+$/,'');
 if(cloudUrl){
+if(window.MatinStudent?.mine()){
+ homeMode=true;courses=[];courseGroups=[];
+ try{
+  if(!MatinStudent.signedIn){$('catalog-status').textContent='请点击“登录 / 注册”，申请加入班级；教师审核通过后，这里显示我的课程。';}
+  else{const data=await MatinStudent.api('catalog',MatinStudent.classId?{class_id:MatinStudent.classId}:{});
+   courses=(data.projects||[]).map(normalize).filter(Boolean);const ids=new Set(courses.map(c=>c.id));
+   courseGroups=(data.groups||[]).map(g=>({id:g.id,name:g.name,project_ids:g.project_ids.filter(id=>ids.has(id))})).filter(g=>g.project_ids.length);
+   $('catalog-status').textContent=MatinStudent.classId?'我的课程 · 当前班级已发布项目':'我的课程 · 已加入班级的已发布项目';
+  }
+ }catch(e){$('catalog-status').textContent='我的课程加载失败：'+e.message;}
+ if(!courseGroups.some(g=>g.id===selectedGroup))selectedGroup=null;
+ $('catalog-status').className='status-line';document.querySelector('.page-intro h1').textContent='我的课程';renderLibrary();return;
+}
 try{
 const params=new URLSearchParams(location.hash.slice(1));
 const isHome=params.has('teacher');homeMode=isHome;
@@ -101,10 +115,10 @@ const term=search.toLocaleLowerCase();const list=visibleProjects().filter(c=>(ca
 $('course-grid').innerHTML=list.map((c,i)=>{let saved=readLearning(c),p=saved.record;return `<article class="course-card"><div class="course-cover"><div class="cover-top"><span class="cover-tag">◇ ${esc(c.category)}</span><span>SCENARIO ${String(i+1).padStart(2,'0')}</span></div><strong>${esc(c.title)}</strong></div><div class="course-body"><p class="course-desc">${esc(c.desc||c.objective||'跟随 AI 导师完成课程情境学习。')}</p><div class="course-meta"><span>◎ ${c.nodes.length} 个任务节点</span><span>⌁ ${c.edges.length} 条学习路径</span></div><div class="course-foot"><span class="progress-text">${saved.error?esc(saved.error):p?(p.completion?'已完成 · ':'学习中 · ')+esc(p.nodeName):saved.legacy?'旧版仅有阶段摘要，需重新开始':'尚未开始'}</span><button class="btn primary tiny" data-open-course="${esc(c.id)}">${saved.error?'重新开始':p?(p.completion?'查看学习记录':'继续学习'):'开始学习'} ↗</button>${p?`<button class="btn tiny" data-restart-course="${esc(c.id)}">重新开始</button>`:''}</div></div></article>`;}).join('')||'<div class="empty">当前没有可显示的课程。教师发布课程后，点击「同步最新课程」；也可清空搜索或切换分类。</div>';
 }
 // Learning records never include API settings, credentials or share tokens.
-function learningKey(id){return 'matin_learning_v1_'+encodeURIComponent(String(window.MATIN_CLOUD?.supabaseUrl||'').trim().replace(/\/+$/,'')||'offline')+'_'+encodeURIComponent(id)}
+function learningKey(id){return 'matin_learning_v1_'+encodeURIComponent(String(window.MATIN_CLOUD?.supabaseUrl||'').trim().replace(/\/+$/,'')||'offline')+'_'+(window.MatinStudent?.signedIn?MatinStudent.userId+'_':'')+encodeURIComponent(id)}
 function validEvaluation(v){return v&&Number.isFinite(v.score)&&v.score>=0&&v.score<=100&&typeof v.feedback==='string'&&typeof v.nextStep==='string'&&Array.isArray(v.criteria)&&v.criteria.every(x=>x&&typeof x.name==='string'&&typeof x.comment==='string'&&typeof x.met==='boolean')}
 function readLearning(c){
- try{const raw=localStorage.getItem(learningKey(c.id));if(!raw)return {legacy:!!localStorage.getItem('matin_v6_progress_'+c.id)};
+ try{const raw=localStorage.getItem(learningKey(c.id));if(!raw)return {legacy:!window.MatinStudent?.signedIn&&!!localStorage.getItem('matin_v6_progress_'+c.id)};
  const r=JSON.parse(raw),ids=new Set(c.nodes.map(n=>n.id));
  if(r.version!==1||r.projectId!==c.id||typeof r.snapshot!=='string')throw Error();
  if(r.snapshot!==JSON.stringify(c))return {error:'项目内容已更新，旧记录需重新开始'};
@@ -113,14 +127,14 @@ function readLearning(c){
  }catch{return {error:'学习记录无法读取，请确认后重新开始'}}
 }
 function rememberProgress(){if(!active||!runNode)return;
- try{localStorage.setItem(learningKey(active.id),JSON.stringify({version:1,projectId:active.id,snapshot:JSON.stringify(active),nodeId:runNode.id,nodeName:runNode.name,visited,messages,evalResult,evaluations,completion,draft:$('chat-input').value,pending:pendingRequest,at:Date.now()}));saveFailed=false;$('learning-save-status').textContent='✓ 学习记录已保存到此浏览器 · '+new Date().toLocaleTimeString('zh-CN');}
+ try{localStorage.setItem(activeLearningKey||learningKey(active.id),JSON.stringify({version:1,projectId:active.id,snapshot:JSON.stringify(active),nodeId:runNode.id,nodeName:runNode.name,visited,messages,evalResult,evaluations,completion,draft:$('chat-input').value,pending:pendingRequest,at:Date.now()}));saveFailed=false;$('learning-save-status').textContent='✓ 学习记录已保存到此浏览器 · '+new Date().toLocaleTimeString('zh-CN');}
  catch{if(!saveFailed)notify('学习记录保存失败，请及时导出学习报告');saveFailed=true;$('learning-save-status').textContent='保存失败：浏览器存储不可用或空间不足。请导出学习报告，关闭页面可能丢失本次进度。';}
 }
 function stopRequests(){visitId++;controller?.abort();evaluationController?.abort();controller=null;evaluationController=null;busy=false;evalBusy=false;pendingRequest='';}
 function showCourses(){stopRequests();if(active)rememberProgress();active=null;$('screen-courses').classList.remove('hidden');$('screen-runtime').classList.add('hidden');renderLibrary();window.scrollTo(0,0)}
 function startCourse(id,restart=false){const c=courses.find(x=>x.id===id);if(!c)return;const saved=readLearning(c);
  if((restart||saved.error)&&!confirm((saved.error?saved.error+'。':'')+'重新开始将替换此项目的旧对话、阶段评价和进度；如需保留，请先导出报告。确认重新开始吗？'))return;
- stopRequests();active=c;saveFailed=false;
+ stopRequests();active=c;activeLearningKey=learningKey(c.id);saveFailed=false;
  const r=!restart&&!saved.error?saved.record:null;
  runNode=c.nodes.find(n=>n.id===(r?r.nodeId:c.startNodeId))||c.nodes[0];visited=r?r.visited:[runNode.id];messages=r?r.messages:[];evalResult=r?r.evalResult:null;evaluations=r?r.evaluations:[];completion=r?r.completion:false;$('chat-input').value=r?r.draft:'';
  $('screen-courses').classList.add('hidden');$('screen-runtime').classList.remove('hidden');
@@ -159,7 +173,8 @@ $('settings-open').addEventListener('click',openSettings);$('settings-cancel').a
 $('chat-input').addEventListener('input',()=>rememberProgress());
 window.addEventListener('pagehide',()=>{if(active)rememberProgress()});
 window.addEventListener('hashchange',()=>location.reload());
-loadCatalog();
+async function studentRefresh(){if(active)showCourses();selectedGroup=null;category='全部';search='';$('course-search').value='';await loadCatalog();}
+Promise.resolve(window.MatinStudent?.ready(studentRefresh)).then(loadCatalog).catch(e=>notify('学生账号初始化失败：'+e.message));
 })();
 </script>
 </body>

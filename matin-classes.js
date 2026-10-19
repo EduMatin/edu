@@ -8,7 +8,7 @@
   root.innerHTML=`<div class="modal classes-panel">
    <div class="actions"><h2 id="classes-title" style="margin-right:auto">班级管理</h2><button type="button" class="btn" id="classes-close">关闭</button></div>
    <p>管理自己的专业、年级和班级。一个班级可关联多门课程，同一课程也可用于多个班级。</p>
-   <p class="notice">授课课程关联用于教师备课管理，暂不限制学生访问。现有教师主页仍展示全部已发布课程。</p>
+   <p class="notice">审核通过的学生可在“我的课程”查看班级关联的已发布项目。原有教师主页和项目分享链接仍独立有效。</p>
    <p id="classes-context" class="notice" hidden></p>
    <p id="classes-status" role="status" aria-live="polite"></p>
    <div class="classes-layout"><section><div class="actions"><input id="classes-search" aria-label="搜索班级" placeholder="搜索专业、年级、班级"><button type="button" class="btn" id="classes-refresh">刷新列表</button><button type="button" class="btn" id="classes-new">新建班级</button></div><p id="classes-count"></p><div id="classes-list"></div></section>
@@ -81,7 +81,8 @@
      if(busy||!discard()||!confirm(`删除班级“${r.name}”？仅删除班级及课程关联，课程内容会保留。`))return;
      await request(async()=>{await window.MatinAccount.api({action:'class_delete',id:r.id,revision:Number(r.revision)});rows=rows.filter(x=>x.id!==r.id);edit();render();return '班级已删除，课程内容已保留。';});
     };
-    actions.append(e,d);card.append(h,info,courses,actions);list.append(card);
+    const members=document.createElement('button');members.type='button';members.className='btn';members.textContent='学生与入班审核';members.onclick=()=>{if(!busy&&discard())window.MatinEnrollment.open(r);};
+    actions.append(e,d,members);card.append(h,info,courses,actions);list.append(card);
    }
   }
   async function request(fn){lock(true);$('classes-status').textContent='正在处理…';try{$('classes-status').textContent=await fn();}catch(e){$('classes-status').textContent=e.message;}finally{lock(false);}}
@@ -120,7 +121,7 @@
    await request(async()=>{
     const result=await window.MatinAccount.api({action:'class_group_save',id:current?.id||null,revision:Number(current?.revision||0),outline_revision:formOutlineRevision,data});
     const row={...result.class,course_group_ids:data.group_ids,matin_class_courses:data.course_ids.map(course_id=>({course_id}))};
-    rows=rows.filter(x=>x.id!==row.id);rows.push(row);edit(row);render();return '班级已保存到云端，课程下所有项目沿用授课班级。关联不会自动发布或限制学生访问。';
+    rows=rows.filter(x=>x.id!==row.id);rows.push(row);edit(row);render();return '班级已保存到云端。审核通过的学生可查看关联课程的已发布项目，草稿不会自动发布。';
    });
   };
   edit();lock(false);if(account)refresh();else renderCourseInfo();
