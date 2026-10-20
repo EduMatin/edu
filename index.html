@@ -43,6 +43,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 <script src="./matin-config.js"></script>
 <script src="./matin-math.js"></script>
 <script src="./matin-student.js"></script>
+<script src="./matin-tasks.js"></script>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -132,6 +133,7 @@ function rememberProgress(){if(!active||!runNode)return;
 }
 function stopRequests(){visitId++;controller?.abort();evaluationController?.abort();controller=null;evaluationController=null;busy=false;evalBusy=false;pendingRequest='';}
 function showCourses(){stopRequests();if(active)rememberProgress();active=null;$('screen-courses').classList.remove('hidden');$('screen-runtime').classList.add('hidden');renderLibrary();window.scrollTo(0,0)}
+window.MatinTaskOpen=p=>{const c=normalize(p);if(!c)throw Error('项目内容无效');showCourses();courses=courses.filter(x=>x.id!==c.id);courses.push(c);startCourse(c.id);};
 function startCourse(id,restart=false){const c=courses.find(x=>x.id===id);if(!c)return;const saved=readLearning(c);
  if((restart||saved.error)&&!confirm((saved.error?saved.error+'。':'')+'重新开始将替换此项目的旧对话、阶段评价和进度；如需保留，请先导出报告。确认重新开始吗？'))return;
  stopRequests();active=c;activeLearningKey=learningKey(c.id);saveFailed=false;

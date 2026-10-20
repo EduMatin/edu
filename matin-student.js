@@ -14,8 +14,8 @@
  }
  function adopt(d){if(!d.access_token||!d.refresh_token||!d.user?.id)throw Error('登录响应不完整');persist({...d,expires_at:d.expires_at||Date.now()/1000+(d.expires_in||3600)});}
  async function token(){if(!session)throw Error('请先登录学生账号');if(session.expires_at*1000<Date.now()+60000){if(!refreshing)refreshing=auth('token?grant_type=refresh_token',{refresh_token:session.refresh_token}).then(adopt).finally(()=>refreshing=null);await refreshing;}return session.access_token;}
- async function api(op,data={}){
-  const r=await fetch(base+'/functions/v1/matin-courses',{method:'POST',headers:{'Content-Type':'application/json',apikey:cfg.publishableKey,Authorization:'Bearer '+await token()},body:JSON.stringify({action:'membership',op,data}),signal:AbortSignal.timeout(25000)});
+ async function api(op,data={},action='membership'){
+  const r=await fetch(base+'/functions/v1/matin-courses',{method:'POST',headers:{'Content-Type':'application/json',apikey:cfg.publishableKey,Authorization:'Bearer '+await token()},body:JSON.stringify({action,op,data}),signal:AbortSignal.timeout(25000)});
   const out=await r.json().catch(()=>({}));if(!r.ok||!out.ok){if(r.status===401){persist(null);location.replace(location.pathname+'#my');location.reload();}throw Error(out.error||'班级服务暂不可用');}return out;
  }
  function mine(){return !new URLSearchParams(location.hash.slice(1)).has('teacher')&&!new URLSearchParams(location.hash.slice(1)).has('course');}
@@ -43,6 +43,7 @@
   const bar=$('student-bar');bar.replaceChildren();const label=document.createElement('span');label.textContent=startupError|| (session?'当前账号：'+session.user.email:'登录后申请加入班级，查看我的课程');bar.append(label);
   function btn(text,id,fn){const b=document.createElement('button');b.className='btn tiny';b.id=id;b.textContent=text;b.onclick=fn;bar.append(b);}
   btn('我的课程','student-my-courses',changeView);
+  btn('我的任务','student-my-tasks',()=>session?window.MatinTasks.open():showLogin());
   btn('我的班级','student-my-classes',()=>{if(!session)return showLogin();$('student-classes').classList.toggle('hidden');if(!$('student-classes').classList.contains('hidden'))task(async()=>{await refresh();return '';});});
   if(!session)btn('登录 / 注册','student-login-open',showLogin);
   else btn('退出账号','student-logout',async()=>{const access=session.access_token;persist(null);document.querySelector('main').classList.add('hidden');try{await fetch(base+'/auth/v1/logout',{method:'POST',headers:{apikey:cfg.publishableKey,Authorization:'Bearer '+access},signal:AbortSignal.timeout(5000)});}catch{}location.replace(location.pathname+'#my');location.reload();});
@@ -73,5 +74,5 @@
  // Prevent browser back/forward cache from reviving another student's rendered conversations.
  window.addEventListener('pagehide',()=>{if(base)document.querySelector('main').classList.add('hidden');});
  window.addEventListener('pageshow',e=>{if(base&&e.persisted)location.reload();});
- window.MatinStudent={ready,api,mine,get userId(){return session?.user?.id||'guest';},get signedIn(){return !!session;},get classId(){return classId;}};
+ window.MatinStudent={ready,api,taskApi:(op,data)=>api(op,data,'tasks'),mine,get userId(){return session?.user?.id||'guest';},get signedIn(){return !!session;},get classId(){return classId;}};
 })();

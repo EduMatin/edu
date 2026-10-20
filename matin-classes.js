@@ -82,7 +82,8 @@
      await request(async()=>{await window.MatinAccount.api({action:'class_delete',id:r.id,revision:Number(r.revision)});rows=rows.filter(x=>x.id!==r.id);edit();render();return '班级已删除，课程内容已保留。';});
     };
     const members=document.createElement('button');members.type='button';members.className='btn';members.textContent='学生与入班审核';members.onclick=()=>{if(!busy&&discard())window.MatinEnrollment.open(r);};
-    actions.append(e,d,members);card.append(h,info,courses,actions);list.append(card);
+    const tasks=document.createElement('button');tasks.type='button';tasks.className='btn';tasks.textContent='布置学习任务';tasks.onclick=()=>{if(!busy&&discard())window.MatinTasks.open(r);};
+    actions.append(e,d,members,tasks);card.append(h,info,courses,actions);list.append(card);
    }
   }
   async function request(fn){lock(true);$('classes-status').textContent='正在处理…';try{$('classes-status').textContent=await fn();}catch(e){$('classes-status').textContent=e.message;}finally{lock(false);}}
