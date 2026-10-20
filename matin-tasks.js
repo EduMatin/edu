@@ -7,7 +7,7 @@
  <div class="actions"><h2 id="tasks-title">我的任务</h2><button type="button" class="btn" id="tasks-close">关闭</button><button type="button" class="btn" id="tasks-refresh">刷新任务</button></div>
  <p>截止时间按当前设备时区显示。逾期仍可补做；完成状态为学生自报，不代表教师评分。</p>
  <div id="tasks-project-notice"><p id="tasks-project-help" role="status"></p><button type="button" class="btn" id="tasks-return" hidden>返回班级检查课程</button></div>
- <form id="tasks-form"><label>已发布项目<select id="tasks-project" aria-describedby="tasks-project-help" required></select></label>
+ <form id="tasks-form"><label>选择课程项目<select id="tasks-project" aria-describedby="tasks-project-help" required></select></label>
  <label>任务名称<input id="tasks-name" maxlength="120" required></label>
  <label>截止时间<input id="tasks-due" type="datetime-local" required></label>
  <label>学习要求<textarea id="tasks-instructions" maxlength="2000"></textarea></label>
@@ -33,11 +33,11 @@
   if(!ctx.teacher)return;
   const ready=ctx.loadState==='ready',empty=ready&&!ctx.projects.length,failed=ctx.loadState==='error';
   $('tasks-project-help').textContent=empty
-   ?'本班尚无可布置的已发布项目。请检查：班级已勾选并保存授课课程，且该课程内至少有一个项目已发布。旧版项目关联需先归入课程，再保存班级的授课课程。'
-   :failed?'项目加载失败，请点击“刷新任务”重试。':ready?'可选择本班已关联课程下的已发布项目。':'正在读取本班已发布项目，可以先关闭窗口稍后重试。';
+   ?'本班尚无可布置的项目。请检查：班级已勾选并保存授课课程，项目已归入该课程并保存到云端。无需提前发布给学生。'
+   :failed?'项目加载失败，请点击“刷新任务”重试。':ready?'无需提前公开发布。点击“布置任务”后，本班审核通过的学生即可学习项目当前已保存的版本；后续修改草稿不会改变本次任务内容。':'正在读取本班课程项目，可以先关闭窗口稍后重试。';
   $('tasks-return').hidden=!empty;
   const select=$('tasks-project');select.replaceChildren();
-  for(const p of ctx.projects){const o=document.createElement('option');o.value=p.id;o.textContent=p.title;select.append(o);}
+  for(const p of ctx.projects){const o=document.createElement('option');o.value=p.id;o.textContent=p.title+(p.is_published?'（已公开发布）':'（未公开发布，可直接布置）');select.append(o);}
   if(!ctx.projects.length){const o=document.createElement('option');o.value='';o.textContent=empty?'暂无可布置项目':failed?'加载失败，请刷新重试':'正在加载项目…';select.append(o);}
   if(ctx.projects.some(p=>p.id===old))select.value=old;
  }
@@ -56,6 +56,7 @@
    const d=await api(ctx,ctx.teacher?'teacher_list':'list');
    if(active!==ctx)return;
    if(!Array.isArray(d.tasks)||(ctx.teacher&&!Array.isArray(d.projects)))throw Error('任务数据不完整，请刷新重试。');
+   if(ctx.teacher&&d.assignment_mode!=='class_snapshot')throw Error('任务服务尚未更新，请联系管理员完成升级后刷新。');
    ctx.projects=ctx.teacher?d.projects:[];ctx.loadState='ready';projectNotice(ctx,old);renderTasks(ctx,d.tasks);
   }catch(e){
    if(active===ctx){ctx.projects=[];ctx.loadState='error';projectNotice(ctx);$('tasks-list').textContent='任务读取失败，请刷新重试。';}
@@ -69,9 +70,10 @@
    const a=document.createElement('article'),h=document.createElement('h3'),p=document.createElement('p'),desc=document.createElement('p');h.textContent=t.title;
    const late=Date.parse(t.due_at)<Date.now();p.textContent=(teacher?'':t.class_name+' · ')+new Date(t.due_at).toLocaleString('zh-CN')+' 截止 · '+(teacher?(t.active?'已布置':'已撤回')+' · '+t.completed_count+' 人自报完成':t.status==='completed'?'已完成（自报）':(late?'已逾期 · ':'')+(t.status==='started'?'进行中':'待开始'));
    desc.textContent=t.instructions;a.append(h,p,desc);
+   if(t.delivery_mode==='class_snapshot'){const version=document.createElement('p');version.textContent='班级学习版本 · 内容以布置时保存的版本为准'+(teacher?'。如需停止本次任务，请撤回任务。':'');a.append(version);}
    if(teacher&&t.active)a.append(button(ctx,'撤回任务',async()=>{if(!confirm('撤回后学生将不再看到此任务，确认？'))return;await api(ctx,'cancel',{task_id:t.id,revision:Number(t.revision)});await load(ctx);}));
    if(!teacher&&t.available){a.append(button(ctx,t.status==='pending'?'开始学习':'打开学习记录',async()=>{const d=await api(ctx,'open',{task_id:t.id});if(active!==ctx)return;window.MatinTaskOpen(d.project);close(true,false);}));if(t.status!=='completed')a.append(button(ctx,'标记已完成',async()=>{if(!confirm('确认已完成此任务的学习要求？这将记录为学生自报完成。'))return;await api(ctx,'complete',{task_id:t.id});await load(ctx);}));}
-   else if(!teacher){const n=document.createElement('p');n.textContent='项目已下架，请联系教师。';a.append(n);}list.append(a);
+   else if(!teacher){const n=document.createElement('p');n.textContent='任务项目暂不可用，请联系教师。';a.append(n);}list.append(a);
   }
   if(!count)list.textContent=teacher?'尚未布置任务。':'暂无待显示的任务。可取消“只看待完成事项”或刷新任务。';
  }
@@ -95,10 +97,12 @@
  $('tasks-form').onsubmit=e=>{
   e.preventDefault();const ctx=active;if(!ctx?.teacher||ctx.busy)return;
   const projectId=$('tasks-project').value,title=$('tasks-name').value.trim(),due=new Date($('tasks-due').value);
-  if(ctx.loadState!=='ready'||!ctx.projects.some(p=>p.id===projectId)){$('tasks-status').textContent='本班暂无可选项目，请先检查课程关联和发布状态。';return;}
+  const selected=ctx.projects.find(p=>p.id===projectId);
+  if(ctx.loadState!=='ready'||!selected){$('tasks-status').textContent='本班暂无可选项目，请先检查课程关联和云端保存状态。';return;}
+  if(!Number.isSafeInteger(Number(selected.revision))||Number(selected.revision)<1){$('tasks-status').textContent='项目版本未能读取，请刷新任务后重试。';return;}
   if(!title){$('tasks-status').textContent='请填写任务名称。';$('tasks-name').focus();return;}
   if(!Number.isFinite(+due)||due<=new Date()){$('tasks-status').textContent='请选择未来的截止时间';return;}
-  const data={project_id:projectId,title,instructions:$('tasks-instructions').value,due_at:due.toISOString()};
+  const data={project_id:projectId,project_revision:Number(selected.revision),title,instructions:$('tasks-instructions').value,due_at:due.toISOString()};
   run(ctx,async()=>{await api(ctx,'create',data);if(active!==ctx)return;$('tasks-form').reset();await load(ctx);},true);
  };
  window.MatinTasks={open(row=null){
