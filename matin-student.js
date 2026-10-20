@@ -54,7 +54,7 @@
   $('student-name').value=state.profile?.display_name||'';$('student-number').value=state.profile?.student_no||'';$('student-join-form').classList.toggle('hidden',state.is_teacher);
   const list=$('student-class-list');list.replaceChildren();
   if(state.is_teacher){list.textContent='当前是教师账号。请使用单独的学生账号测试入班审核。';return;}
-  if(!state.classes.length)list.textContent='尚未加入班级，请向教师索取入班码。';
+  if(!state.classes.length)list.textContent='尚未加入班级。若教师已导入名单，请使用名单中的邮箱注册、验证并登录后刷新；也可以向教师索取入班码。';
   for(const c of state.classes){const card=document.createElement('article');card.innerHTML=`<h3>${esc(c.name)}</h3><p>${esc(c.major)} · ${esc(c.grade)}</p><p>${esc(names[c.status])} · ${esc(c.display_name)} / ${esc(c.student_no)}</p>`;
    if(c.status==='approved'){const b=document.createElement('button');b.className='btn primary tiny';b.textContent='查看班级课程';b.onclick=()=>{if(!mine()){location.hash='my';return;}classId=c.id;hook();$('student-classes').classList.add('hidden');};card.append(b);}
    if(['approved','pending'].includes(c.status)){const b=document.createElement('button');b.className='btn tiny';b.textContent=c.status==='pending'?'撤回申请':'退出班级';b.onclick=()=>{if(!confirm(c.status==='pending'?'撤回此入班申请？':'退出后将失去该班级课程入口，确认退出？'))return;task(async()=>{await api('leave',{class_id:c.id,revision:Number(c.revision)});await refresh();hook();return '已更新班级状态';});};card.append(b);}
