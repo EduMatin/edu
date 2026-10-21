@@ -56,7 +56,7 @@ const demoCatalog=[
 { id:'sample-mat',title:'熔窑冷修模拟实训导师',category:'材料/工程',desc:'从安全技术交底到技术方案评审，跟随不同工程角色完成情境学习。',objective:'训练材料工程中的现场风险识别、施工方案论证与表达能力。',startNodeId:'mat-1',nodes:[{id:'mat-1',name:'阶段一：安全技术交底',roleName:'安全督导员·赵科长',persona:'严谨负责，善于追问证据，不会代替学生回答。',context:'冷修作业开始前，需确认作业现场安全条件。',studentTask:'描述如何组织现场风险排查、安全交底和开工确认。',greeting:'你好，进入安全交底阶段。请先说说你认为最需要识别的现场风险。',rubric:'危险源识别、审批确认、现场复核、应急准备',hints:'我们可以先考虑现场危险源有哪些。',keywords:'风险,审批',passScore:'75',scriptRules:'风险=>能进一步说明应如何核查和记录危险源吗？'},{id:'mat-2',name:'阶段二：损毁勘验与方案制定',roleName:'总工程师·张工',persona:'关注技术证据、工程可行性和风险评估。',context:'耐火结构观察到局部损伤，需要制定经过专业审核的方案。',studentTask:'说明现场损伤记录、原因分析与方案评审流程。',greeting:'请说明进入勘验阶段后，你打算优先收集哪些证据？',rubric:'现象记录、原因分析、方案比选、审核复核',passScore:'75'}],edges:[{id:'mat-edge',from:'mat-1',to:'mat-2',condition:'always',keyword:'',label:'通过后继续'}]},
 {id:'sample-auto',title:'电机控制与 SVPWM 实训',category:'自动化/控制',desc:'在电机低速振动情境下，逐步分析 PWM 死区、输出电压偏差和验证思路。',objective:'掌握控制系统问题分析与技术表达。',startNodeId:'auto-1',nodes:[{id:'auto-1',name:'SVPWM 死区效应分析',roleName:'控制算法导师·李博士',persona:'鼓励学生先提出假设再进行验证。',context:'逆变器低速运行时出现转矩脉动。',studentTask:'解释死区时间对输出电压的潜在影响，并提出排查思路。',greeting:'电机低速运行时出现明显抖动，你觉得我们应该先关注哪一个控制参数？',rubric:'死区时间、电压误差、验证方法',passScore:'75',hints:'可以从互补开关管的死区设置入手。'}],edges:[]}
 ];
-let courseGroups=[],selectedGroup=null,homeMode=false;
+let courseGroups=[],publishedGroups=[],selectedGroup=null,homeMode=false,catalogRequest=0,catalogLoading=false,activeTask=null;
 let courses=[],category='全部',search='',active=null,runNode=null,visited=[],messages=[],evalResult=null,completion=false,busy=false,evalBusy=false,controller=null,visitId=0,evaluationController=null,evaluations=[],pendingRequest='',saveFailed=false,activeLearningKey=null;
 const safeText=(v,limit=12000)=>typeof v==='string'?v.slice(0,limit):'';
 function normalize(raw){if(!raw||typeof raw!=='object'||!Array.isArray(raw.nodes)||!raw.nodes.length||raw.nodes.length>50)return null;
@@ -64,20 +64,23 @@ const nodes=raw.nodes.filter(n=>n&&typeof n==='object').slice(0,50).map((n,i)=>(
 const ids=new Set(nodes.map(n=>n.id));const edges=(Array.isArray(raw.edges)?raw.edges:[]).slice(0,150).filter(e=>e&&ids.has(e.from)&&ids.has(e.to)).map((e,i)=>({id:safeText(e.id,100)||'edge-'+i,from:e.from,to:e.to,condition:['always','keyword','score_gte','score_lt'].includes(e.condition)?e.condition:'always',keyword:safeText(e.keyword,100),label:safeText(e.label,120)}));
 return {id:safeText(raw.id,120)||'course-'+Math.random().toString(36).slice(2),title:safeText(raw.title,150)||'未命名课程',category:safeText(raw.category,90)||'未分类',desc:safeText(raw.desc,1500),objective:safeText(raw.objective,1800),nodes,edges,startNodeId:ids.has(raw.startNodeId)?raw.startNodeId:nodes[0].id};}
 async function loadCatalog(){
-courseGroups=[];homeMode=false;
+const request=++catalogRequest;catalogLoading=true;courseGroups=[];publishedGroups=[];homeMode=false;
 const cloudUrl=String(window.MATIN_CLOUD?.supabaseUrl||'').trim().replace(/\/+$/,'');
 if(cloudUrl){
 if(window.MatinStudent?.mine()){
  homeMode=true;courses=[];courseGroups=[];
  try{
   if(!MatinStudent.signedIn){$('catalog-status').textContent='请点击“登录 / 注册”，申请加入班级；教师审核通过后，这里显示我的课程。';}
-  else{const data=await MatinStudent.api('catalog',MatinStudent.classId?{class_id:MatinStudent.classId}:{});
+  else{const owner=MatinStudent.userId,classId=MatinStudent.classId;
+   const [data]=await Promise.all([MatinStudent.api('catalog',classId?{class_id:classId}:{}),MatinTasks.loadStudent()]);
+   if(request!==catalogRequest||owner!==MatinStudent.userId||classId!==MatinStudent.classId)return;
    courses=(data.projects||[]).map(normalize).filter(Boolean);const ids=new Set(courses.map(c=>c.id));
-   courseGroups=(data.groups||[]).map(g=>({id:g.id,name:g.name,project_ids:g.project_ids.filter(id=>ids.has(id))})).filter(g=>g.project_ids.length);
-   $('catalog-status').textContent=MatinStudent.classId?'我的课程 · 当前班级已发布项目':'我的课程 · 已加入班级的已发布项目';
+   publishedGroups=(data.groups||[]).map(g=>({id:g.id,name:g.name,project_ids:g.project_ids.filter(id=>ids.has(id))})).filter(g=>g.project_ids.length);
+   $('catalog-status').textContent=classId?'我的课程 · 当前班级的学习任务与公开分享项目':'我的课程 · 已加入班级的学习任务与公开分享项目';
   }
- }catch(e){$('catalog-status').textContent='我的课程加载失败：'+e.message;}
- if(!courseGroups.some(g=>g.id===selectedGroup))selectedGroup=null;
+ }catch(e){if(request!==catalogRequest)return;$('catalog-status').textContent='我的课程加载失败：'+e.message;}
+ catalogLoading=false;
+ document.querySelector('.page-intro p').textContent='先选择课程，查看本班任务，也可进入公开分享项目自主学习。';
  $('catalog-status').className='status-line';document.querySelector('.page-intro h1').textContent='我的课程';renderLibrary();return;
 }
 try{
@@ -101,25 +104,52 @@ try{const resp=await fetch('./catalog.json',{cache:'no-store'});if(!resp.ok)thro
 catch(e){courses=demoCatalog.map(normalize).filter(Boolean);$('catalog-status').textContent='当前显示内置体验课程。尚未配置云端或有效的 catalog.json（'+e.message+'）。';$('catalog-status').className='status-line warning';}renderLibrary();}
 const visibleProjects=()=>homeMode?courses.filter(p=>courseGroups.find(g=>g.id===selectedGroup)?.project_ids.includes(p.id)):courses;
 const subjects=()=>['全部',...new Set(visibleProjects().map(c=>c.category))];
+const myCatalog=()=>!!(homeMode&&window.MatinStudent?.mine()&&MatinStudent.signedIn);
+const classTasks=()=>myCatalog()?MatinTasks.studentState().tasks.filter(t=>!MatinStudent.classId||t.class_id===MatinStudent.classId):[];
+function mergeTaskGroups(){
+ const groups=new Map(publishedGroups.map(g=>[g.id,{...g,project_ids:[...g.project_ids]}]));
+ for(const t of classTasks())if(t.course_id&&t.course_name&&!groups.has(t.course_id))groups.set(t.course_id,{id:t.course_id,name:t.course_name,project_ids:[]});
+ courseGroups=[...groups.values()];
+ if(selectedGroup&&!groups.has(selectedGroup))selectedGroup=null;
+}
+const taskSection=document.createElement('section');taskSection.id='course-task-section';taskSection.hidden=true;
+taskSection.innerHTML='<h3>班级学习任务</h3><p class="help">与“我的任务”同步，含已完成任务。截止时间按本机时区显示，逾期仍可补做；完成状态为学生自报。</p><p id="course-task-status" role="status"></p><div id="course-task-list"></div>';
+$('course-grid').before(taskSection);
+const projectHeading=document.createElement('h3');projectHeading.textContent='公开分享项目 · 自主学习';projectHeading.hidden=true;$('course-grid').before(projectHeading);
+const taskWarning=document.createElement('p');taskWarning.id='course-task-warning';taskWarning.className='status-line warning';taskWarning.hidden=true;$('catalog-status').after(taskWarning);
+const taskStyle=document.createElement('style');taskStyle.textContent='#course-task-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}#course-task-section{margin:8px 0 30px}#course-task-section h3{margin-top:0}#course-task-status{color:#6073a1;font-size:13px}#course-task-section .help{line-height:1.7;margin-bottom:16px}.course-area{min-width:0}.course-card{overflow-wrap:anywhere}@media(max-width:750px){#course-task-list{grid-template-columns:1fr}}';document.head.append(taskStyle);
+window.addEventListener('matin-student-tasks-changed',()=>{if(myCatalog()&&!catalogLoading)renderLibrary();});
 const groupBack=document.createElement('button');groupBack.type='button';groupBack.id='back-course-groups';groupBack.className='btn';groupBack.textContent='← 返回课程列表';$('course-title').before(groupBack);
 groupBack.onclick=()=>{selectedGroup=null;category='全部';search='';$('course-search').value='';renderLibrary();};
 function renderGroupLibrary(){
- const list=courseGroups.filter(g=>g.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()));
- $('course-title').textContent='全部课程';$('course-subtitle').textContent='共 '+list.length+' 个课程目录 · 进入课程查看已发布项目';
- $('course-grid').innerHTML=list.map(g=>'<article class="course-card"><div class="course-cover"><div class="cover-top"><span class="cover-tag">课程</span></div><strong>'+esc(g.name)+'</strong></div><div class="course-body"><p class="course-desc">'+g.project_ids.length+' 个已发布实训项目</p><div class="course-foot"><button type="button" class="btn primary tiny" data-open-group="'+esc(g.id)+'">进入课程 ↗</button></div></div></article>').join('')||'<div class="empty">暂无可显示的课程。请清空搜索，或等待教师发布项目后同步最新课程。</div>';
+ const term=search.trim().toLocaleLowerCase(),tasks=classTasks();
+ const list=courseGroups.filter(g=>g.name.toLocaleLowerCase().includes(term)||tasks.some(t=>t.course_id===g.id&&[t.title,t.project_title,t.class_name].some(x=>String(x||'').toLocaleLowerCase().includes(term))));
+ $('course-title').textContent='全部课程';$('course-subtitle').textContent='共 '+list.length+' 个课程目录 · '+(myCatalog()?'进入课程查看班级任务与学习项目':'进入课程查看已发布项目');
+ $('course-grid').innerHTML=list.map(g=>{const own=tasks.filter(t=>t.course_id===g.id),pending=own.filter(t=>t.status!=='completed').length;return '<article class="course-card"><div class="course-cover"><div class="cover-top"><span class="cover-tag">课程</span></div><strong>'+esc(g.name)+'</strong></div><div class="course-body"><p class="course-desc">'+(myCatalog()?own.length+' 个班级任务 · '+pending+' 个待完成<br>'+g.project_ids.length+' 个公开分享项目':g.project_ids.length+' 个已发布实训项目')+'</p><div class="course-foot"><button type="button" class="btn primary tiny" data-open-group="'+esc(g.id)+'">进入课程 ↗</button></div></div></article>';}).join('')||'<div class="empty">暂无可显示的课程。请清空搜索，或等待教师布置任务、分享项目后同步最新课程。</div>';
 }
 
-function renderLibrary(){const root=homeMode&&!selectedGroup;groupBack.classList.toggle('hidden',!homeMode||root);document.querySelector('.subjects').hidden=root;document.querySelector('.layout').style.gridTemplateColumns=root?'1fr':'';
-$('course-search').placeholder=root?'搜索课程名称…':'搜索学科、项目或技能…';$('course-search').setAttribute('aria-label',root?'搜索课程':'搜索项目');$('back-courses').textContent=homeMode?'← 返回项目列表':'← 返回项目';
+function renderLibrary(){const mine=myCatalog();if(mine)mergeTaskGroups();const root=homeMode&&!selectedGroup;
+ taskSection.hidden=!mine||root;projectHeading.hidden=!mine||root;
+ const taskState=mine?MatinTasks.studentState():null;
+ taskWarning.hidden=!mine||(!taskState.error&&taskState.catalog_version===1);
+ taskWarning.textContent=mine?(taskState.error||'班级任务目录尚未升级，请联系教师运行本次 SQL；现有任务仍可从“我的任务”打开。'):'';
+ groupBack.classList.toggle('hidden',!homeMode||root);document.querySelector('.subjects').hidden=root||mine;document.querySelector('.layout').style.gridTemplateColumns=root||mine?'1fr':'';
+$('course-search').placeholder=mine?(root?'搜索课程或任务…':'搜索任务、项目或班级…'):root?'搜索课程名称…':'搜索学科、项目或技能…';$('course-search').setAttribute('aria-label',mine?'搜索课程与任务':root?'搜索课程':'搜索项目');$('back-courses').textContent=homeMode?'← 返回项目列表':'← 返回项目';
 if(root){renderGroupLibrary();return;}let all=subjects();if(!all.includes(category))category='全部';$('subject-total').textContent=(all.length-1)+' 类';$('subject-list').innerHTML=all.map(s=>`<button type="button" class="subject-item ${s===category?'active':''}" data-subject="${esc(s)}"><span>${s==='全部'?'▦ ': '◇ '}${esc(s)}</span><span class="subject-count">${visibleProjects().filter(c=>s==='全部'||c.category===s).length}</span></button>`).join('');
 const term=search.toLocaleLowerCase();const list=visibleProjects().filter(c=>(category==='全部'||c.category===category)&&(!term||[c.title,c.category,c.desc,c.objective].some(x=>x.toLocaleLowerCase().includes(term))));$('course-title').textContent=homeMode?(courseGroups.find(g=>g.id===selectedGroup)?.name||'实训项目'):(category==='全部'?'实训项目':category);$('course-subtitle').textContent=`共 ${list.length} 个已发布项目 · 选择项目开始学习`;
+if(mine){const tasks=classTasks().filter(t=>t.course_id===selectedGroup&&[t.title,t.project_title,t.class_name,t.instructions].some(x=>String(x||'').toLocaleLowerCase().includes(term)));
+ MatinTasks.renderStudent($('course-task-list'),tasks);$('course-task-status').textContent=taskState.error||taskState.message||'';
+ $('course-subtitle').textContent=tasks.length+' 个班级任务 · '+list.length+' 个公开分享项目';
+ projectHeading.textContent='公开分享项目 · 自主学习（'+list.length+'）';
+}
 $('course-grid').innerHTML=list.map((c,i)=>{let saved=readLearning(c),p=saved.record;return `<article class="course-card"><div class="course-cover"><div class="cover-top"><span class="cover-tag">◇ ${esc(c.category)}</span><span>SCENARIO ${String(i+1).padStart(2,'0')}</span></div><strong>${esc(c.title)}</strong></div><div class="course-body"><p class="course-desc">${esc(c.desc||c.objective||'跟随 AI 导师完成课程情境学习。')}</p><div class="course-meta"><span>◎ ${c.nodes.length} 个任务节点</span><span>⌁ ${c.edges.length} 条学习路径</span></div><div class="course-foot"><span class="progress-text">${saved.error?esc(saved.error):p?(p.completion?'已完成 · ':'学习中 · ')+esc(p.nodeName):saved.legacy?'旧版仅有阶段摘要，需重新开始':'尚未开始'}</span><button class="btn primary tiny" data-open-course="${esc(c.id)}">${saved.error?'重新开始':p?(p.completion?'查看学习记录':'继续学习'):'开始学习'} ↗</button>${p?`<button class="btn tiny" data-restart-course="${esc(c.id)}">重新开始</button>`:''}</div></div></article>`;}).join('')||'<div class="empty">当前没有可显示的课程。教师发布课程后，点击「同步最新课程」；也可清空搜索或切换分类。</div>';
+if(mine&&!list.length)$('course-grid').innerHTML='<div class="empty">没有符合条件的公开分享项目。班级任务可直接从上方进入学习。</div>';
 }
 // Learning records never include API settings, credentials or share tokens.
 function learningKey(id){return 'matin_learning_v1_'+encodeURIComponent(String(window.MATIN_CLOUD?.supabaseUrl||'').trim().replace(/\/+$/,'')||'offline')+'_'+(window.MatinStudent?.signedIn?MatinStudent.userId+'_':'')+encodeURIComponent(id)}
 function validEvaluation(v){return v&&Number.isFinite(v.score)&&v.score>=0&&v.score<=100&&typeof v.feedback==='string'&&typeof v.nextStep==='string'&&Array.isArray(v.criteria)&&v.criteria.every(x=>x&&typeof x.name==='string'&&typeof x.comment==='string'&&typeof x.met==='boolean')}
-function readLearning(c){
- try{const raw=localStorage.getItem(learningKey(c.id));if(!raw)return {legacy:!window.MatinStudent?.signedIn&&!!localStorage.getItem('matin_v6_progress_'+c.id)};
+function readLearning(c,key=learningKey(c.id)){
+ try{const raw=localStorage.getItem(key);if(!raw)return {legacy:!window.MatinStudent?.signedIn&&!!localStorage.getItem('matin_v6_progress_'+c.id)};
  const r=JSON.parse(raw),ids=new Set(c.nodes.map(n=>n.id));
  if(r.version!==1||r.projectId!==c.id||typeof r.snapshot!=='string')throw Error();
  if(r.snapshot!==JSON.stringify(c))return {error:'项目内容已更新，旧记录需重新开始'};
@@ -132,22 +162,27 @@ function rememberProgress(){if(!active||!runNode)return;
  catch{if(!saveFailed)notify('学习记录保存失败，请及时导出学习报告');saveFailed=true;$('learning-save-status').textContent='保存失败：浏览器存储不可用或空间不足。请导出学习报告，关闭页面可能丢失本次进度。';}
 }
 function stopRequests(){visitId++;controller?.abort();evaluationController?.abort();controller=null;evaluationController=null;busy=false;evalBusy=false;pendingRequest='';}
-function showCourses(){stopRequests();if(active)rememberProgress();active=null;$('screen-courses').classList.remove('hidden');$('screen-runtime').classList.add('hidden');renderLibrary();window.scrollTo(0,0)}
-window.MatinTaskOpen=p=>{const c=normalize(p);if(!c)throw Error('项目内容无效');showCourses();courses=courses.filter(x=>x.id!==c.id);courses.push(c);startCourse(c.id);};
-function startCourse(id,restart=false){const c=courses.find(x=>x.id===id);if(!c)return;const saved=readLearning(c);
- if((restart||saved.error)&&!confirm((saved.error?saved.error+'。':'')+'重新开始将替换此项目的旧对话、阶段评价和进度；如需保留，请先导出报告。确认重新开始吗？'))return;
- stopRequests();active=c;activeLearningKey=learningKey(c.id);saveFailed=false;
+function showCourses(){stopRequests();if(active)rememberProgress();active=null;activeTask=null;$('screen-courses').classList.remove('hidden');$('screen-runtime').classList.add('hidden');renderLibrary();window.scrollTo(0,0)}
+window.MatinTaskOpen=(p,task)=>{const c=normalize(p);if(!c||!task?.id)throw Error('任务项目内容无效');if(active)rememberProgress();return startLearning(c,false,task);};
+function startCourse(id,restart=false){const c=courses.find(x=>x.id===id);if(c)return startLearning(c,restart,null);}
+function startLearning(c,restart=false,task=null){const key=learningKey(c.id)+(task?':task:'+encodeURIComponent(task.id):'');let saved=readLearning(c,key);
+ // One-time compatibility with records written before task-specific storage existed.
+ // Only a previously started task and an exactly matching snapshot can reuse that record.
+ if(task&&task.status!=='pending'&&!saved.record&&!saved.error){const previous=readLearning(c);if(previous.record)saved=previous;}
+ if((restart||saved.error)&&!confirm((saved.error?saved.error+'。':'')+'重新开始将替换本次学习的旧对话、阶段评价和进度；如需保留，请先导出报告。确认重新开始吗？'))return false;
+ stopRequests();active=c;activeTask=task;activeLearningKey=key;saveFailed=false;
  const r=!restart&&!saved.error?saved.record:null;
  runNode=c.nodes.find(n=>n.id===(r?r.nodeId:c.startNodeId))||c.nodes[0];visited=r?r.visited:[runNode.id];messages=r?r.messages:[];evalResult=r?r.evalResult:null;evaluations=r?r.evaluations:[];completion=r?r.completion:false;$('chat-input').value=r?r.draft:'';
  $('screen-courses').classList.add('hidden');$('screen-runtime').classList.remove('hidden');
  if(!r)post('assistant',runNode.greeting,runNode.roleName);
  else if(r.pending)post('system','上次的 AI 请求未完成，已有对话已恢复。回复不会自动重试；可继续提问或重新请求阶段评价。','恢复提示');
- rememberProgress();renderRuntime();window.scrollTo(0,0);
+ rememberProgress();renderRuntime();window.scrollTo(0,0);return true;
 }
 function post(role,text,sender){messages.push({role,text:String(text),sender:sender||'系统',nodeId:runNode.id,at:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})});rememberProgress();renderMessages()}
 function rich(text){return window.MatinMath ? MatinMath.format(text) : esc(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`([^`\n]+)`/g,'<code>$1</code>');}
 function renderMessages(){const area=$('chat-feed');area.innerHTML=messages.map(m=>`<div class="msg ${m.role==='user'?'user':m.role==='system'?'system':''}"><span class="sender">${esc(m.role==='user'?'我':m.sender)}</span><div class="msg-text">${rich(m.text)}</div></div>`).join('');area.scrollTop=area.scrollHeight;}
 function renderRuntime(){$('send-button').disabled=busy||evalBusy||completion;$('send-button').textContent=busy?'思考中…':'发送 ↗';$('evaluate-button').disabled=busy||evalBusy||completion;$('evaluate-button').textContent=evalBusy?'AI 评价中…':'✦ 获取 AI 学习反馈';$('chat-input').disabled=completion;$('run-project-title').textContent=active.title;$('run-subject').textContent=active.category+' · '+active.objective;$('run-node-name').textContent=runNode.name;$('run-student-task').textContent=runNode.studentTask;$('run-role-name').textContent=runNode.roleName;$('run-role-persona').textContent=runNode.persona;$('run-model-tag').textContent=config.provider==='offline'?'离线剧本体验':config.provider==='classroom'?'教师班级 AI':'AI 模型 · '+(config.model||defaults[config.provider]||config.provider);
+if(activeTask){$('run-project-title').textContent=activeTask.title;$('run-subject').textContent='项目：'+active.title+' · '+activeTask.class_name+' · 班级任务';}
 $('run-progress').innerHTML=active.nodes.map(n=>`<div class="progress-node ${n.id===runNode.id?'current':visited.includes(n.id)?'done':''}">${n.id===runNode.id?'▶':visited.includes(n.id)?'✓':'○'} ${esc(n.name)}</div>`).join('');renderScore();renderBranches();renderMessages();}
 function evaluationHistory(){return evaluations.length?'<details style="margin-top:10px"><summary>已保存的阶段评价（'+evaluations.length+'）</summary>'+evaluations.map(e=>'<p><strong>'+esc(active.nodes.find(n=>n.id===e.nodeId)?.name||'阶段')+' · '+e.result.score+' 分</strong><br>'+esc(e.result.feedback)+'<br>'+esc(e.result.nextStep)+'</p>').join('')+'</details>':''}
 function renderScore(){const out=$('score-panel');if(!evalResult){out.innerHTML='<p>完成回答后可请求 AI 评价，查看当前阶段的建议分数和改进建议。</p>'+evaluationHistory();return;}out.innerHTML=`<div class="score-large">${evalResult.score}<span style="font-size:13px;font-weight:500;color:#8fa0b6"> / 100 · AI 建议</span></div><p>${esc(evalResult.feedback)}</p><div class="criteria">${evalResult.criteria.map(c=>`<div>${c.met?'✓':'△'} ${esc(c.name)}：${esc(c.comment)}</div>`).join('')}</div><p style="margin-top:8px"><strong>下一步：</strong>${esc(evalResult.nextStep)}</p>`+evaluationHistory();}
@@ -170,7 +205,7 @@ function exportReport(){if(!active)return;const transcript=messages.map(m=>`<sec
 function setSettingsVisibility(){const p=$('provider').value;$('api-fields').classList.toggle('hidden',p==='offline'||p==='classroom');$('class-fields').classList.toggle('hidden',p!=='classroom');$('custom-wrap').classList.toggle('hidden',p!=='custom');}
 function openSettings(){$('settings-modal').classList.remove('hidden');$('provider').value=config.provider;$('api-model').value=config.model||defaults[config.provider]||'';$('api-key').value=config.key;$('custom-url').value=config.url;$('class-url').value=config.classUrl;$('class-code').value=config.classCode;setSettingsVisibility();}
 function saveSettings(){const provider=$('provider').value,model=$('api-model').value.trim(),key=$('api-key').value.trim(),url=$('custom-url').value.trim(),classUrl=$('class-url').value.trim(),classCode=$('class-code').value.trim();if(!['offline','classroom'].includes(provider)&&(!model||!key))return notify('模型名称和 API Key 不可为空');if(provider==='classroom'&&(!classUrl||!classCode))return notify('请输入课堂服务器地址和访问码');if(provider==='classroom'||provider==='custom'){let u;try{u=new URL(provider==='classroom'?classUrl:url)}catch{return notify('请填写正确的 API 地址')};if(u.protocol!=='https:'&&!(u.protocol==='http:'&&['localhost','127.0.0.1'].includes(u.hostname)))return notify('接口需为 HTTPS（本机 localhost 除外）');}Object.assign(config,{provider,model,key:provider==='classroom'||provider==='offline'?'':key,url,classUrl,classCode:provider==='classroom'?classCode:''});try{localStorage.setItem('matin_studio_model_pref_v2',JSON.stringify({provider,model,url,classroomUrl:classUrl}))}catch{}$('settings-modal').classList.add('hidden');if(active)renderRuntime();notify('模型设置已保存。密钥仅保存在当前标签页内存中。');}
-$('refresh-courses').addEventListener('click',async()=>{const btn=$('refresh-courses');btn.disabled=true;btn.textContent='同步中…';try{await loadCatalog();notify('课程列表已刷新');}finally{btn.disabled=false;btn.textContent='↻ 同步最新课程';}});$('subject-list').addEventListener('click',e=>{const b=e.target.closest('[data-subject]');if(!b)return;category=b.dataset.subject;renderLibrary();});$('course-search').addEventListener('input',e=>{search=e.target.value;renderLibrary();});$('course-grid').addEventListener('click',e=>{const group=e.target.closest('[data-open-group]');if(group){selectedGroup=group.dataset.openGroup;category='全部';search='';$('course-search').value='';renderLibrary();return;}const restart=e.target.closest('[data-restart-course]');if(restart){startCourse(restart.dataset.restartCourse,true);return;}const btn=e.target.closest('[data-open-course]');if(btn)startCourse(btn.dataset.openCourse);});$('back-courses').addEventListener('click',showCourses);$('restart-run').addEventListener('click',()=>{if(active)startCourse(active.id,true);});$('chat-form').addEventListener('submit',e=>{e.preventDefault();sendMessage();});$('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendMessage();}});$('evaluate-button').addEventListener('click',evaluate);$('run-branches').addEventListener('click',e=>{const b=e.target.closest('[data-branch]');if(b)takeBranch(b.dataset.branch);if(e.target.id==='finish-button'&&!busy&&!evalBusy&&!completion&&stageAnswers()){completion=true;rememberProgress();post('system','已结束本次学习，可以导出个人学习报告。这不是正式成绩证明。','学习路线');renderRuntime();}});$('export-report').addEventListener('click',exportReport);
+$('refresh-courses').addEventListener('click',async()=>{const btn=$('refresh-courses');btn.disabled=true;btn.textContent='同步中…';try{await loadCatalog();notify('课程列表已刷新');}finally{btn.disabled=false;btn.textContent='↻ 同步最新课程';}});$('subject-list').addEventListener('click',e=>{const b=e.target.closest('[data-subject]');if(!b)return;category=b.dataset.subject;renderLibrary();});$('course-search').addEventListener('input',e=>{search=e.target.value;renderLibrary();});$('course-grid').addEventListener('click',e=>{const group=e.target.closest('[data-open-group]');if(group){selectedGroup=group.dataset.openGroup;category='全部';search='';$('course-search').value='';renderLibrary();return;}const restart=e.target.closest('[data-restart-course]');if(restart){startCourse(restart.dataset.restartCourse,true);return;}const btn=e.target.closest('[data-open-course]');if(btn)startCourse(btn.dataset.openCourse);});$('back-courses').addEventListener('click',showCourses);$('restart-run').addEventListener('click',()=>{if(active)startLearning(active,true,activeTask);});$('chat-form').addEventListener('submit',e=>{e.preventDefault();sendMessage();});$('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendMessage();}});$('evaluate-button').addEventListener('click',evaluate);$('run-branches').addEventListener('click',e=>{const b=e.target.closest('[data-branch]');if(b)takeBranch(b.dataset.branch);if(e.target.id==='finish-button'&&!busy&&!evalBusy&&!completion&&stageAnswers()){completion=true;rememberProgress();post('system','已结束本次学习，可以导出个人学习报告。这不是正式成绩证明。','学习路线');renderRuntime();}});$('export-report').addEventListener('click',exportReport);
 $('settings-open').addEventListener('click',openSettings);$('settings-cancel').addEventListener('click',()=>$('settings-modal').classList.add('hidden'));$('settings-modal').addEventListener('click',e=>{if(e.target===$('settings-modal'))$('settings-modal').classList.add('hidden')});$('provider').addEventListener('change',()=>{$('api-model').value=defaults[$('provider').value]||'';setSettingsVisibility();});$('settings-save').addEventListener('click',saveSettings);$('settings-test').addEventListener('click',async()=>{const old={...config};const provider=$('provider').value;if(provider==='offline')return notify('离线模式无需测试连接');const btn=$('settings-test');btn.disabled=true;btn.textContent='连接中…';try{Object.assign(config,{provider,model:$('api-model').value.trim(),key:$('api-key').value.trim(),url:$('custom-url').value.trim(),classUrl:$('class-url').value.trim(),classCode:$('class-code').value.trim()});const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),25000);try{const reply=await callAI({name:'连通测试',roleName:'助教',persona:'简短回答',rubric:'',context:'',studentTask:''},{title:'连通测试',category:'演示',objective:''},[{role:'user',text:'请回复：连接成功'}],ctrl.signal);notify('连接成功：'+reply.slice(0,50));}finally{clearTimeout(timer)}}catch(e){notify('连接失败：'+e.message)}finally{Object.assign(config,old);btn.disabled=false;btn.textContent='测试连接';}});
 $('chat-input').addEventListener('input',()=>rememberProgress());
 window.addEventListener('pagehide',()=>{if(active)rememberProgress()});

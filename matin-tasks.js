@@ -17,6 +17,89 @@
  <p id="tasks-status" role="status"></p><div id="tasks-list"></div></div>`;
  document.body.append(root);const style=document.createElement('style');style.textContent='#tasks-modal{z-index:130}#tasks-modal .actions{display:flex;gap:10px;flex-wrap:wrap}#tasks-form{display:grid;gap:12px;margin:16px 0}#tasks-form label{display:grid;gap:6px}#tasks-form input,#tasks-form select,#tasks-form textarea{width:100%;min-width:0;padding:10px;border:1px solid #ccd5e7;border-radius:8px}#tasks-list article{padding:16px;border:1px solid #dce3f1;border-radius:12px;margin:12px 0;overflow-wrap:anywhere}#tasks-list p{white-space:pre-wrap}#tasks-status{color:#805221}#tasks-project-notice{margin-top:14px;padding:12px;background:#f3f6ff;border:1px solid #dce3f1;border-radius:12px;line-height:1.7}#tasks-project-help{margin:0 0 8px}#tasks-modal [hidden]{display:none!important}#tasks-modal :disabled{opacity:.6;cursor:not-allowed}';document.head.append(style);
  const $=id=>document.getElementById(id);
+ // Both student entry points use this account-scoped list and the same task actions.
+ let student={owner:'',tasks:[],catalog_version:0,error:'',message:'',busy:false},studentRequest=0;
+ const studentOwner=()=>window.MatinStudent?.signedIn?MatinStudent.userId:'';
+ const studentState=()=>student.owner===studentOwner()?student:{tasks:[],catalog_version:0,error:'',busy:false};
+ const changed=()=>{
+  window.dispatchEvent(new CustomEvent('matin-student-tasks-changed'));
+  if(active&&!active.teacher){
+   active.tasks=studentState().tasks;renderTasks(active,active.tasks);
+   $('tasks-status').textContent=studentState().error||studentState().message||'已同步云端任务';
+  }
+ };
+ async function loadStudent(){
+  const owner=studentOwner();if(!owner)return {tasks:[],catalog_version:0};
+  if(student.owner===owner&&student.busy)return student;
+  const request=++studentRequest;
+  try{
+   const d=await MatinStudent.taskApi('list');
+   if(request!==studentRequest||owner!==studentOwner())return studentState();
+   if(!Array.isArray(d.tasks))throw Error('任务数据不完整，请刷新重试。');
+   student={owner,tasks:d.tasks,catalog_version:d.catalog_version||0,error:'',message:'已同步云端任务',busy:false};
+  }catch(e){
+   if(request!==studentRequest||owner!==studentOwner())return studentState();
+   student={owner,tasks:[],catalog_version:0,error:'任务读取失败：'+(e.message||'请刷新重试'),busy:false};
+  }
+  changed();return studentState();
+ }
+ async function studentAction(task,operation){
+  const owner=studentOwner(),state=studentState();
+  if(!owner||state.busy||!state.tasks.some(t=>t.id===task.id&&t.available))return;
+  if(operation==='complete'&&!confirm('确认已完成此任务的学习要求？这将记录为学生自报完成。'))return;
+  const request=++studentRequest,ctx=active&&!active.teacher?active:null;
+  student.busy=true;student.error='';student.message='正在保存操作，请稍候…';
+  if(ctx){ctx.busy=true;ctx.writing=true;syncControls(ctx);}changed();
+  try{
+   const d=await MatinStudent.taskApi(operation,{task_id:task.id});
+   if(request!==studentRequest||owner!==studentOwner())return;
+   student.tasks=student.tasks.map(t=>t.id===task.id?{...t,status:operation==='complete'?'completed':t.status==='completed'?'completed':'started'}:t);
+   student.message=operation==='complete'?'已标记完成，课程页与任务列表已同步。':'已打开任务，学习对话保存在当前浏览器。';
+   if(operation==='open'){
+    const opened=window.MatinTaskOpen(d.project,task);
+    if(opened!==false&&active===ctx)close(true,false);
+   }
+  }catch(e){
+   if(request===studentRequest&&owner===studentOwner()){
+    student.error='操作未完成：'+(e.message||'请刷新后重试');
+    // An authorization failure must not leave an old card usable.
+    student.tasks=[];student.catalog_version=0;
+   }
+  }finally{
+   if(request===studentRequest&&owner===studentOwner()){
+    student.busy=false;
+    if(active===ctx&&ctx){ctx.busy=false;ctx.writing=false;syncControls(ctx);}changed();
+   }
+  }
+ }
+ function renderStudent(container,tasks,{pendingOnly=false}={}){
+  container.replaceChildren();
+  for(const t of tasks){
+   if(pendingOnly&&t.status==='completed')continue;
+   const card=document.createElement('article');card.className='student-task-card';card.dataset.taskId=t.id;
+   const tag=document.createElement('span');tag.className='student-task-tag';tag.textContent='班级任务';
+   const h=document.createElement('h3');h.textContent=t.title;
+   const source=document.createElement('p');source.className='student-task-source';
+   source.textContent=[t.course_name,t.project_title?'项目：'+t.project_title:'',t.class_name].filter(Boolean).join(' · ');
+   const status=document.createElement('p');status.className='student-task-meta';
+   const late=Date.parse(t.due_at)<Date.now();
+   status.textContent=new Date(t.due_at).toLocaleString('zh-CN')+' 截止 · '+(t.status==='completed'?'已完成（自报）':(late?'已逾期 · ':'')+(t.status==='started'?'进行中':'待开始'));
+   const desc=document.createElement('p');desc.textContent=t.instructions;
+   const note=document.createElement('p');note.className='student-task-source';
+   note.textContent=t.delivery_mode==='class_snapshot'?'班级学习版本 · 内容以布置时保存的版本为准':'教师公开分享版本';
+   card.append(tag,h,source,status,desc,note);
+   const actions=document.createElement('div');actions.className='student-task-actions';
+   if(t.available){
+    for(const [label,op] of [[t.status==='pending'?'开始学习':t.status==='completed'?'查看学习记录':'继续学习','open'],...(t.status==='completed'?[]:[['标记已完成','complete']])]){
+     const b=document.createElement('button');b.type='button';b.className='btn'+(op==='open'?' primary':'');b.textContent=label;b.dataset.taskAction=op;
+     b.disabled=studentState().busy;b.onclick=()=>studentAction(t,op);actions.append(b);
+    }
+   }else{const unavailable=document.createElement('p');unavailable.textContent='任务项目暂不可用，请联系教师。';actions.append(unavailable);}
+   card.append(actions);container.append(card);
+  }
+  if(!container.childElementCount){const p=document.createElement('p');p.className='help';p.textContent=pendingOnly?'暂无待完成任务，可取消“只看待完成事项”查看已完成任务。':'暂无符合条件的班级任务。';container.append(p);}
+ }
+ style.textContent+='.student-task-card{padding:22px;border:1px solid #dce3f1;border-radius:16px;background:#fff;overflow-wrap:anywhere}.student-task-card h3{margin:12px 0 8px;font-size:20px;color:#26365c}.student-task-card p{white-space:pre-wrap;line-height:1.7;margin:10px 0}.student-task-tag{display:inline-block;color:#494bc5;background:#efedff;padding:5px 10px;border-radius:8px;font-size:12px;font-weight:700}.student-task-source{font-size:13px;color:#71819b}.student-task-meta{font-weight:600;font-size:14px;color:#344c76}.student-task-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.student-task-actions :disabled{opacity:.6;cursor:wait}';
  style.textContent+='#tasks-project-state{padding:12px;background:#f3f6ff;border:1px solid #dce3f1;border-radius:12px;line-height:1.7;overflow-wrap:anywhere}#tasks-project-state strong{font-size:14px;color:#293c67}#tasks-project-state p{margin:6px 0 0;font-size:13px}';
  const api=(ctx,op,data={})=>ctx.teacher?window.MatinAccount.api({action:'tasks',op,data:{...data,class_id:ctx.row.id}}):window.MatinStudent.taskApi(op,data);
  const assignedTasks=(ctx,id)=>ctx.tasks.filter(t=>t.class_id===ctx.row.id&&t.project_id===id&&t.active===true);
@@ -71,9 +154,10 @@
  async function load(ctx){
   const old=$('tasks-project').value;ctx.loadState='loading';
   try{
-   const d=await api(ctx,ctx.teacher?'teacher_list':'list');
+   const d=ctx.teacher?await api(ctx,'teacher_list'):await loadStudent();
    if(active!==ctx)return;
    if(!Array.isArray(d.tasks)||(ctx.teacher&&!Array.isArray(d.projects)))throw Error('任务数据不完整，请刷新重试。');
+   if(d.error)throw Error(d.error);
    if(ctx.teacher&&d.assignment_mode!=='class_snapshot')throw Error('任务服务尚未更新，请联系管理员完成升级后刷新。');
    ctx.projects=ctx.teacher?d.projects:[];ctx.tasks=d.tasks;ctx.loadState='ready';projectNotice(ctx,old);renderTasks(ctx,d.tasks);
   }catch(e){
@@ -83,6 +167,7 @@
  }
  function renderTasks(ctx,tasks){
   const teacher=ctx.teacher;
+  if(!teacher){renderStudent($('tasks-list'),tasks,{pendingOnly:$('tasks-pending').checked});return;}
   const list=$('tasks-list');list.replaceChildren();let count=0;
   for(const t of tasks){if(!teacher&&$('tasks-pending').checked&&t.status==='completed')continue;count++;
    const a=document.createElement('article'),h=document.createElement('h3'),p=document.createElement('p'),desc=document.createElement('p');h.textContent=t.title;
@@ -90,8 +175,7 @@
    desc.textContent=t.instructions;a.append(h,p,desc);
    if(t.delivery_mode==='class_snapshot'){const version=document.createElement('p');version.textContent='班级学习版本 · 内容以布置时保存的版本为准'+(teacher?'。如需停止本次任务，请撤回任务。':'');a.append(version);}
    if(teacher&&t.active)a.append(button(ctx,'撤回任务',async()=>{if(!confirm('撤回后学生将不再看到此任务，确认？'))return;await api(ctx,'cancel',{task_id:t.id,revision:Number(t.revision)});await load(ctx);}));
-   if(!teacher&&t.available){a.append(button(ctx,t.status==='pending'?'开始学习':'打开学习记录',async()=>{const d=await api(ctx,'open',{task_id:t.id});if(active!==ctx)return;window.MatinTaskOpen(d.project);close(true,false);}));if(t.status!=='completed')a.append(button(ctx,'标记已完成',async()=>{if(!confirm('确认已完成此任务的学习要求？这将记录为学生自报完成。'))return;await api(ctx,'complete',{task_id:t.id});await load(ctx);}));}
-   else if(!teacher){const n=document.createElement('p');n.textContent='任务项目暂不可用，请联系教师。';a.append(n);}list.append(a);
+   list.append(a);
   }
   if(!count)list.textContent=teacher?'尚未布置任务。':'暂无待显示的任务。可取消“只看待完成事项”或刷新任务。';
  }
@@ -130,7 +214,8 @@
    return success;
   },true);
  };
- window.MatinTasks={open(row=null){
+ window.MatinTasks={loadStudent,studentState,renderStudent,open(row=null){
+  if(studentState().busy)return;
   if(active?.busy&&active.writing)return;
   const ctx={teacher:!!row,row:row?{id:row.id,name:row.name}:null,busy:false,writing:false,projects:[],tasks:[],loadState:'loading',opener:document.activeElement};
   active=ctx;
