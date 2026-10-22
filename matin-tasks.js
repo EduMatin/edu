@@ -203,9 +203,9 @@
    if(!Array.isArray(d.tasks)||(ctx.teacher&&!Array.isArray(d.projects)))throw Error('任务数据不完整，请刷新重试。');
    if(d.error)throw Error(d.error);
    if(ctx.teacher&&d.assignment_mode!=='class_snapshot')throw Error('任务服务尚未更新，请联系管理员完成升级后刷新。');
-   ctx.projects=ctx.teacher?d.projects:[];ctx.tasks=d.tasks;ctx.reports=d.reports_version===1;ctx.loadState='ready';if(ctx.teacher)courseFilters(ctx);projectNotice(ctx,old);renderTasks(ctx,d.tasks);
+   ctx.projects=ctx.teacher?d.projects:[];ctx.tasks=d.tasks;ctx.reports=d.reports_version===1;ctx.loadState='ready';if(ctx.teacher){courseFilters(ctx);window.dispatchEvent(new CustomEvent('matin-teacher-tasks-changed',{detail:{classId:ctx.row.id,data:d}}));}projectNotice(ctx,old);renderTasks(ctx,d.tasks);
   }catch(e){
-   if(active===ctx){ctx.projects=[];ctx.tasks=[];ctx.loadState='error';ctx.pages=1;projectNotice(ctx);$('tasks-list').textContent='任务读取失败，请刷新重试。';$('tasks-summary').replaceChildren();$('tasks-pages').hidden=true;}
+   if(active===ctx){ctx.projects=[];ctx.tasks=[];ctx.loadState='error';ctx.pages=1;projectNotice(ctx);$('tasks-list').textContent='任务读取失败，请刷新重试。';$('tasks-summary').replaceChildren();$('tasks-pages').hidden=true;if(ctx.teacher)window.dispatchEvent(new CustomEvent('matin-teacher-tasks-changed',{detail:{classId:ctx.row.id,error:e.message||'请刷新重试'}}));}
    throw e;
   }
  }
@@ -320,13 +320,13 @@
    return success;
   },true);
  };
- window.MatinTasks={loadStudent,studentState,renderStudent,open(row=null){
+ window.MatinTasks={loadStudent,studentState,renderStudent,open(row=null,options={}){
   if(studentState().busy)return;
   if(active?.busy&&active.writing)return;
   if(active?.teacher&&!discardCreate(active))return;
   if(active?.underlay)active.underlay.inert=active.underlayInert;
   const underlay=[...document.querySelectorAll('.modal-layer:not(.hidden)')].filter(e=>e!==root).at(-1);
-  const ctx={teacher:!!row,row:row?{id:row.id,name:row.name}:null,busy:false,writing:false,projects:[],tasks:[],layout:null,loadState:'loading',opener:document.activeElement,underlay,underlayInert:underlay?.inert,view:'list',page:1,pages:1,filters:{course:'',query:'',state:'active',sort:'newest'}};
+  const ctx={teacher:!!row,row:row?{id:row.id,name:row.name}:null,busy:false,writing:false,projects:[],tasks:[],layout:null,loadState:'loading',opener:document.activeElement,underlay,underlayInert:underlay?.inert,view:'list',page:1,pages:1,filters:{course:typeof options.courseId==='string'?options.courseId:'',query:'',state:'active',sort:'newest'}};
   active=ctx;
   if(underlay)underlay.inert=true;
   root.classList.toggle('teacher-tasks',ctx.teacher);$('tasks-search').value='';$('tasks-state').value='active';$('tasks-sort').value='newest';$('tasks-course').replaceChildren(new Option('全部课程',''));$('tasks-summary').replaceChildren();$('tasks-outline-warning').hidden=true;setView(ctx,'list');

@@ -23,6 +23,7 @@
   document.head.append(style);document.body.append(root);
   const $=id=>document.getElementById(id);let rows=[],current=null,busy=false,changed=false,loaded=false,loadError='',courseContext=null,formOutlineRevision=0;
   const outline=()=>window.MatinCourseOutline.controller.snapshot();
+  window.MatinClasses.state=()=>({rows:[...rows],loaded,error:loadError});
   const projectGroup=(id,layout)=>layout.members.find(m=>m.project_id===id&&layout.groups.some(g=>g.id===m.group_id))?.group_id;
   const groupLinks=(r,layout)=>new Set([...(r.course_group_ids||[]),...(r.matin_class_courses||[]).map(c=>projectGroup(c.course_id,layout)).filter(Boolean)]);
   const infoStyle=document.createElement('style');infoStyle.textContent=`.course-class-info{margin:14px 0;padding:12px;border:1px solid #e0e5f4;border-radius:12px;background:#f7f9ff;overflow-wrap:anywhere}.course-class-info strong{font-size:12px;color:#42547b}.course-class-info ul{padding-left:18px;margin:8px 0;font-size:12px;color:#566787;line-height:1.7}.course-class-info .class-message{font-size:12px;color:#697995;margin:8px 0}.course-class-info .btn{margin-top:6px}`;document.head.append(infoStyle);
@@ -37,6 +38,7 @@
     const note=document.createElement('div');note.className='class-message';note.textContent=!account?'登录云端教师账号后管理班级':loadError?'班级信息读取失败，请打开班级管理刷新'+(loaded?'（上方为上次加载结果）':''):!loaded?'正在加载班级…':!layout?'课程目录尚未加载，请打开班级管理刷新':!linked.length?'尚未关联班级':'已关联 '+linked.length+' 个班级';target.append(note);
     if(account){const manage=document.createElement('button');manage.type='button';manage.className='btn tiny';manage.textContent='管理授课班级';manage.onclick=()=>open(target.dataset.courseGroupClasses||id,!!target.dataset.courseGroupClasses);target.append(manage);}
    });
+   window.MatinProjectTasks?.render?.();
   }
   window.MatinClasses.renderCourseInfo=renderCourseInfo;
   const oldCanLeave=window.MatinAccount.canLeave;
