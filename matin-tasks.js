@@ -84,7 +84,7 @@
    student.tasks=student.tasks.map(t=>t.id===task.id?{...t,status:operation==='complete'?'completed':['completed','submitted'].includes(t.status)?t.status:'started'}:t);
    student.message=operation==='complete'?'已标记完成，课程页与任务列表已同步。':'已打开任务，学习对话保存在当前浏览器。';
    if(operation==='open'){
-    const opened=window.MatinTaskOpen(d.project,task);
+    const opened=await window.MatinTaskOpen(d.project,task);
     if(opened!==false&&active===ctx)close(true,false);
    }
   }catch(e){

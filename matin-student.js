@@ -16,7 +16,7 @@
  async function token(){if(!session)throw Error('请先登录学生账号');if(session.expires_at*1000<Date.now()+60000){if(!refreshing)refreshing=auth('token?grant_type=refresh_token',{refresh_token:session.refresh_token}).then(adopt).finally(()=>refreshing=null);await refreshing;}return session.access_token;}
  async function api(op,data={},action='membership'){
   const r=await fetch(base+'/functions/v1/matin-courses',{method:'POST',headers:{'Content-Type':'application/json',apikey:cfg.publishableKey,Authorization:'Bearer '+await token()},body:JSON.stringify({action,op,data}),signal:AbortSignal.timeout(25000)});
-  const out=await r.json().catch(()=>({}));if(!r.ok||!out.ok){if(r.status===401){persist(null);location.replace(location.pathname+'#my');location.reload();}throw Error(out.error||'班级服务暂不可用');}return out;
+  const out=await r.json().catch(()=>({}));if(!r.ok||!out.ok){if(r.status===401){persist(null);location.replace(location.pathname+'#my');location.reload();}const error=Error(out.error||'班级服务暂不可用');error.status=r.status;throw error;}return out;
  }
  function mine(){return !new URLSearchParams(location.hash.slice(1)).has('teacher')&&!new URLSearchParams(location.hash.slice(1)).has('course');}
  function changeView(){$('student-classes').classList.add('hidden');if(!mine()){location.hash='my';return;}classId=null;hook();}
@@ -46,7 +46,7 @@
   btn('我的任务','student-my-tasks',()=>session?window.MatinTasks.open():showLogin());
   btn('我的班级','student-my-classes',()=>{if(!session)return showLogin();$('student-classes').classList.toggle('hidden');if(!$('student-classes').classList.contains('hidden'))task(async()=>{await refresh();return '';});});
   if(!session)btn('登录 / 注册','student-login-open',showLogin);
-  else btn('退出账号','student-logout',async()=>{const access=session.access_token;persist(null);document.querySelector('main').classList.add('hidden');try{await fetch(base+'/auth/v1/logout',{method:'POST',headers:{apikey:cfg.publishableKey,Authorization:'Bearer '+access},signal:AbortSignal.timeout(5000)});}catch{}location.replace(location.pathname+'#my');location.reload();});
+  else btn('退出账号','student-logout',async()=>{if(window.MatinLearningSync?.hasPending()&&!await MatinLearningSync.flush()&&!confirm('学习记录尚未同步云端，本机副本已保留。仍要退出账号吗？'))return;const access=session.access_token;persist(null);document.querySelector('main').classList.add('hidden');try{await fetch(base+'/auth/v1/logout',{method:'POST',headers:{apikey:cfg.publishableKey,Authorization:'Bearer '+access},signal:AbortSignal.timeout(5000)});}catch{}location.replace(location.pathname+'#my');location.reload();});
  }
  async function task(fn){const panel=$('student-classes');panel.querySelectorAll('button,input').forEach(x=>x.disabled=true);$('student-class-status').textContent='正在处理…';try{$('student-class-status').textContent=await fn();}catch(e){$('student-class-status').textContent=e.message;}finally{panel.querySelectorAll('button,input').forEach(x=>x.disabled=false);}}
  async function refresh(){state=await api('me');renderClasses();return state;}
