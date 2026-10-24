@@ -41,7 +41,7 @@
  #tasks-modal .tasks-extra{font-size:12px;line-height:1.7;margin-top:6px;padding:0;border:0;background:transparent;border-radius:0}.tasks-extra summary{color:#596b8a;cursor:pointer;font-weight:400}.tasks-extra .btn{margin-top:8px;font-size:12px;padding:6px 10px;color:#9b4343}#tasks-list .tasks-extra p{color:#53627b;white-space:pre-wrap}
  .tasks-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 28px;border-top:1px solid #e7ebf4;background:#fff;flex-shrink:0}#tasks-status{font-size:13px;margin:0;overflow-wrap:anywhere}#tasks-pages{display:flex;align-items:center;gap:10px;flex-shrink:0;font-size:13px;color:#64748b}#tasks-pages .btn{padding:8px 12px}
  #tasks-create{max-width:760px;margin:auto}#tasks-form input,#tasks-form select,#tasks-form textarea{font:inherit}#tasks-instructions{min-height:100px}#tasks-form .actions{justify-content:flex-end;padding-top:12px}
- #tasks-modal :focus-visible{outline:3px solid #aebffe;outline-offset:2px}.tasks-empty{text-align:center;padding:36px 12px;color:#71819b}
+ #tasks-modal :focus-visible{outline:3px solid #aebffe;outline-offset:2px}.tasks-empty{text-align:center;padding:36px 12px;color:#71819b}.tasks-table td:last-child .btn{margin:0 4px 6px 0}
  @media(max-width:700px){#tasks-modal .tasks-header{padding:16px;flex-wrap:wrap}#tasks-modal h2{font-size:19px}#tasks-modal .tasks-header .actions{gap:6px}#tasks-modal .tasks-header .btn{padding:9px 12px;font-size:13px}#tasks-body{padding:16px}#tasks-summary{gap:14px;font-size:12px}#tasks-summary strong{font-size:20px}.tasks-filters label{min-width:calc(50% - 12px)}.tasks-filters .tasks-search-label{flex:1}.tasks-table thead{display:none}.tasks-table,.tasks-table tbody{display:block}.tasks-table tr{display:grid;grid-template-columns:1fr 1fr;border:1px solid #e1e7f2;border-radius:12px;padding:12px;margin-bottom:12px;gap:10px}.tasks-table td{display:block;padding:0;border:0}.tasks-table td:first-child,.tasks-table td:last-child{grid-column:1/-1}.tasks-table td[data-label]::before{content:attr(data-label);display:block;font-size:11px;color:#71819b;margin-bottom:4px}.tasks-footer{padding:12px 16px;flex-wrap:wrap}#tasks-pages{width:100%;justify-content:flex-end;font-size:12px}#tasks-page-info{margin-right:auto}}
  `;
  const $=id=>document.getElementById(id);
@@ -126,6 +126,7 @@
    }else{const unavailable=document.createElement('p');unavailable.textContent='任务项目暂不可用，请联系教师。';actions.append(unavailable);}
    if(t.submission_version){const report=document.createElement('button');report.type='button';report.className='btn';report.textContent='查看已提交报告'+(t.reviewed_at?' · 有教师批注':'');report.disabled=studentState().busy;report.onclick=()=>window.MatinTaskReports.student(t);actions.append(report);}
    if(reports&&t.status!=='submitted'){const hint=document.createElement('p');hint.className='student-task-source';hint.textContent='进入学习后点击“提交学习报告”，教师即可查看你的报告。';card.append(hint);}
+   if(window.MatinTaskEdit){const history=document.createElement('button');history.type='button';history.className='btn';history.textContent='修改记录';history.onclick=()=>MatinTaskEdit.history(t);actions.append(history);}
    card.append(actions);container.append(card);
   }
   if(!container.childElementCount){const p=document.createElement('p');p.className='help';p.textContent=pendingOnly?'暂无待完成任务，可取消“只看待完成事项”查看已完成任务。':'暂无符合条件的班级任务。';container.append(p);}
@@ -249,6 +250,7 @@
    const state=document.createElement('td'),status=taskStatus(t);state.dataset.label='任务状态';state.append(el('span',statusNames[status],'tasks-badge '+status));
    const count=el('td',(ctx.reports?(t.submitted_count||0):(t.completed_count||0))+' 人');count.dataset.label=ctx.reports?'已提交报告':'自报完成';
    const actions=document.createElement('td'),detail=el('button','完成明细','btn tasks-detail-button');detail.type='button';detail.onclick=()=>window.MatinTaskReports.teacher(t);actions.append(detail);
+   if(window.MatinTaskEdit){if(t.active){const edit=el('button','编辑 / 延期','btn tasks-detail-button');edit.type='button';edit.onclick=()=>MatinTaskEdit.edit(t,()=>load(ctx));actions.append(edit);}const history=el('button','修改记录','btn tasks-detail-button');history.type='button';history.onclick=()=>MatinTaskEdit.history(t,true);actions.append(history);}
    row.append(name,date,state,count,actions);body.append(row);
   }
   if(visible.length)list.append(table);else list.append(el('p',tasks.length?'没有符合条件的任务，请调整课程、状态或搜索条件。':'尚未布置任务，点击右上方“新建任务”开始。','tasks-empty'));
