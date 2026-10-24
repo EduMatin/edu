@@ -100,6 +100,18 @@
    }
   }
  }
+ function studentChangeNotice(t){
+  const change=t.latest_change;if(!t.available||!change||!Number.isSafeInteger(Number(change.revision))||Number(change.revision)<1)return null;
+  const before=Date.parse(change.previous_due_at),due=Date.parse(t.due_at),dateChanged=Number.isFinite(before)&&Number.isFinite(due)&&before!==due;
+  const earlier=dateChanged&&due<before,notice=document.createElement('div');notice.className='student-task-change'+(earlier?' deadline-earlier':'');
+  const dateText=new Date(due).toLocaleString('zh-CN',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});
+  const parts=[];if(dateChanged)parts.push((earlier?'注意：截止时间已提前至 ':'截止时间已延长至 ')+dateText);
+  if(change.instructions_changed)parts.push('学习要求已更新');
+  const message=document.createElement('span');message.textContent=parts.join('；')||'任务安排已更新';notice.append(message);
+  if(Number.isFinite(Date.parse(change.changed_at)))notice.title='最近修改：'+new Date(change.changed_at).toLocaleString('zh-CN');
+  if(window.MatinTaskEdit){const details=document.createElement('button');details.type='button';details.className='student-task-change-link';details.textContent='查看变更';details.setAttribute('aria-label','查看变更：'+t.title);details.onclick=()=>MatinTaskEdit.history(t);notice.append(details);}
+  return notice;
+ }
  function renderStudent(container,tasks,{pendingOnly=false}={}){
   container.replaceChildren();
   for(const t of tasks){
@@ -116,7 +128,7 @@
    const desc=document.createElement('p');desc.textContent=t.instructions;
    const note=document.createElement('p');note.className='student-task-source';
    note.textContent=t.delivery_mode==='class_snapshot'?'班级学习版本 · 内容以布置时保存的版本为准':'教师公开分享版本';
-   card.append(tag,h,source,status,desc,note);
+   card.append(tag,h,source,status);const change=studentChangeNotice(t);if(change)card.append(change);card.append(desc,note);
    const actions=document.createElement('div');actions.className='student-task-actions';
    if(t.available){
     for(const [label,op] of [[t.status==='pending'?'开始学习':t.status==='completed'?'查看学习记录':'继续学习','open'],...(reports||t.status==='completed'?[]:[['标记已完成','complete']])]){
@@ -126,12 +138,12 @@
    }else{const unavailable=document.createElement('p');unavailable.textContent='任务项目暂不可用，请联系教师。';actions.append(unavailable);}
    if(t.submission_version){const report=document.createElement('button');report.type='button';report.className='btn';report.textContent='查看已提交报告'+(t.reviewed_at?' · 有教师批注':'');report.disabled=studentState().busy;report.onclick=()=>window.MatinTaskReports.student(t);actions.append(report);}
    if(reports&&t.status!=='submitted'){const hint=document.createElement('p');hint.className='student-task-source';hint.textContent='进入学习后点击“提交学习报告”，教师即可查看你的报告。';card.append(hint);}
-   if(window.MatinTaskEdit){const history=document.createElement('button');history.type='button';history.className='btn';history.textContent='修改记录';history.onclick=()=>MatinTaskEdit.history(t);actions.append(history);}
    card.append(actions);container.append(card);
   }
   if(!container.childElementCount){const p=document.createElement('p');p.className='help';p.textContent=pendingOnly?'暂无待完成任务，可取消“只看待完成事项”查看已完成任务。':'暂无符合条件的班级任务。';container.append(p);}
  }
  style.textContent+='.student-task-card{padding:22px;border:1px solid #dce3f1;border-radius:16px;background:#fff;overflow-wrap:anywhere}.student-task-card h3{margin:12px 0 8px;font-size:20px;color:#26365c}.student-task-card p{white-space:pre-wrap;line-height:1.7;margin:10px 0}.student-task-tag{display:inline-block;color:#494bc5;background:#efedff;padding:5px 10px;border-radius:8px;font-size:12px;font-weight:700}.student-task-source{font-size:13px;color:#71819b}.student-task-meta{font-weight:600;font-size:14px;color:#344c76}.student-task-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.student-task-actions :disabled{opacity:.6;cursor:wait}';
+ style.textContent+='.student-task-change{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;margin:12px 0;padding:8px 12px;border-left:3px solid #adb9ee;border-radius:6px;background:#f3f5ff;color:#4c5d86;font-size:13px;line-height:1.7}.student-task-change.deadline-earlier{border-left-color:#ce7b17;background:#fff4df;color:#864b10}.student-task-change.deadline-earlier>span{font-weight:600}.student-task-change-link{appearance:none;border:0;background:transparent;color:inherit;font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:4px 0;min-height:32px;flex-shrink:0}.student-task-change-link:focus-visible{outline:3px solid #aebffe;outline-offset:3px;border-radius:3px}';
  style.textContent+='#tasks-project-state{padding:12px;background:#f3f6ff;border:1px solid #dce3f1;border-radius:12px;line-height:1.7;overflow-wrap:anywhere}#tasks-project-state strong{font-size:14px;color:#293c67}#tasks-project-state p{margin:6px 0 0;font-size:13px}';
  const api=(ctx,op,data={})=>ctx.teacher?window.MatinAccount.api({action:'tasks',op,data:{...data,class_id:ctx.row.id}}):window.MatinStudent.taskApi(op,data);
  const assignedTasks=(ctx,id)=>ctx.tasks.filter(t=>t.class_id===ctx.row.id&&t.project_id===id&&t.active===true);

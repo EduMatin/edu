@@ -35,7 +35,7 @@
    run(c,async()=>{const result=await api(c,'save',c.write.data);if(!valid(c))return;c.dirty=false;c.saved=true;status.textContent=result.unchanged?'内容没有变化，无需保存。':'修改已保存，原任务和学生进度已保留。';if(c.onSaved){try{await c.onSaved();}catch{if(valid(c))status.textContent+=' 列表刷新失败，返回后请刷新任务。';}}},true);
   };
  }
- async function history(c,more=false){const last=c.history.at(-1);const d=await api(c,'history',more&&last?{before_revision:last.revision}:{});if(!valid(c))return;c.task=d.task;c.history=more?[...c.history,...d.history]:d.history;body.replaceChildren();footer.replaceChildren();title.textContent='修改记录 · '+c.task.title;
+ async function history(c,more=false){const last=c.history.at(-1);const d=await api(c,'history',more&&last?{before_revision:last.revision}:{});if(!valid(c))return;c.task=d.task;c.history=more?[...c.history,...d.history]:d.history;body.replaceChildren();footer.replaceChildren();title.textContent=(c.teacher?'修改记录':'任务变更')+' · '+c.task.title;
   body.append(el('p','当前截止：'+time(c.task.due_at)+'\n截止时间与学习要求可以调整，项目学习版本和学生进度保持不变。逾期状态按当前截止时间计算。','te-note'));
   if(!c.history.length)body.append(el('p','尚无修改记录。此处记录启用本功能后的任务修改。'));
   for(const h of c.history){const card=el('article',undefined,'te-history');card.append(el('h3',time(h.changed_at)+' · '+h.actor+' · 任务版本 '+h.revision));
