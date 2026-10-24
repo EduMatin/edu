@@ -12,10 +12,14 @@
  const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const names={pending:'待教师审核',approved:'已加入',rejected:'申请未通过',removed:'已被移出',left:'已退出 / 已撤回'};
  function persist(v){session=v;try{v?sessionStorage.setItem(key,JSON.stringify(v)):sessionStorage.removeItem(key);}catch{}}
- async function auth(path,body,access){
-  const r=await fetch(base+'/auth/v1/'+path,{method:body?'POST':'GET',headers:{apikey:cfg.publishableKey,'Content-Type':'application/json',...(access?{Authorization:'Bearer '+access}:{})},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000)});
+ async function auth(path,body,access,method){
+  const r=await fetch(base+'/auth/v1/'+path,{method:method||(body?'POST':'GET'),headers:{apikey:cfg.publishableKey,'Content-Type':'application/json',...(access?{Authorization:'Bearer '+access}:{})},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000)});
   const data=await r.json().catch(()=>({}));
-  if(!r.ok)throw Error(r.status===429?'请求较多，请稍后再试':path.startsWith('signup')?'注册未完成，请检查邮箱、密码要求或联系教师确认注册服务':r.status===400||r.status===401?'邮箱或密码不正确，或邮箱尚未确认':'登录服务暂不可用，请稍后重试');
+  if(!r.ok){let message=r.status===429?'请求较多，请稍后再试':path.startsWith('signup')?'注册未完成，请检查邮箱、密码要求或联系教师确认注册服务':r.status===400||r.status===401?'邮箱或密码不正确，或邮箱尚未确认':'账号服务暂不可用，请稍后重试';
+   if(r.status!==429&&/^(recover|resend)/.test(path))message='邮件发送未完成，请检查邮箱地址后重试；若持续失败，请联系教师检查邮件服务。';
+   if(method==='PUT')message=data.code==='same_password'?'新密码不能与原密码相同。':data.code==='weak_password'?'新密码不符合要求，请使用更长、更复杂的密码。':r.status===401||r.status===403?'重置会话已失效，请取消并重新发送重置密码邮件。':'密码更新未完成，请检查密码要求或重新发送重置邮件后再试。';
+   const error=Error(message);error.status=r.status;throw error;
+  }
   return data;
  }
  function adopt(d){if(!d.access_token||!d.refresh_token||!d.user?.id)throw Error('登录响应不完整');persist({...d,expires_at:d.expires_at||Date.now()/1000+(d.expires_in||3600)});}
@@ -41,7 +45,7 @@
   <p id="student-class-status" role="status"></p><div id="student-class-list"></div><nav class="student-page-pagination" aria-label="班级分页"><span id="student-class-page"></span><button type="button" class="btn tiny" id="student-class-prev">上一页</button><button type="button" class="btn tiny" id="student-class-next">下一页</button></nav>
   <details id="student-join-panel"><summary>申请加入新班级</summary><p>输入教师提供的入班码，提交后等待教师确认。教师已导入名单的学生，验证名单中的邮箱后刷新即可关联。入班码与 AI 课堂访问码不同。</p><form id="student-join-form"><label>姓名<input id="student-name" maxlength="60" required autocomplete="name"></label><label>学号<input id="student-number" maxlength="60" required></label><label>入班码<input id="student-join-code" minlength="32" maxlength="32" required autocomplete="off" placeholder="向班级教师索取"></label><button class="btn primary" id="student-join" type="submit">申请加入班级</button></form><p id="student-join-status" role="status"></p></details>`;
   document.querySelector('#screen-courses .page-intro').after(panel);
-  const modal=document.createElement('div');modal.id='student-auth-modal';modal.className='modal-layer hidden';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-labelledby','student-auth-title');modal.innerHTML=`<form class="modal" id="student-auth-form"><h2 id="student-auth-title">学生登录 / 注册</h2><p>审核通过后，即可在“我的课程”查看班级授课内容。教师账号仍由管理员授权。</p><div class="field"><label for="student-email">邮箱</label><input id="student-email" type="email" required autocomplete="username"></div><div class="field"><label for="student-password">密码（注册至少8位）</label><input id="student-password" type="password" required autocomplete="current-password"></div><p id="student-auth-status" role="status"></p><div class="modal-footer"><button class="btn" type="button" id="student-auth-close">取消</button><button class="btn" type="submit" name="mode" value="signup">注册学生账号</button><button class="btn primary" type="submit" name="mode" value="login">登录</button></div><p>忘记密码请联系项目管理员重设。注册后若要求确认邮箱，请先完成邮件确认再登录。</p></form>`;document.body.append(modal);
+  const modal=document.createElement('div');modal.id='student-auth-modal';modal.className='modal-layer hidden';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-labelledby','student-auth-title');modal.innerHTML=`<form class="modal" id="student-auth-form"><h2 id="student-auth-title">学生登录 / 注册</h2><p>审核通过后，即可在“我的课程”查看班级授课内容。教师账号仍由管理员授权。</p><div class="field"><label for="student-email">邮箱</label><input id="student-email" type="email" required autocomplete="username"></div><div class="field"><label for="student-password">密码（注册至少8位）</label><input id="student-password" type="password" required autocomplete="current-password"></div><p id="student-auth-status" role="status"></p><div class="modal-footer"><button class="btn" type="button" id="student-auth-close">取消</button><button class="btn" type="submit" name="mode" value="signup">注册学生账号</button><button class="btn primary" type="submit" name="mode" value="login">登录</button></div><p>注册后请先完成邮箱验证再登录。未收到邮件或忘记密码，可使用下方入口。</p></form>`;document.body.append(modal);
   $('student-auth-close').onclick=()=>modal.classList.add('hidden');modal.addEventListener('keydown',e=>{if(e.key==='Escape')modal.classList.add('hidden');});
   $('student-auth-form').onsubmit=async e=>{e.preventDefault();const mode=e.submitter?.value||'login',email=$('student-email').value.trim(),password=$('student-password').value;
    if(mode==='signup'&&password.length<8){$('student-auth-status').textContent='注册密码至少8位';return;}
@@ -50,6 +54,7 @@
     if(d.access_token){adopt(d);location.replace(location.pathname+'#my');location.reload();}else $('student-auth-status').textContent='请检查邮箱并完成确认后登录。如果未收到邮件，请稍后重试或联系管理员。';
    }catch(err){$('student-auth-status').textContent=err.message;}finally{buttons.forEach(b=>b.disabled=false);}
   };
+  window.MatinStudentAccount?.install({auth,api,refresh,showLogin,getUser:()=>session?.user});
   $('student-join-form').onsubmit=async e=>{e.preventDefault();await task(async()=>{const r=await api('join',{code:$('student-join-code').value.trim().toLowerCase(),display_name:$('student-name').value.trim(),student_no:$('student-number').value.trim()});$('student-join-code').value='';joinDirty=false;await refresh();return r.status==='approved'?'你已是此班级成员':'申请已提交，等待教师审核。';});};
   $('student-class-refresh').onclick=()=>task(async()=>{await refresh();hook();return '审核状态已刷新';});
   $('student-join-form').addEventListener('input',()=>joinDirty=true);
@@ -65,6 +70,7 @@
   btn('我的课程','student-my-courses',()=>changeView('courses'));
   btn('我的任务','student-my-tasks',()=>changeView('tasks'));
   btn('我的班级','student-my-classes',openClasses);
+  if(session&&window.MatinStudentAccount)btn('个人资料','student-profile-open',()=>MatinStudentAccount.openProfile());
   if(!session)btn('登录 / 注册','student-login-open',showLogin);
   else btn('退出账号','student-logout',async()=>{if(window.MatinLearningSync?.hasPending()&&!await MatinLearningSync.flush()&&!confirm('学习记录尚未同步云端，本机副本已保留。仍要退出账号吗？'))return;const access=session.access_token;persist(null);document.querySelector('main').classList.add('hidden');try{await fetch(base+'/auth/v1/logout',{method:'POST',headers:{apikey:cfg.publishableKey,Authorization:'Bearer '+access},signal:AbortSignal.timeout(5000)});}catch{}location.replace(location.pathname+'#my');location.reload();});
   updateNavigation();
@@ -111,7 +117,16 @@
   try{
    const params=new URLSearchParams(location.hash.slice(1));
    view=views.includes(params.get('view'))?params.get('view'):'home';
-   if(params.has('access_token')){const access=params.get('access_token'),refreshToken=params.get('refresh_token');history.replaceState(null,'',location.pathname+'#my');const user=await auth('user',null,access);adopt({access_token:access,refresh_token:refreshToken,user,expires_in:3600});}
+   if(params.has('error')){history.replaceState(null,'',location.pathname+'#my');persist(null);window.MatinStudentAccount?.clearRecovery();throw Error('邮件链接无效或已过期，请重新发送验证邮件或重置密码邮件。');}
+   if(params.has('access_token')&&params.get('type')==='recovery'){
+    const access=params.get('access_token'),refreshToken=params.get('refresh_token'),expiresIn=Number(params.get('expires_in')||3600);
+    history.replaceState(null,'',location.pathname+'#my');persist(null);renderBar();
+    if(window.MatinStudentAccount)await MatinStudentAccount.beginRecovery({access_token:access,refresh_token:refreshToken,expires_at:Date.now()/1000+expiresIn});
+    else startupError='请更新账号自助服务文件后重新打开重置邮件。';
+    return;
+   }
+   if(!params.has('access_token')&&window.MatinStudentAccount?.hasRecovery()){persist(null);renderBar();await MatinStudentAccount.beginRecovery();return;}
+   if(params.has('access_token')){const access=params.get('access_token'),refreshToken=params.get('refresh_token');history.replaceState(null,'',location.pathname+'#my');window.MatinStudentAccount?.clearRecovery();const user=await auth('user',null,access);adopt({access_token:access,refresh_token:refreshToken,user,expires_in:Number(params.get('expires_in')||3600)});}
    else session=JSON.parse(sessionStorage.getItem(key)||'null');
    if(session){const user=await auth('user',null,await token());if(user.id!==session.user.id)throw Error('会话不匹配');session.user=user;}
   }catch(e){persist(null);startupError=e.message;}
