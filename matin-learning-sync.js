@@ -70,5 +70,5 @@
  window.addEventListener('online',()=>void retry());
  window.addEventListener('beforeunload',e=>{if(current?.dirty){e.preventDefault();e.returnValue='';}});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)void flush();});
- window.MatinLearningSync={prepare,queue,flush,cancel:()=>{current=previous;previous=null;paint();},accept:()=>{previous=null;},hasPending:()=>!!current?.dirty};
+ window.MatinLearningSync={prepare,queue,flush,cancel:()=>{current=previous;previous=null;paint();},accept:()=>{previous=null;},hasConflict:()=>!!current?.conflict,hasPending:()=>!!current?.dirty};
 })();

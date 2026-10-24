@@ -11,7 +11,7 @@
    <p class="notice">审核通过的学生可在“我的课程”查看班级关联的已发布项目。原有教师主页和项目分享链接仍独立有效。</p>
    <p id="classes-context" class="notice" hidden></p>
    <p id="classes-status" role="status" aria-live="polite"></p>
-   <div class="classes-layout"><section><div class="actions"><input id="classes-search" aria-label="搜索班级" placeholder="搜索专业、年级、班级"><button type="button" class="btn" id="classes-refresh">刷新列表</button><button type="button" class="btn" id="classes-new">新建班级</button></div><p id="classes-count"></p><div id="classes-list"></div></section>
+   <div class="classes-layout"><section><div class="actions"><select id="classes-view" aria-label="班级范围"><option value="active">常用班级</option><option value="archived">已归档</option><option value="all">全部班级</option></select><input id="classes-search" aria-label="搜索班级" placeholder="搜索专业、年级、班级"><button type="button" class="btn" id="classes-refresh">刷新列表</button><button type="button" class="btn" id="classes-new">新建班级</button></div><p id="classes-count"></p><div id="classes-list"></div></section>
    <form id="class-form"><h3 id="class-heading">新建班级</h3>
     <div class="field"><label for="class-name">班级名称（必填）</label><input id="class-name" maxlength="80" required placeholder="例如：光电1班"></div>
     <div class="form-grid"><div class="field"><label for="class-major">专业</label><input id="class-major" maxlength="80" placeholder="例如：光电信息科学与工程"></div><div class="field"><label for="class-grade">年级</label><input id="class-grade" maxlength="40" placeholder="例如：2026级"></div></div>
@@ -20,6 +20,7 @@
     <div class="actions"><button type="submit" class="btn primary" id="class-save">保存班级</button><button type="button" class="btn" id="class-cancel">取消并关闭</button></div>
    </form></div></div>`;
   const style=document.createElement('style');style.textContent=`#classes-modal .classes-panel{width:min(1100px,96vw);max-width:1100px;max-height:90vh;overflow:auto}#classes-modal p{line-height:1.7}#classes-modal .classes-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}#classes-modal .actions{flex-wrap:wrap;gap:8px}#classes-search{min-width:120px;flex:1;padding:10px;border:1px solid #ccd5e7;border-radius:10px}#classes-list{max-height:55vh;overflow:auto}#classes-modal .class-card{padding:16px;margin:10px 0;border:1px solid #dce3f1;border-radius:14px;background:#f8faff;overflow-wrap:anywhere}#classes-modal fieldset{border:1px solid #dce3f1;border-radius:12px;margin:14px 0;padding:12px}#class-courses{max-height:210px;overflow:auto}#class-legacy label,#class-courses label{display:flex;gap:10px;align-items:flex-start;padding:8px}#class-legacy input,#class-courses input{width:auto;flex-shrink:0}#classes-status{min-height:26px;color:#4c539d}#classes-modal h3{margin:4px 0 12px}@media(max-width:760px){#classes-modal .classes-layout{grid-template-columns:1fr}#classes-list{max-height:220px}}`;
+  style.textContent+='#classes-view{font:inherit;color:#42547b;background:#fff;min-height:42px;max-width:100%;padding:10px 12px;border:1px solid #ccd5e7;border-radius:10px}#classes-view:focus-visible{outline:3px solid #b8c8ff;outline-offset:2px}';
   document.head.append(style);document.body.append(root);
   const $=id=>document.getElementById(id);let rows=[],current=null,busy=false,changed=false,loaded=false,loadError='',courseContext=null,formOutlineRevision=0;
   const outline=()=>window.MatinCourseOutline.controller.snapshot();
@@ -45,7 +46,7 @@
   window.MatinAccount.canLeave=()=>{if(busy){alert('班级操作正在处理中，请稍候。');return false;}return oldCanLeave()&&(!changed||confirm('班级资料尚未保存，确定离开？'));};
   window.addEventListener('beforeunload',e=>{if(changed||busy){e.preventDefault();e.returnValue='';}});
   const discard=()=>!changed||confirm('放弃尚未保存的班级修改？');
-  function lock(value){busy=value;root.querySelectorAll('button,input,textarea').forEach(el=>el.disabled=value);$('class-save').disabled=value||!loaded;}
+  function lock(value){busy=value;root.querySelectorAll('button,input,textarea,select').forEach(el=>el.disabled=value);$('class-save').disabled=value||!loaded;}
   function edit(row=null){
    current=row;changed=false;$('class-heading').textContent=row?'编辑班级':'新建班级';
    for(const key of ['name','major','grade','notes'])$('class-'+key).value=row?.[key]||'';
@@ -65,14 +66,14 @@
   }
   function render(){
    renderCourseInfo();
-   const q=$('classes-search').value.trim().toLowerCase();const visible=rows.filter(r=>[r.name,r.major,r.grade].join(' ').toLowerCase().includes(q));
+   const q=$('classes-search').value.trim().toLowerCase();const visible=rows.filter(r=>($('classes-view').value==='all'||!!r.archived_at===($('classes-view').value==='archived'))&&[r.name,r.major,r.grade].join(' ').toLowerCase().includes(q));
    $('classes-count').textContent=`共 ${rows.length} 个班级 · 当前显示 ${visible.length} 个`;
    const list=$('classes-list');list.replaceChildren();
    if(!visible.length){list.textContent=rows.length?'没有匹配的班级。':'尚未创建班级，请填写右侧表单。';return;}
    let layout;try{layout=outline().layout;}catch{}
    const titles=new Map((layout?.groups||[]).map(g=>[g.id,g.name]));
    for(const r of visible){
-    const card=document.createElement('article');card.className='class-card';const h=document.createElement('h3');h.textContent=r.name;
+    const card=document.createElement('article');card.className='class-card';const h=document.createElement('h3');h.textContent=r.name+(r.archived_at?' · 已归档':'');
     const info=document.createElement('p');info.textContent=[r.major||'未填写专业',r.grade||'未填写年级'].join(' · ');
     const courses=document.createElement('p');courses.textContent='授课课程：'+(layout?([...groupLinks(r,layout)].filter(id=>titles.has(id)).map(id=>titles.get(id)).join('、')||'尚未关联'):'课程目录尚未加载');
     const legacy=(r.matin_class_courses||[]).filter(c=>!layout||!projectGroup(c.course_id,layout));if(legacy.length)courses.textContent+='；有 '+legacy.length+' 个旧版项目关联待归类';
@@ -80,12 +81,16 @@
     const actions=document.createElement('div');actions.className='actions';
     const e=document.createElement('button');e.type='button';e.className='btn';e.textContent='编辑';e.onclick=()=>{if(!busy&&discard())edit(r);};
     const d=document.createElement('button');d.type='button';d.className='btn';d.textContent='删除';d.onclick=async()=>{
-     if(busy||!discard()||!confirm(`删除班级“${r.name}”？仅删除班级及课程关联，课程内容会保留。`))return;
+     if(busy||!discard()||!confirm(`删除班级“${r.name}”？仅无成员、无导入名单、无任务的空班级可删除；已有教学记录请使用归档。课程内容会保留。`))return;
      await request(async()=>{await window.MatinAccount.api({action:'class_delete',id:r.id,revision:Number(r.revision)});rows=rows.filter(x=>x.id!==r.id);edit();render();return '班级已删除，课程内容已保留。';});
     };
     const members=document.createElement('button');members.type='button';members.className='btn';members.textContent='学生与入班审核';members.onclick=()=>{if(!busy&&discard())window.MatinEnrollment.open(r);};
     const tasks=document.createElement('button');tasks.type='button';tasks.className='btn';tasks.textContent='任务管理';tasks.onclick=()=>{if(!busy&&discard())window.MatinTasks.open(r);};
-    actions.append(e,d,members,tasks);card.append(h,info,courses,actions);list.append(card);
+    const archive=document.createElement('button');archive.type='button';archive.className='btn';archive.textContent=r.archived_at?'恢复到常用班级':'归档班级';archive.onclick=async()=>{
+     if(busy||!discard()||!confirm((r.archived_at?'恢复班级“':'归档班级“')+r.name+'”？归档仅从常用列表收起，保留成员、任务、进度、报告和批注；现有学生仍可学习和提交。'))return;
+     await request(async()=>{const result=await MatinAccount.api({action:'class_archive',id:r.id,revision:Number(r.revision),archived:!r.archived_at});rows=rows.map(x=>x.id===r.id?{...x,...result.class}:x);edit();render();return r.archived_at?'班级已恢复。':'班级已归档，可切换“已归档”继续查看或恢复。';});
+    };
+    actions.append(e,members,tasks,archive,d);card.append(h,info,courses,actions);list.append(card);
    }
   }
   async function request(fn){lock(true);$('classes-status').textContent='正在处理…';try{$('classes-status').textContent=await fn();}catch(e){$('classes-status').textContent=e.message;}finally{lock(false);}}
@@ -103,7 +108,7 @@
   root.addEventListener('keydown',e=>{
    if(e.key==='Escape')$('classes-close').click();
    if(e.key==='Tab'){
-    const items=[...root.querySelectorAll('button:not(:disabled),input:not(:disabled),textarea:not(:disabled)')].filter(x=>x.getClientRects().length);
+    const items=[...root.querySelectorAll('button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled)')].filter(x=>x.getClientRects().length);
     if(!items.length){e.preventDefault();return;}
     if(e.shiftKey&&document.activeElement===items[0]){e.preventDefault();items.at(-1).focus();}
     else if(!e.shiftKey&&document.activeElement===items.at(-1)){e.preventDefault();items[0].focus();}
@@ -112,7 +117,7 @@
   $('classes-new').onclick=()=>{if(discard()){edit();$('class-name').focus();}};
   $('class-cancel').onclick=close;
   $('classes-refresh').onclick=()=>{if(discard())refresh();};
-  $('classes-search').oninput=render;
+  $('classes-search').oninput=render;$('classes-view').onchange=render;
   $('class-form').oninput=()=>{changed=true;};
   $('class-form').onsubmit=async e=>{
    e.preventDefault();if(busy||!loaded)return;

@@ -3,9 +3,9 @@
  'use strict';
  const $=id=>document.getElementById(id);
  const root=document.createElement('section');root.id='student-tasks-page';root.hidden=true;root.setAttribute('aria-label','我的任务');
- root.innerHTML=`<div class="student-section-heading"><div><h2>任务与报告</h2><p>按班级、课程和学习状态查找任务，提交后可查看报告与教师批注。</p></div><button type="button" class="btn" id="student-tasks-refresh">刷新任务</button></div>
+ root.innerHTML=`<div class="student-section-heading"><div><h2>任务与报告</h2><p>按班级、课程和学习状态查找任务，提交后查看批阅结果，需修改的任务可继续原进度并重交。</p></div><button type="button" class="btn" id="student-tasks-refresh">刷新任务</button></div>
  <div id="student-tasks-summary" class="student-task-counts"></div>
- <details id="student-task-filters-panel" open><summary>筛选与搜索</summary><div class="student-page-filters"><label>班级<select id="student-tasks-class"><option value="">全部班级</option></select></label><label>课程<select id="student-tasks-course"><option value="">全部课程</option></select></label><label>学习状态<select id="student-tasks-state"><option value="pending">待完成</option><option value="not_started">未开始</option><option value="started">进行中</option><option value="overdue">逾期未交</option><option value="submitted">已提交 / 已完成</option><option value="all">全部任务</option></select></label><label>排序<select id="student-tasks-sort"><option value="due">截止时间从早到晚</option><option value="recent">最近学习</option></select></label><label class="student-task-search">搜索任务<input type="search" id="student-tasks-search" placeholder="任务、项目、课程或班级…"></label></div></details>
+ <details id="student-task-filters-panel" open><summary>筛选与搜索</summary><div class="student-page-filters"><label>班级<select id="student-tasks-class"><option value="">全部班级</option></select></label><label>课程<select id="student-tasks-course"><option value="">全部课程</option></select></label><label>学习状态<select id="student-tasks-state"><option value="pending">待完成</option><option value="not_started">未开始</option><option value="started">进行中</option><option value="overdue">逾期未交</option><option value="submitted">已提交 / 已完成</option><option value="revision_required">需修改重交</option><option value="pending_review">待教师批阅</option><option value="passed">已通过</option><option value="all">全部任务</option></select></label><label>排序<select id="student-tasks-sort"><option value="due">截止时间从早到晚</option><option value="recent">最近学习</option></select></label><label class="student-task-search">搜索任务<input type="search" id="student-tasks-search" placeholder="任务、项目、课程或班级…"></label></div></details>
  <p id="student-tasks-status" role="status"></p><div id="student-tasks-list"></div><nav class="student-page-pagination" aria-label="我的任务分页"><span id="student-tasks-page-info"></span><button type="button" class="btn tiny" id="student-tasks-prev">上一页</button><button type="button" class="btn tiny" id="student-tasks-next">下一页</button></nav>
  <p class="student-page-note">时间按当前设备时区显示；逾期仍可补交。提交报告不等同于教师评分。</p>`;
  document.querySelector('#screen-courses .page-intro').after(root);
@@ -29,7 +29,7 @@
  `;document.head.append(style);
  let visible=false,owner='',scope=null,page=1,pages=1,filters={classId:'',course:'',state:'pending',sort:'due',query:''};
  const done=(t,s)=>t.status==='submitted'||s.reports_version!==1&&t.status==='completed';
- const overdue=(t,s)=>!done(t,s)&&Date.parse(t.due_at)<=Date.now();
+ const overdue=(t,s)=>!done(t,s)&&Date.parse(t.effective_due_at||t.due_at)<=Date.now();
  function options(id,items,label,value){const select=$(id);select.replaceChildren(new Option(label,''));for(const [key,name] of items)select.add(new Option(name,key));select.value=items.has(value)?value:'';return select.value;}
  function render(){
   if(!visible||!window.MatinStudent?.signedIn||!MatinStudent.mine()){root.hidden=true;return;}root.hidden=false;
@@ -53,9 +53,9 @@
   root.querySelector('#student-task-filters-panel summary').textContent='筛选与搜索 · '+$('student-tasks-state').selectedOptions[0].textContent+(filters.classId||filters.course||filters.query?' · 已筛选':'');
   const term=filters.query.trim().toLocaleLowerCase();
   const rows=base.filter(t=>{
-   const matches={all:true,pending:!done(t,s),not_started:!done(t,s)&&!overdue(t,s)&&t.status==='pending',started:!done(t,s)&&!overdue(t,s)&&['started','completed'].includes(t.status),overdue:overdue(t,s),submitted:done(t,s)};
+   const matches={all:true,pending:!done(t,s),not_started:!done(t,s)&&!overdue(t,s)&&t.status==='pending',started:!done(t,s)&&!overdue(t,s)&&['started','completed'].includes(t.status),overdue:overdue(t,s),submitted:done(t,s),revision_required:t.review_status==='revision_required',pending_review:t.review_status==='pending_review',passed:t.review_status==='passed'};
    return matches[filters.state]&&[t.title,t.project_title,t.course_name,t.class_name].some(x=>String(x||'').toLocaleLowerCase().includes(term));
-  }).sort((a,b)=>filters.sort==='recent'?(Date.parse(b.updated_at)||0)-(Date.parse(a.updated_at)||0)||String(a.id).localeCompare(String(b.id)):(Date.parse(a.due_at)||Infinity)-(Date.parse(b.due_at)||Infinity)||String(a.id).localeCompare(String(b.id)));
+  }).sort((a,b)=>filters.sort==='recent'?(Date.parse(b.updated_at)||0)-(Date.parse(a.updated_at)||0)||String(a.id).localeCompare(String(b.id)):(Date.parse(a.effective_due_at||a.due_at)||Infinity)-(Date.parse(b.effective_due_at||b.due_at)||Infinity)||String(a.id).localeCompare(String(b.id)));
   pages=Math.max(1,Math.ceil(rows.length/8));page=Math.max(1,Math.min(page,pages));
   $('student-tasks-status').textContent=s.error|| (s.loading?'正在同步任务…':s.busy?'正在打开任务…':s.loadedAt?'已同步云端任务 · 筛选结果 '+rows.length+' 项':'正在读取任务…');$('student-tasks-status').classList.toggle('task-error',!!s.error);
   $('student-tasks-refresh').disabled=!!s.busy||!!s.loading;

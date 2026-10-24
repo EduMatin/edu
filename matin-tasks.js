@@ -65,7 +65,7 @@
    const d=await MatinStudent.taskApi('list');
    if(request!==studentRequest||owner!==studentOwner())return studentState();
    if(!Array.isArray(d.tasks))throw Error('任务数据不完整，请刷新重试。');
-   student={owner,tasks:d.tasks,catalog_version:d.catalog_version||0,reports_version:d.reports_version||0,error:'',message:'已同步云端任务',busy:false,loadedAt:Date.now()};
+   student={owner,tasks:d.tasks,catalog_version:d.catalog_version||0,reports_version:d.reports_version||0,workflow_version:d.workflow_version||0,error:'',message:'已同步云端任务',busy:false,loadedAt:Date.now()};
   }catch(e){
    if(request!==studentRequest||owner!==studentOwner())return studentState();
    student={owner,tasks:[],catalog_version:0,error:'任务读取失败：'+(e.message||'请刷新重试'),busy:false};
@@ -82,7 +82,8 @@
   try{
    const d=await MatinStudent.taskApi(operation,{task_id:task.id});
    if(request!==studentRequest||owner!==studentOwner())return;
-   student.tasks=student.tasks.map(t=>t.id===task.id?{...t,updated_at:new Date().toISOString(),status:operation==='complete'?'completed':['completed','submitted'].includes(t.status)?t.status:'started'}:t);
+   task={...task,...d.latest_review};
+   student.tasks=student.tasks.map(t=>t.id===task.id?{...t,...d.latest_review,updated_at:new Date().toISOString(),status:operation==='complete'?'completed':task.status==='revision_required'?'revision_required':['completed','submitted'].includes(task.status)?task.status:'started'}:t);
    student.message=operation==='complete'?'已标记完成，课程页与任务列表已同步。':'已打开任务，学习对话保存在当前浏览器。';
    if(operation==='open'&&navigationRevision===window.MatinStudent?.navigationRevision){
     const opened=await window.MatinTaskOpen(d.project,task);
@@ -124,15 +125,15 @@
    const source=document.createElement('p');source.className='student-task-source';
    source.textContent=[t.course_name,t.project_title?'项目：'+t.project_title:'',t.class_name].filter(Boolean).join(' · ');
    const status=document.createElement('p');status.className='student-task-meta';
-   const late=Date.parse(t.due_at)<Date.now();
-   status.textContent=new Date(t.due_at).toLocaleString('zh-CN')+' 截止 · '+(t.status==='submitted'?'已提交'+(t.late_submission?' · 逾期补交':''):t.status==='completed'?(reports?(late?'逾期未交 · ':'')+'旧版自报完成 · 尚未提交报告':'已完成（自报）'):(late?'已逾期 · ':'')+(t.status==='started'?'进行中':'待开始'));
+   const late=Date.parse(t.effective_due_at||t.due_at)<Date.now();
+   status.textContent=new Date(t.effective_due_at||t.due_at).toLocaleString('zh-CN')+(t.review_status==='revision_required'?' 重交截止 · ':' 截止 · ')+(t.review_status==='revision_required'?'需修改重交'+(late?' · 已逾期':''):t.review_status==='passed'?'已通过':t.status==='submitted'?(t.review_status?'待教师批阅':'已提交')+(t.late_submission?' · 逾期补交':''):t.status==='completed'?(reports?(late?'逾期未交 · ':'')+'旧版自报完成 · 尚未提交报告':'已完成（自报）'):(late?'已逾期 · ':'')+(t.status==='started'?'进行中':'待开始'));
    const desc=document.createElement('p');desc.textContent=t.instructions;
    const note=document.createElement('p');note.className='student-task-source';
    note.textContent=t.delivery_mode==='class_snapshot'?'班级学习版本 · 内容以布置时保存的版本为准':'教师公开分享版本';
-   card.append(tag,h,source,status);const change=studentChangeNotice(t);if(change)card.append(change);if(compact){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='学习要求与任务说明';details.append(summary,desc,note);card.append(details);}else card.append(desc,note);
+   card.append(tag,h,source,status);if(t.review_status==='revision_required')card.append(Object.assign(document.createElement('p'),{className:'student-task-change deadline-earlier',textContent:'修改要求：'+t.revision_reason}));const change=studentChangeNotice(t);if(change)card.append(change);if(compact){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='学习要求与任务说明';details.append(summary,desc,note);card.append(details);}else card.append(desc,note);
    const actions=document.createElement('div');actions.className='student-task-actions';
    if(t.available){
-    for(const [label,op] of [[t.status==='pending'?'开始学习':t.status==='completed'?'查看学习记录':'继续学习','open'],...(reports||t.status==='completed'?[]:[['标记已完成','complete']])]){
+    for(const [label,op] of [[t.review_status==='revision_required'?'修改并重交':t.review_status==='passed'?'查看学习记录':t.status==='pending'?'开始学习':t.status==='completed'?'查看学习记录':'继续学习','open'],...(reports||t.status==='completed'?[]:[['标记已完成','complete']])]){
      const b=document.createElement('button');b.type='button';b.className='btn'+(op==='open'?' primary':'');b.textContent=label;b.dataset.taskAction=op;
      b.disabled=studentState().busy;b.onclick=()=>studentAction(t,op);actions.append(b);
     }
@@ -262,6 +263,7 @@
    const date=el('td',new Date(t.due_at).toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}));date.dataset.label='截止时间';
    const state=document.createElement('td'),status=taskStatus(t);state.dataset.label='任务状态';state.append(el('span',statusNames[status],'tasks-badge '+status));
    const count=el('td',(ctx.reports?(t.submitted_count||0):(t.completed_count||0))+' 人');count.dataset.label=ctx.reports?'已提交报告':'自报完成';
+   if(t.review_counts)count.append(el('p','待批阅 '+t.review_counts.pending_review+' · 需修改 '+t.review_counts.revision_required+' · 已通过 '+t.review_counts.passed));
    const actions=document.createElement('td'),detail=el('button','完成明细','btn tasks-detail-button');detail.type='button';detail.onclick=()=>window.MatinTaskReports.teacher(t);actions.append(detail);
    if(window.MatinTaskEdit){if(t.active){const edit=el('button','编辑 / 延期','btn tasks-detail-button');edit.type='button';edit.onclick=()=>MatinTaskEdit.edit(t,()=>load(ctx));actions.append(edit);}const history=el('button','修改记录','btn tasks-detail-button');history.type='button';history.onclick=()=>MatinTaskEdit.history(t,true);actions.append(history);}
    row.append(name,date,state,count,actions);body.append(row);
@@ -335,6 +337,7 @@
    return success;
   },true);
  };
+ window.addEventListener('matin-report-reviewed',()=>{const ctx=active;if(ctx?.teacher&&!ctx.busy)run(ctx,()=>load(ctx));});
  window.MatinTasks={loadStudent,studentState,renderStudent,studentChangeNotice,openStudent(id){const task=studentState().tasks.find(t=>t.id===id);if(task)return studentAction(task,'open');},open(row=null,options={}){
   if(!row&&window.MatinStudentPages&&window.MatinStudent?.navigate)return MatinStudent.navigate('tasks');
   if(studentState().busy)return;

@@ -6,11 +6,11 @@
  root.innerHTML=`<div class="home-heading"><div><h2>学习待办</h2><p id="home-scope"></p></div><div class="home-heading-actions"><button type="button" class="btn primary" id="home-courses">进入我的课程 →</button><button type="button" class="btn" id="home-refresh">刷新待办</button></div></div>
  <p id="home-status" role="status"></p><div id="home-counts" class="home-counts"></div>
  <div class="home-columns"><section class="home-panel" aria-labelledby="home-todo-title"><div class="home-panel-title"><h3 id="home-todo-title">待完成任务</h3><button type="button" class="home-link" id="home-all-tasks">全部任务与报告 ↗</button></div>
- <div class="home-filters" role="group" aria-label="待办筛选"><button type="button" data-home-filter="soon">未来 7 天</button><button type="button" data-home-filter="overdue">逾期待交</button><button type="button" data-home-filter="all">全部待办</button></div>
+ <div class="home-filters" role="group" aria-label="待办筛选"><button type="button" data-home-filter="soon">未来 7 天</button><button type="button" data-home-filter="overdue">逾期待交</button><button type="button" data-home-filter="revision">需修改重交</button><button type="button" data-home-filter="all">全部待办</button></div>
  <label class="home-search"><span class="home-sr-only">搜索首页待办</span><input id="home-search" type="search" placeholder="搜索任务、课程或班级…"></label>
  <div id="home-todos"></div><nav class="home-pagination" aria-label="首页待办分页"><span id="home-page-info"></span><button type="button" class="btn tiny" id="home-prev">上一页</button><button type="button" class="btn tiny" id="home-next">下一页</button></nav>
- <p class="home-footnote">时间按当前设备时区显示；逾期仍可补交，提交报告后移出待办。</p></section>
- <div class="home-aside"><section class="home-panel" aria-labelledby="home-continue-title"><h3 id="home-continue-title" tabindex="-1">继续学习</h3><p class="home-footnote">最近打开且尚未提交的班级任务</p><div id="home-continue"></div></section>
+ <p class="home-footnote">时间按当前设备时区显示；逾期仍可补交，提交报告后移出待办，教师退回修改后重新列入。</p></section>
+ <div class="home-aside"><section class="home-panel" aria-labelledby="home-continue-title"><h3 id="home-continue-title" tabindex="-1">继续学习</h3><p class="home-footnote">最近学习或需修改重交的班级任务</p><div id="home-continue"></div></section>
  <section class="home-panel" aria-labelledby="home-review-title"><div class="home-panel-title"><h3 id="home-review-title" tabindex="-1">入班审核</h3><button type="button" class="home-link" id="home-classes">管理班级 ↗</button></div><div id="home-reviews"></div><button type="button" class="home-link" id="home-more-reviews" hidden>展开全部班级</button></section></div></div>`;
  document.querySelector('#screen-courses .page-intro').after(root);
  const style=document.createElement('style');style.textContent=`
@@ -34,10 +34,10 @@
   const nextOwner=MatinStudent.userId,nextScope=MatinStudent.classId||'';
   if(owner!==nextOwner||scope!==nextScope){owner=nextOwner;scope=nextScope;filter='soon';page=1;query='';moreReviews=false;initialized=false;$('home-search').value='';}
   const s=MatinTasks.studentState(),membership=MatinStudent.membershipState(),m=membership.owner&&membership.owner!==nextOwner?{}:membership,now=Date.now(),all=s.tasks.filter(t=>!scope||t.class_id===scope),todo=all.filter(t=>pending(t,s));
-  const overdue=todo.filter(t=>Date.parse(t.due_at)<=now),soon=todo.filter(t=>Date.parse(t.due_at)>now&&Date.parse(t.due_at)<=now+week);
-  const resumes=todo.filter(t=>t.available&&['started','completed'].includes(t.status)).sort((a,b)=>(Date.parse(b.updated_at)||0)-(Date.parse(a.updated_at)||0)||String(a.id).localeCompare(String(b.id)));
+  const overdue=todo.filter(t=>Date.parse(t.effective_due_at||t.due_at)<=now),soon=todo.filter(t=>Date.parse(t.effective_due_at||t.due_at)>now&&Date.parse(t.effective_due_at||t.due_at)<=now+week);
+  const resumes=todo.filter(t=>t.available&&['started','completed','revision_required'].includes(t.status)).sort((a,b)=>(Date.parse(b.updated_at)||0)-(Date.parse(a.updated_at)||0)||String(a.id).localeCompare(String(b.id)));
   const classes=m.data?.classes||[],waiting=classes.filter(c=>c.status==='pending').length,taskUnknown=!!s.error||!!s.loading||!s.loadedAt;
-  if(!initialized&&!taskUnknown){filter=overdue.length?'overdue':soon.length?'soon':'all';initialized=true;}
+  if(!initialized&&!taskUnknown){filter=todo.some(t=>t.review_status==='revision_required')?'revision':overdue.length?'overdue':soon.length?'soon':'all';initialized=true;}
   const selected=classes.find(c=>c.id===scope);$('home-scope').textContent=(scope?(selected?.name||'当前班级'):'全部已加入班级')+' · 未来 7 天截止与逾期待交任务';
   const errors=[s.error,m.error].filter(Boolean);$('home-status').classList.toggle('home-error',!!errors.length);
   $('home-status').textContent=errors.join('；')||(refreshing||s.loading||m.loading?'正在同步最新安排…':s.loadedAt?'已同步 · '+new Date(s.loadedAt).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})+'，可点击“刷新待办”获取最新安排。':'正在加载待办…');
@@ -45,7 +45,7 @@
   const count=(value,unknown)=>unknown?'—':String(value);
   $('home-counts').innerHTML=[['soon','未来 7 天截止',count(soon.length,taskUnknown),'按最近截止时间排列',''],['overdue','逾期待交',count(overdue.length,taskUnknown),'提交报告后移出待办',overdue.length?'home-late':''],['continue','可继续学习',count(resumes.length,taskUnknown),'直接恢复原学习进度',''],['review','入班待审核',count(waiting,!!m.error||m.loading||!m.data),'下方查看审核结果','']].map(([id,title,n,help,cls])=>'<button type="button" data-home-summary="'+id+'" class="'+cls+'"><span>'+title+'</span><strong>'+n+'</strong><small>'+help+'</small></button>').join('');
   root.querySelectorAll('[data-home-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.homeFilter===filter)));
-  const term=query.trim().toLocaleLowerCase(),rows=(filter==='soon'?soon:filter==='overdue'?overdue:todo).filter(t=>[t.title,t.course_name,t.class_name,t.project_title].some(x=>String(x||'').toLocaleLowerCase().includes(term))).sort((a,b)=>(Date.parse(a.due_at)||Infinity)-(Date.parse(b.due_at)||Infinity)||String(a.id).localeCompare(String(b.id)));
+  const term=query.trim().toLocaleLowerCase(),rows=(filter==='soon'?soon:filter==='overdue'?overdue:filter==='revision'?todo.filter(t=>t.review_status==='revision_required'):todo).filter(t=>[t.title,t.course_name,t.class_name,t.project_title].some(x=>String(x||'').toLocaleLowerCase().includes(term))).sort((a,b)=>(Date.parse(a.effective_due_at||a.due_at)||Infinity)-(Date.parse(b.effective_due_at||b.due_at)||Infinity)||String(a.id).localeCompare(String(b.id)));
   const pages=Math.max(1,Math.ceil(rows.length/pageSize));page=Math.min(page,pages);
   const focused=document.activeElement,focusKey=root.contains(focused)?focused.dataset.homeTask:null,focusRegion=focused.closest('#home-todos,#home-continue');
   const list=$('home-todos');list.replaceChildren();
@@ -53,17 +53,18 @@
   else if(!rows.length)empty(list,term?'没有匹配的任务，试试其他关键词。':filter==='soon'?'未来 7 天暂无到期任务，可查看“全部待办”。':filter==='overdue'?'暂无逾期待交任务。':todo.length?'暂无匹配任务。':'当前没有待完成任务。已提交报告可在“全部任务与报告”查看。');
   else for(const t of rows.slice((page-1)*pageSize,page*pageSize)){
    const row=document.createElement('article');row.className='home-task-row';row.dataset.homeTaskId=t.id;
-   const late=Date.parse(t.due_at)<=now;
-   row.innerHTML='<div class="home-task-copy"><h4>'+esc(t.title)+'</h4><p class="home-source">'+esc([t.course_name,t.class_name].filter(Boolean).join(' · '))+'</p><p class="home-due'+(late?' overdue':'')+'">'+esc(date(t.due_at))+' 截止 · '+(late?'逾期未交':t.status==='pending'?'待开始':'待提交报告')+'</p></div>';
+   const late=Date.parse(t.effective_due_at||t.due_at)<=now;
+   row.innerHTML='<div class="home-task-copy"><h4>'+esc(t.title)+'</h4><p class="home-source">'+esc([t.course_name,t.class_name].filter(Boolean).join(' · '))+'</p><p class="home-due'+(late?' overdue':'')+'">'+esc(date(t.effective_due_at||t.due_at))+' 截止 · '+(t.review_status==='revision_required'?'需修改重交'+(late?' · 已逾期':''):late?'逾期未交':t.status==='pending'?'待开始':'待提交报告')+'</p></div>';
+   if(t.review_status==='revision_required'){const reason=document.createElement('p');reason.className='home-due';reason.textContent='教师要求：'+t.revision_reason;row.firstChild.append(reason);}
    const notice=MatinTasks.studentChangeNotice(t);if(notice)row.firstChild.append(notice);
-   if(t.available){const b=document.createElement('button');b.type='button';b.className='btn tiny';b.textContent=t.status==='pending'?'开始学习':'继续学习';b.dataset.homeTask=t.id;b.disabled=!!s.busy;b.onclick=()=>openTask(t.id);row.append(b);}
+   if(t.available){const b=document.createElement('button');b.type='button';b.className='btn tiny';b.textContent=t.review_status==='revision_required'?'修改并重交':t.status==='pending'?'开始学习':'继续学习';b.dataset.homeTask=t.id;b.disabled=!!s.busy;b.onclick=()=>openTask(t.id);row.append(b);}
    else{const note=document.createElement('p');note.className='home-footnote';note.textContent='项目暂不可用，请联系教师';row.append(note);}list.append(row);
   }
   $('home-page-info').textContent=taskUnknown?'任务状态待同步':'共 '+rows.length+' 项 · '+page+' / '+pages+' 页';$('home-prev').disabled=taskUnknown||page===1;$('home-next').disabled=taskUnknown||page===pages;
   const continuation=$('home-continue');continuation.replaceChildren();
   if(taskUnknown)empty(continuation,s.error?'任务读取失败，暂不能确认可继续的任务。':'正在读取学习进度…');
   else if(!resumes.length)empty(continuation,'还没有进行中的班级任务。开始学习后，可从这里继续。');
-  else for(const t of resumes.slice(0,3)){const card=document.createElement('article');card.className='home-resume';card.innerHTML='<h4>'+esc(t.title)+'</h4><p class="home-source">'+esc([t.course_name,t.class_name].filter(Boolean).join(' · '))+'</p><p class="home-due'+(Date.parse(t.due_at)<=now?' overdue':'')+'">'+esc(date(t.due_at))+' 截止'+(Date.parse(t.due_at)<=now?' · 逾期未交':'')+'</p>';const b=document.createElement('button');b.type='button';b.className='btn primary tiny';b.textContent='继续学习';b.dataset.homeTask=t.id;b.disabled=!!s.busy;b.onclick=()=>openTask(t.id);card.append(b);continuation.append(card);}
+  else for(const t of resumes.slice(0,3)){const card=document.createElement('article');card.className='home-resume';card.innerHTML='<h4>'+esc(t.title)+'</h4><p class="home-source">'+esc([t.course_name,t.class_name].filter(Boolean).join(' · '))+'</p><p class="home-due'+(Date.parse(t.effective_due_at||t.due_at)<=now?' overdue':'')+'">'+esc(date(t.effective_due_at||t.due_at))+' 截止'+(Date.parse(t.effective_due_at||t.due_at)<=now?' · 逾期未交':'')+'</p>';const b=document.createElement('button');b.type='button';b.className='btn primary tiny';b.textContent='继续学习';b.dataset.homeTask=t.id;b.disabled=!!s.busy;b.onclick=()=>openTask(t.id);card.append(b);continuation.append(card);}
   if(resumes.length>3){const hint=document.createElement('p');hint.className='home-footnote';hint.textContent='显示最近 3 项，其余可在全部待办中查看。';continuation.append(hint);}
   const reviews=$('home-reviews');reviews.replaceChildren();const priority={rejected:0,removed:1,pending:2,approved:3,left:4};const ordered=classes.slice().sort((a,b)=>(priority[a.status]??5)-(priority[b.status]??5));
   $('home-more-reviews').hidden=ordered.length<=3||!!m.error||m.loading;
