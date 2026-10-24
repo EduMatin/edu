@@ -73,7 +73,7 @@
   changed();return studentState();
  }
  async function studentAction(task,operation){
-  const owner=studentOwner(),state=studentState();
+  const owner=studentOwner(),state=studentState(),navigationRevision=window.MatinStudent?.navigationRevision;
   if(!owner||state.busy||!state.tasks.some(t=>t.id===task.id&&t.available))return;
   if(operation==='complete'&&!confirm('确认已完成此任务的学习要求？这将记录为学生自报完成。'))return;
   const request=++studentRequest,ctx=active&&!active.teacher?active:null;
@@ -84,7 +84,7 @@
    if(request!==studentRequest||owner!==studentOwner())return;
    student.tasks=student.tasks.map(t=>t.id===task.id?{...t,updated_at:new Date().toISOString(),status:operation==='complete'?'completed':['completed','submitted'].includes(t.status)?t.status:'started'}:t);
    student.message=operation==='complete'?'已标记完成，课程页与任务列表已同步。':'已打开任务，学习对话保存在当前浏览器。';
-   if(operation==='open'){
+   if(operation==='open'&&navigationRevision===window.MatinStudent?.navigationRevision){
     const opened=await window.MatinTaskOpen(d.project,task);
     if(opened!==false&&active===ctx)close(true,false);
    }
@@ -113,12 +113,12 @@
   if(window.MatinTaskEdit){const details=document.createElement('button');details.type='button';details.className='student-task-change-link';details.textContent='查看变更';details.setAttribute('aria-label','查看变更：'+t.title);details.onclick=()=>MatinTaskEdit.history(t);notice.append(details);}
   return notice;
  }
- function renderStudent(container,tasks,{pendingOnly=false}={}){
+ function renderStudent(container,tasks,{pendingOnly=false,compact=false}={}){
   container.replaceChildren();
   for(const t of tasks){
    const reports=studentState().reports_version===1;
    if(pendingOnly&&(t.status==='submitted'||!reports&&t.status==='completed'))continue;
-   const card=document.createElement('article');card.className='student-task-card';card.dataset.taskId=t.id;
+   const card=document.createElement('article');card.className='student-task-card'+(compact?' student-task-compact':'');card.dataset.taskId=t.id;
    const tag=document.createElement('span');tag.className='student-task-tag';tag.textContent='班级任务';
    const h=document.createElement('h3');h.textContent=t.title;
    const source=document.createElement('p');source.className='student-task-source';
@@ -129,7 +129,7 @@
    const desc=document.createElement('p');desc.textContent=t.instructions;
    const note=document.createElement('p');note.className='student-task-source';
    note.textContent=t.delivery_mode==='class_snapshot'?'班级学习版本 · 内容以布置时保存的版本为准':'教师公开分享版本';
-   card.append(tag,h,source,status);const change=studentChangeNotice(t);if(change)card.append(change);card.append(desc,note);
+   card.append(tag,h,source,status);const change=studentChangeNotice(t);if(change)card.append(change);if(compact){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='学习要求与任务说明';details.append(summary,desc,note);card.append(details);}else card.append(desc,note);
    const actions=document.createElement('div');actions.className='student-task-actions';
    if(t.available){
     for(const [label,op] of [[t.status==='pending'?'开始学习':t.status==='completed'?'查看学习记录':'继续学习','open'],...(reports||t.status==='completed'?[]:[['标记已完成','complete']])]){
@@ -138,7 +138,7 @@
     }
    }else{const unavailable=document.createElement('p');unavailable.textContent='任务项目暂不可用，请联系教师。';actions.append(unavailable);}
    if(t.submission_version){const report=document.createElement('button');report.type='button';report.className='btn';report.textContent='查看已提交报告'+(t.reviewed_at?' · 有教师批注':'');report.disabled=studentState().busy;report.onclick=()=>window.MatinTaskReports.student(t);actions.append(report);}
-   if(reports&&t.status!=='submitted'){const hint=document.createElement('p');hint.className='student-task-source';hint.textContent='进入学习后点击“提交学习报告”，教师即可查看你的报告。';card.append(hint);}
+   if(!compact&&reports&&t.status!=='submitted'){const hint=document.createElement('p');hint.className='student-task-source';hint.textContent='进入学习后点击“提交学习报告”，教师即可查看你的报告。';card.append(hint);}
    card.append(actions);container.append(card);
   }
   if(!container.childElementCount){const p=document.createElement('p');p.className='help';p.textContent=pendingOnly?'暂无待完成任务，可取消“只看待完成事项”查看已完成任务。':'暂无符合条件的班级任务。';container.append(p);}
@@ -336,6 +336,7 @@
   },true);
  };
  window.MatinTasks={loadStudent,studentState,renderStudent,studentChangeNotice,openStudent(id){const task=studentState().tasks.find(t=>t.id===id);if(task)return studentAction(task,'open');},open(row=null,options={}){
+  if(!row&&window.MatinStudentPages&&window.MatinStudent?.navigate)return MatinStudent.navigate('tasks');
   if(studentState().busy)return;
   if(active?.busy&&active.writing)return;
   if(active?.teacher&&!discardCreate(active))return;

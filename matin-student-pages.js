@@ -1,0 +1,75 @@
+/* Full-page student tasks. Uses the same authorized task store and report actions as courses. */
+(() => {
+ 'use strict';
+ const $=id=>document.getElementById(id);
+ const root=document.createElement('section');root.id='student-tasks-page';root.hidden=true;root.setAttribute('aria-label','我的任务');
+ root.innerHTML=`<div class="student-section-heading"><div><h2>任务与报告</h2><p>按班级、课程和学习状态查找任务，提交后可查看报告与教师批注。</p></div><button type="button" class="btn" id="student-tasks-refresh">刷新任务</button></div>
+ <div id="student-tasks-summary" class="student-task-counts"></div>
+ <details id="student-task-filters-panel" open><summary>筛选与搜索</summary><div class="student-page-filters"><label>班级<select id="student-tasks-class"><option value="">全部班级</option></select></label><label>课程<select id="student-tasks-course"><option value="">全部课程</option></select></label><label>学习状态<select id="student-tasks-state"><option value="pending">待完成</option><option value="not_started">未开始</option><option value="started">进行中</option><option value="overdue">逾期未交</option><option value="submitted">已提交 / 已完成</option><option value="all">全部任务</option></select></label><label>排序<select id="student-tasks-sort"><option value="due">截止时间从早到晚</option><option value="recent">最近学习</option></select></label><label class="student-task-search">搜索任务<input type="search" id="student-tasks-search" placeholder="任务、项目、课程或班级…"></label></div></details>
+ <p id="student-tasks-status" role="status"></p><div id="student-tasks-list"></div><nav class="student-page-pagination" aria-label="我的任务分页"><span id="student-tasks-page-info"></span><button type="button" class="btn tiny" id="student-tasks-prev">上一页</button><button type="button" class="btn tiny" id="student-tasks-next">下一页</button></nav>
+ <p class="student-page-note">时间按当前设备时区显示；逾期仍可补交。提交报告不等同于教师评分。</p>`;
+ document.querySelector('#screen-courses .page-intro').after(root);
+ const narrow=matchMedia('(max-width:700px)');$('student-task-filters-panel').open=!narrow.matches;narrow.addEventListener('change',()=>{$('student-task-filters-panel').open=!narrow.matches;});
+ const style=document.createElement('style');style.textContent=`
+ #student-tasks-page[hidden]{display:none!important}#student-task-filters-panel{margin-top:18px}#student-task-filters-panel>summary{display:none;padding:13px 15px;background:white;border:1px solid #dce3f1;border-radius:10px;color:#5266ac;cursor:pointer;font-size:13px}#student-tasks-page,#student-classes{min-width:0}
+ #student-classes{margin:0;padding:0;background:transparent;border:0;border-radius:0}
+ .student-section-heading{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:18px}.student-section-heading h2{font-size:21px;margin:0 0 6px}.student-section-heading p{font-size:13px;color:#71809b;margin:0;line-height:1.7}
+ .student-page-actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px}.student-page-filters{display:flex;flex-wrap:wrap;gap:12px;padding:18px;background:#fff;border:1px solid #e0e6f3;border-radius:14px;margin:18px 0}.student-page-filters label{display:grid;gap:7px;flex:1;min-width:140px;font-size:13px;color:#53647d}.student-page-filters .student-task-search{flex:2;min-width:220px}
+ .student-page-filters input,.student-page-filters select{width:100%;min-width:0;border:1px solid #dce3f1;border-radius:9px;background:white;color:#26365c;font:inherit;padding:11px}
+ .student-task-counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.student-task-counts button{border:1px solid #e0e6f3;background:white;border-radius:14px;padding:16px 20px;text-align:left;color:#64748b;font:inherit;cursor:pointer}.student-task-counts strong{display:block;font-size:26px;color:#293d6d;margin-top:6px}.student-task-counts [aria-pressed=true]{border-color:#7586e4;background:#f0f3ff}.student-task-counts [data-task-filter=overdue] strong{color:#a95121}
+ #student-tasks-status{color:#536b91;font-size:13px;line-height:1.7;min-height:22px}#student-tasks-status.task-error{color:#944b13}
+ #student-tasks-list{display:grid;gap:12px}.student-task-compact{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:24px;padding:19px 22px!important}.student-task-compact>.student-task-tag{display:none}.student-task-compact h3{font-size:17px;margin:0 0 4px}.student-task-compact>h3,.student-task-compact>p,.student-task-compact>.student-task-change,.student-task-compact>details{grid-column:1}.student-task-compact p{margin:4px 0;font-size:13px}.student-task-compact .student-task-actions{grid-column:2;grid-row:1/6;align-self:center;margin:0;max-width:270px;justify-content:flex-end}.student-task-compact .btn{font-size:13px;padding:9px 13px}
+ .student-task-compact details{margin-top:8px;color:#65748d;font-size:13px;line-height:1.7}.student-task-compact summary{cursor:pointer;color:#5266ac}.student-task-compact details p{white-space:pre-wrap;overflow-wrap:anywhere}
+ .student-page-pagination{display:flex;align-items:center;gap:10px;margin:20px 0;color:#71809b;font-size:13px}.student-page-pagination span{margin-right:auto}.student-page-empty{padding:32px 20px;background:#fff;border:1px dashed #dce3f1;border-radius:14px;line-height:1.8;color:#71809b;grid-column:1/-1}.student-page-note{font-size:12px;color:#71809b;line-height:1.7}
+ #student-class-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;scroll-margin-top:90px}#student-class-list article{padding:22px;margin:0;background:white;border-radius:16px;min-width:0}#student-class-list h3{font-size:20px;margin:12px 0 8px}#student-class-list p{font-size:13px;color:#71809b;line-height:1.7;margin:8px 0}#student-class-list .student-page-actions{margin-top:18px}
+ .student-class-badge{display:inline-block;font-size:12px;padding:5px 9px;border-radius:7px;background:#f1f3f7;color:#68748b}.student-class-badge.approved{color:#247657;background:#e8f7ef}.student-class-badge.pending{color:#92631c;background:#fff4dd}#student-class-list .student-leave{color:#7b879b;background:transparent;border-color:transparent;margin-left:auto}
+ #student-join-panel{margin-top:26px;padding:20px 24px;background:#fff;border:1px solid #dce3f1;border-radius:16px}#student-join-panel summary{font-weight:700;cursor:pointer;color:#344d89}#student-join-panel p{color:#71809b;font-size:13px;line-height:1.8}#student-join-form{margin-top:18px}#student-join-form label{font-size:13px;color:#53647d}#student-join-form button{grid-column:1/-1;justify-self:end}#student-join-status{color:#805221!important}
+ #student-tasks-page :disabled,#student-classes :disabled{opacity:.55;cursor:not-allowed}#student-tasks-page :focus-visible,#student-classes :focus-visible{outline:3px solid #aebffe;outline-offset:3px}
+ @media(max-width:700px){#student-task-filters-panel>summary{display:list-item;list-style-position:inside}#student-tasks-page .student-section-heading{justify-content:flex-end;margin-bottom:12px}#student-tasks-page .student-section-heading>div{display:none}.student-task-counts{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.student-task-counts button{padding:11px 8px;font-size:11px}.student-task-counts strong{font-size:23px}.student-task-compact{display:block;padding:17px!important}.student-task-compact .student-task-actions{margin-top:14px;justify-content:flex-start;max-width:none}.student-page-filters{padding:14px;gap:10px}.student-page-filters label{min-width:calc(50% - 10px)}.student-page-filters .student-task-search{min-width:100%}#student-class-list{grid-template-columns:1fr}#student-class-list article{padding:18px}#student-join-panel{padding:18px}.student-page-pagination{flex-wrap:wrap}.student-section-heading h2{font-size:19px}.student-section-heading .btn{padding:9px 12px;font-size:13px}}
+ `;document.head.append(style);
+ let visible=false,owner='',scope=null,page=1,pages=1,filters={classId:'',course:'',state:'pending',sort:'due',query:''};
+ const done=(t,s)=>t.status==='submitted'||s.reports_version!==1&&t.status==='completed';
+ const overdue=(t,s)=>!done(t,s)&&Date.parse(t.due_at)<=Date.now();
+ function options(id,items,label,value){const select=$(id);select.replaceChildren(new Option(label,''));for(const [key,name] of items)select.add(new Option(name,key));select.value=items.has(value)?value:'';return select.value;}
+ function render(){
+  if(!visible||!window.MatinStudent?.signedIn||!MatinStudent.mine()){root.hidden=true;return;}root.hidden=false;
+  const s=MatinTasks.studentState(),focused=document.activeElement,list=$('student-tasks-list');
+  const focusedMetric=root.contains(focused)?focused.dataset.taskFilter:null,focusedTask=list.contains(focused)?focused.closest('[data-task-id]')?.dataset.taskId:null;
+  const focusedAction=focusedTask?focused.dataset.taskAction||focused.textContent:null,expanded=new Set([...list.querySelectorAll('article')].filter(c=>c.querySelector('details')?.open).map(c=>c.dataset.taskId));
+  if(owner!==MatinStudent.userId||scope!==MatinStudent.classId){owner=MatinStudent.userId;scope=MatinStudent.classId;filters={classId:scope||'',course:'',state:'pending',sort:'due',query:''};page=1;$('student-tasks-search').value='';}
+  const all=s.tasks.filter(t=>t.active!==false),classes=new Map(all.map(t=>[t.class_id,t.class_name||'班级']));
+  for(const c of MatinStudent.membershipState().data?.classes||[])if(c.status==='approved')classes.set(c.id,c.name);
+  // Preserve a class scope during transient loading; never silently broaden it after removal.
+  if(filters.classId&&!classes.has(filters.classId))classes.set(filters.classId,'所选班级（暂无可用任务）');
+  filters.classId=options('student-tasks-class',classes,'全部班级',filters.classId);
+  const byClass=all.filter(t=>!filters.classId||t.class_id===filters.classId);
+  const courses=new Map(byClass.filter(t=>t.course_id).map(t=>[t.course_id,t.course_name||'未归类课程']));
+  if(filters.course&&!courses.has(filters.course))courses.set(filters.course,'所选课程（暂无任务）');
+  filters.course=options('student-tasks-course',courses,'全部课程',filters.course);
+  const base=byClass.filter(t=>!filters.course||t.course_id===filters.course),unknown=s.loading||!!s.error||!s.loadedAt;
+  const metrics=[['pending','待完成',base.filter(t=>!done(t,s)).length],['overdue','逾期未交',base.filter(t=>overdue(t,s)).length],['started','进行中',base.filter(t=>!done(t,s)&&!overdue(t,s)&&['started','completed'].includes(t.status)).length],['submitted',s.reports_version===1?'已提交报告':'已完成',base.filter(t=>done(t,s)).length]];
+  $('student-tasks-summary').replaceChildren(...metrics.map(([id,label,n])=>{const b=document.createElement('button');b.type='button';b.dataset.taskFilter=id;b.setAttribute('aria-pressed',String(filters.state===id));const title=document.createElement('span'),count=document.createElement('strong');title.textContent=label;count.textContent=unknown?'—':n;b.append(title,count);b.onclick=()=>{filters.state=id;page=1;render();};return b;}));
+  $('student-tasks-state').querySelector('[value="submitted"]').textContent=s.reports_version===1?'已提交报告':'已完成（自报）';$('student-tasks-state').value=filters.state;$('student-tasks-sort').value=filters.sort;
+  root.querySelector('#student-task-filters-panel summary').textContent='筛选与搜索 · '+$('student-tasks-state').selectedOptions[0].textContent+(filters.classId||filters.course||filters.query?' · 已筛选':'');
+  const term=filters.query.trim().toLocaleLowerCase();
+  const rows=base.filter(t=>{
+   const matches={all:true,pending:!done(t,s),not_started:!done(t,s)&&!overdue(t,s)&&t.status==='pending',started:!done(t,s)&&!overdue(t,s)&&['started','completed'].includes(t.status),overdue:overdue(t,s),submitted:done(t,s)};
+   return matches[filters.state]&&[t.title,t.project_title,t.course_name,t.class_name].some(x=>String(x||'').toLocaleLowerCase().includes(term));
+  }).sort((a,b)=>filters.sort==='recent'?(Date.parse(b.updated_at)||0)-(Date.parse(a.updated_at)||0)||String(a.id).localeCompare(String(b.id)):(Date.parse(a.due_at)||Infinity)-(Date.parse(b.due_at)||Infinity)||String(a.id).localeCompare(String(b.id)));
+  pages=Math.max(1,Math.ceil(rows.length/8));page=Math.max(1,Math.min(page,pages));
+  $('student-tasks-status').textContent=s.error|| (s.loading?'正在同步任务…':s.busy?'正在打开任务…':s.loadedAt?'已同步云端任务 · 筛选结果 '+rows.length+' 项':'正在读取任务…');$('student-tasks-status').classList.toggle('task-error',!!s.error);
+  $('student-tasks-refresh').disabled=!!s.busy||!!s.loading;
+  if(unknown||!rows.length){list.innerHTML='<p class="student-page-empty"></p>';list.firstChild.textContent=s.error?'任务读取失败，请点击“刷新任务”重试。':unknown?'正在读取任务…':all.length?'没有符合条件的任务，可调整筛选或查看“全部任务”。':'尚无班级任务。请确认已通过入班审核，并等待教师布置任务。';}
+  else {MatinTasks.renderStudent(list,rows.slice((page-1)*8,page*8),{compact:true});for(const card of list.querySelectorAll('article'))if(expanded.has(card.dataset.taskId))card.querySelector('details').open=true;}
+  const focusTarget=focusedMetric?[...$('student-tasks-summary').querySelectorAll('button')].find(b=>b.dataset.taskFilter===focusedMetric):focusedTask?[...list.querySelectorAll('article')].find(c=>c.dataset.taskId===focusedTask):null;
+  const focusButton=focusedTask?[...focusTarget?.querySelectorAll('button,summary')||[]].find(b=>(b.dataset.taskAction||b.textContent)===focusedAction):focusTarget;
+  if(focusButton&&!focusButton.disabled&&focusButton.getClientRects().length)focusButton.focus({preventScroll:true});
+  $('student-tasks-page-info').textContent=unknown?'—':'共 '+rows.length+' 项 · '+page+' / '+pages+' 页';$('student-tasks-prev').disabled=unknown||page<=1;$('student-tasks-next').disabled=unknown||page>=pages;
+ }
+ for(const [id,key,event] of [['student-tasks-class','classId','change'],['student-tasks-course','course','change'],['student-tasks-state','state','change'],['student-tasks-sort','sort','change'],['student-tasks-search','query','input']])$(id).addEventListener(event,e=>{filters[key]=e.target.value;if(key==='classId')filters.course='';page=1;render();});
+ for(const [id,step] of [['student-tasks-prev',-1],['student-tasks-next',1]])$(id).onclick=()=>{page+=step;render();$('student-tasks-list').scrollIntoView({block:'start'});};
+ $('student-tasks-refresh').onclick=()=>MatinTasks.loadStudent();
+ window.addEventListener('matin-student-tasks-changed',render);window.addEventListener('matin-student-membership-changed',render);
+ setInterval(()=>{if(visible&&!document.hidden&&!$('screen-courses').classList.contains('hidden'))render();},60000);
+ window.MatinStudentPages={setView(value){visible=value;root.hidden=!value;if(value)render();else $('student-tasks-list').replaceChildren();}};
+})();

@@ -49,6 +49,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 <script src="./matin-task-edit.js"></script>
 <script src="./matin-learning-sync.js"></script>
 <script src="./matin-student-home.js"></script>
+<script src="./matin-student-pages.js"></script>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -141,20 +142,22 @@ function renderGroupLibrary(){
  $('course-grid').innerHTML=list.map(g=>{const own=tasks.filter(t=>t.course_id===g.id),pending=own.filter(t=>t.status!=='submitted'&&(window.MatinTasks?.studentState().reports_version===1||t.status!=='completed')).length;return '<article class="course-card"><div class="course-cover"><div class="cover-top"><span class="cover-tag">课程</span></div><strong>'+esc(g.name)+'</strong></div><div class="course-body"><p class="course-desc">'+(myCatalog()?own.length+' 个班级任务 · '+pending+' 个待完成<br>'+g.project_ids.length+' 个公开分享项目':g.project_ids.length+' 个已发布实训项目')+'</p><div class="course-foot"><button type="button" class="btn primary tiny" data-open-group="'+esc(g.id)+'">进入课程 ↗</button></div></div></article>';}).join('')||'<div class="empty">暂无可显示的课程。请清空搜索，或等待教师布置任务、分享项目后同步最新课程。</div>';
 }
 
-function renderLibrary(){const mine=myCatalog();if(mine)mergeTaskGroups();const root=homeMode&&!selectedGroup,home=mine&&root&&MatinStudent.view!=='courses';
+function renderLibrary(){const mine=myCatalog();if(mine)mergeTaskGroups();const root=homeMode&&!selectedGroup,view=mine?MatinStudent.view:'courses',home=mine&&root&&view==='home',coursesView=!mine||view==='courses';
  window.MatinStudentHome?.setView(home);
- document.querySelector('#screen-courses .layout').classList.toggle('hidden',home);
- $('catalog-status').classList.toggle('hidden',home);
+ window.MatinStudentPages?.setView(mine&&view==='tasks');
+ $('student-classes')?.classList.toggle('hidden',!mine||view!=='classes');
+ document.querySelector('#screen-courses .layout').classList.toggle('hidden',!coursesView);
+ $('catalog-status').classList.toggle('hidden',!coursesView);
  document.querySelector('#screen-courses .hero').classList.toggle('hidden',mine);
- if(mine){document.querySelector('.page-intro h1').textContent=home?'学习首页':'我的课程';const className=MatinStudent.membershipState().data?.classes.find(c=>c.id===MatinStudent.classId)?.name;document.querySelector('.page-intro p').textContent=home?'查看待办，接着上次的进度学习。':className?'当前班级：'+className+' · 选择课程，查看班级任务与学习项目。':'按课程查看班级任务与学习项目，选择一门课程开始学习。';}
+ if(mine){document.querySelector('.page-intro h1').textContent=({home:'学习首页',courses:'我的课程',tasks:'我的任务',classes:'我的班级'})[view];const className=MatinStudent.membershipState().data?.classes.find(c=>c.id===MatinStudent.classId)?.name;document.querySelector('.page-intro p').textContent=home?'查看待办，接着上次的进度学习。':view==='tasks'?'集中管理学习任务，继续学习、提交报告并查看反馈。':view==='classes'?'查看已加入的班级和申请结果，按班级进入课程与任务。':className?'当前班级：'+className+' · 选择课程，查看班级任务与学习项目。':'按课程查看班级任务与学习项目，选择一门课程开始学习。';}
  if(linkedPublicGroup!==selectedGroup||!mine||root){linkedPublic.open=false;linkedPublicGroup=selectedGroup;}
  linkedPublic.hidden=true;$('course-linked-public-grid').replaceChildren();$('course-grid').hidden=false;
  taskSection.hidden=!mine||root;projectHeading.hidden=!mine||root;
  const taskState=mine?MatinTasks.studentState():null;
- taskWarning.hidden=!mine||home||catalogLoading||taskState.loading||(!taskState.error&&taskState.catalog_version===1);
+ taskWarning.hidden=!mine||!coursesView||catalogLoading||taskState.loading||(!taskState.error&&taskState.catalog_version===1);
  taskWarning.textContent=mine?(taskState.error||'班级任务目录尚未升级，请联系教师运行本次 SQL；现有任务仍可从“我的任务”打开。'):'';
  groupBack.classList.toggle('hidden',!homeMode||root);groupBack.textContent=mine?'← 返回我的课程':'← 返回课程列表';document.querySelector('.subjects').hidden=root||mine;document.querySelector('.layout').style.gridTemplateColumns=root||mine?'1fr':'';
-$('course-search').placeholder=mine?(root?'搜索课程或任务…':'搜索任务、项目或班级…'):root?'搜索课程名称…':'搜索学科、项目或技能…';$('course-search').setAttribute('aria-label',mine?'搜索课程与任务':root?'搜索课程':'搜索项目');$('back-courses').textContent=mine?(home?'← 返回学习首页':root?'← 返回我的课程':'← 返回课程任务'):homeMode?'← 返回项目列表':'← 返回项目';
+$('course-search').placeholder=mine?(root?'搜索课程或任务…':'搜索任务、项目或班级…'):root?'搜索课程名称…':'搜索学科、项目或技能…';$('course-search').setAttribute('aria-label',mine?'搜索课程与任务':root?'搜索课程':'搜索项目');$('back-courses').textContent=mine?(view==='tasks'?'← 返回我的任务':view==='classes'?'← 返回我的班级':home?'← 返回学习首页':root?'← 返回我的课程':'← 返回课程任务'):homeMode?'← 返回项目列表':'← 返回项目';
 if(root){renderGroupLibrary();return;}let all=subjects();if(!all.includes(category))category='全部';$('subject-total').textContent=(all.length-1)+' 类';$('subject-list').innerHTML=all.map(s=>`<button type="button" class="subject-item ${s===category?'active':''}" data-subject="${esc(s)}"><span>${s==='全部'?'▦ ': '◇ '}${esc(s)}</span><span class="subject-count">${visibleProjects().filter(c=>s==='全部'||c.category===s).length}</span></button>`).join('');
 const term=search.toLocaleLowerCase();const list=visibleProjects().filter(c=>(category==='全部'||c.category===category)&&(!term||[c.title,c.category,c.desc,c.objective].some(x=>x.toLocaleLowerCase().includes(term))));$('course-title').textContent=homeMode?(courseGroups.find(g=>g.id===selectedGroup)?.name||'实训项目'):(category==='全部'?'实训项目':category);$('course-subtitle').textContent=`共 ${list.length} 个已发布项目 · 选择项目开始学习`;
 const linkedIds=new Set(mine?classTasks().filter(t=>t.course_id===selectedGroup).map(t=>t.project_id):[]),standalone=list.filter(p=>!linkedIds.has(p.id)),linked=list.filter(p=>linkedIds.has(p.id));
@@ -193,7 +196,7 @@ function showCourses(){stopRequests();if(active)rememberProgress();active=null;a
 window.MatinTaskOpen=(p,task)=>{const c=normalize(p);if(!c||!task?.id)throw Error('任务项目内容无效');if(active)rememberProgress();return startLearning(c,false,task);};
 function startCourse(id,restart=false){const c=courses.find(x=>x.id===id);if(c)return startLearning(c,restart,null);}
 let openingLearning=false;
-async function startLearning(c,restart=false,task=null){if(openingLearning)return false;openingLearning=true;$('screen-runtime').inert=true;try{
+async function startLearning(c,restart=false,task=null){if(openingLearning)return false;openingLearning=true;const navigationRevision=window.MatinStudent?.navigationRevision;$('screen-runtime').inert=true;try{
  const key=learningKey(c.id)+(task?':task:'+encodeURIComponent(task.id):'');let saved=readLearning(c,key);
  // One-time compatibility with records written before task-specific storage existed.
  // Only a previously started task and an exactly matching snapshot can reuse that record.
@@ -201,6 +204,7 @@ async function startLearning(c,restart=false,task=null){if(openingLearning)retur
  if(active){stopRequests();rememberProgress();}
  let oldRaw=null;try{oldRaw=localStorage.getItem(key);}catch{}
  const cloud=await MatinLearningSync.prepare({key,projectId:c.id,taskId:task?.id,local:saved.record||null,reload:()=>{stopRequests();active=null;return startLearning(c,false,task);}});
+ if(navigationRevision!==window.MatinStudent?.navigationRevision){MatinLearningSync.cancel();return false;}
  if(cloud.record){saved=validateLearning(c,cloud.record);try{localStorage.setItem(key,JSON.stringify(cloud.record));}catch{}}
  if((restart||saved.error)&&!confirm((saved.error?saved.error+'。':'')+'重新开始将替换本次学习的旧对话、阶段评价和进度；如需保留，请先导出报告。确认重新开始吗？')){try{if(oldRaw)localStorage.setItem(key,oldRaw);else localStorage.removeItem(key);}catch{}MatinLearningSync.cancel();if(active)renderRuntime();return false;}
  MatinLearningSync.accept();
