@@ -21,13 +21,14 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .modal-layer{position:fixed;inset:0;background:#0e1c39a8;display:grid;place-items:center;padding:16px;z-index:30}.modal{width:100%;max-width:520px;background:white;border:1px solid #e7eaf2;border-radius:22px;padding:24px;box-shadow:0 30px 90px #101a3355;max-height:95vh;overflow:auto}.modal h2{font-size:20px;margin:0 0 8px}.modal p{color:#7a8aa5;font-size:12px;line-height:1.7}.field{display:flex;flex-direction:column;gap:6px;margin:14px 0}.field label{font-size:12px;font-weight:750;color:#596a8b}.field input,.field select{padding:12px;border:1px solid #dce3f1;border-radius:10px;background:#fff;color:#283960;min-width:0;width:100%}.modal-footer{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:22px}.toast{position:fixed;bottom:25px;right:25px;background:#18284d;color:#fff;padding:13px 20px;box-shadow:0 12px 25px #18284d40;max-width:min(460px,90vw);border-radius:12px;z-index:40;line-height:1.6}.help{font-size:12px;line-height:1.75;color:#8191ac}.student-foot{max-width:1380px;margin:0 auto 35px;padding:0 24px;color:#90a0b7;font-size:11px}
 @media(max-width:950px){.course-grid{grid-template-columns:1fr}.layout{grid-template-columns:200px 1fr}.runtime-layout{grid-template-columns:1fr}.runtime-left{position:static;max-height:none}.chat-shell{height:640px}}
 @media(max-width:650px){.header{padding:11px 14px;height:auto;flex-wrap:wrap}.brand-icon{width:38px;height:38px}.brand strong{font-size:19px}.brand-sub{font-size:9px}.header-note{display:none}.container{padding:20px 12px 55px}.page-intro h1{font-size:26px}.hero{padding:27px 23px;min-height:192px}.hero h2{font-size:25px}.hero-art{display:none}.layout{display:flex;flex-direction:column;gap:18px;margin-top:18px}.subjects{width:100%;position:static;padding:12px}.sidebar-title{padding:3px 8px 8px}.subject-list{flex-direction:row;overflow-x:auto;padding-bottom:4px}.subject-item{min-width:max-content;gap:9px}.aside-info{display:none}.course-grid{grid-template-columns:1fr}.runtime-header{flex-wrap:wrap}.runtime-left{padding:15px}.chat-shell{min-height:490px;height:70vh}.chat-feed{padding:14px}.msg{max-width:94%}.chat-top{padding:13px}.chat-form{padding:12px}.student-foot{padding:0 13px}}
+.page-intro>div{min-width:0;flex:1}@media(max-width:650px){.page-intro>.eyebrow{display:none}.page-intro{margin-bottom:18px}.page-intro h1{font-size:27px}#screen-courses>.layout{margin-top:22px}}
 </style>
 </head>
 <body>
 <header class="header"><a href="./index.html" class="brand"><div class="brand-icon">M</div><div><strong>Matin <small>AI Studio</small></strong><div class="brand-sub">学生学习中心 · STUDENT CAMPUS</div></div></a><div class="header-right"><span class="header-note">发现学科 · 探索实训 · AI 引导</span><button class="btn" type="button" id="settings-open">✦ AI 模型设置</button></div></header>
 <main class="container">
 <section id="screen-courses">
- <div class="page-intro"><div><span class="eyebrow">MATIN · LEARNING CAMPUS</span><h1>探索你的学习空间</h1><p>先选择课程，再进入老师发布的实训项目。</p></div><span class="eyebrow" style="margin-top:15px">STUDENT EDITION · V7</span></div>
+ <div class="page-intro"><div><span class="eyebrow">MATIN · LEARNING CAMPUS</span><h1 tabindex="-1">探索你的学习空间</h1><p>先选择课程，再进入老师发布的实训项目。</p></div><span class="eyebrow" style="margin-top:15px">STUDENT EDITION · V7</span></div>
  <div class="hero"><div class="hero-copy"><span class="hero-badge">✦ LEARN BY DOING</span><h2>让每一次提问，<br>都成为成长的新起点。</h2><p>与课程里的工程师、导师和评审专家对话，在真实的问题情境中训练专业思维。</p></div><div class="hero-art" aria-hidden="true">✧</div></div>
  <div id="catalog-status" class="status-line hidden"></div>
  <div class="layout"><aside class="subjects"><div class="sidebar-title">学科分类 <small id="subject-total"></small></div><div class="subject-list" id="subject-list"></div><div class="aside-info">课程由教师发布，学生可选择课程并参与学习，但不能在这里编辑剧本。</div></aside><section class="course-area"><div class="courses-header"><div><h2 id="course-title">全部实训课程</h2><p id="course-subtitle">挑选一门课程开始学习</p></div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button type="button" class="btn" id="refresh-courses" title="拉取老师刚发布的最新课程">↻ 同步最新课程</button><label class="search">⌕ <input id="course-search" type="search" aria-label="搜索课程" placeholder="搜索学科、课程或技能……" /></label></div></div><div class="course-grid" id="course-grid"></div></section></div>
@@ -73,6 +74,7 @@ const cloudUrl=String(window.MATIN_CLOUD?.supabaseUrl||'').trim().replace(/\/+$/
 if(cloudUrl){
 if(window.MatinStudent?.mine()){
  homeMode=true;courses=[];courseGroups=[];
+ renderLibrary();
  try{
   if(!MatinStudent.signedIn){$('catalog-status').textContent='请点击“登录 / 注册”，申请加入班级；教师审核通过后，这里显示我的课程。';}
   else{const owner=MatinStudent.userId,classId=MatinStudent.classId;
@@ -93,7 +95,7 @@ try{
 const params=new URLSearchParams(location.hash.slice(1));
 const isHome=params.has('teacher');homeMode=isHome;
 const token=params.get(isHome?'teacher':'course')||'';
-if(!/^[a-f0-9]{64}$/.test(token)){courses=[];$('catalog-status').textContent='请使用教师分享的课程链接进入。这里不展示公开课程列表。';$('catalog-status').className='status-line';renderLibrary();return;}
+if(!/^[a-f0-9]{64}$/.test(token)){courses=[];$('catalog-status').textContent='请使用教师分享的课程链接进入。这里不展示公开课程列表。';$('catalog-status').className='status-line';catalogLoading=false;renderLibrary();return;}
 const resp=await fetch(cloudUrl+'/functions/v1/matin-courses',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:isHome?'teacher_home':'student',token}),cache:'no-store',signal:AbortSignal.timeout(20000)});
 const data=await resp.json();if(!resp.ok||!data.ok||!Array.isArray(data.projects))throw Error(data.error||'课程加载失败');courses=data.projects.map(normalize).filter(Boolean);
 if(isHome){const validIds=new Set(courses.map(p=>p.id)),assigned=new Set();
@@ -105,9 +107,9 @@ $('catalog-status').textContent=isHome?'教师课程主页 · 选择课程后查
  document.querySelector('.page-intro h1').textContent=isHome?'教师课程主页':'探索你的学习空间';
  document.querySelector('.brand').href='./index.html'+location.hash;$('catalog-status').className='status-line';
 }catch(e){courses=[];$('catalog-status').textContent='无法打开课程：'+e.message+'。请联系教师取得有效链接。';$('catalog-status').className='status-line warning';}
-renderLibrary();return;}
+catalogLoading=false;renderLibrary();return;}
 try{const resp=await fetch('./catalog.json',{cache:'no-store'});if(!resp.ok)throw Error('HTTP '+resp.status);const file=await resp.json();if(file.format!=='matin-studio-catalog'||!Array.isArray(file.projects)||file.projects.length>100)throw Error('课程文件格式错误');courses=file.projects.filter(p=>p&&p.published!==false).map(normalize).filter(Boolean);$('catalog-status').textContent='当前为离线课程库模式；启用 Supabase 后教师可一键发布，无需再上传 catalog.json。';$('catalog-status').className='status-line';}
-catch(e){courses=demoCatalog.map(normalize).filter(Boolean);$('catalog-status').textContent='当前显示内置体验课程。尚未配置云端或有效的 catalog.json（'+e.message+'）。';$('catalog-status').className='status-line warning';}renderLibrary();}
+catch(e){courses=demoCatalog.map(normalize).filter(Boolean);$('catalog-status').textContent='当前显示内置体验课程。尚未配置云端或有效的 catalog.json（'+e.message+'）。';$('catalog-status').className='status-line warning';}catalogLoading=false;renderLibrary();}
 const visibleProjects=()=>homeMode?courses.filter(p=>courseGroups.find(g=>g.id===selectedGroup)?.project_ids.includes(p.id)):courses;
 const subjects=()=>['全部',...new Set(visibleProjects().map(c=>c.category))];
 const myCatalog=()=>!!(homeMode&&window.MatinStudent?.mine()&&MatinStudent.signedIn);
@@ -116,7 +118,7 @@ function mergeTaskGroups(){
  const groups=new Map(publishedGroups.map(g=>[g.id,{...g,project_ids:[...g.project_ids]}]));
  for(const t of classTasks())if(t.course_id&&t.course_name&&!groups.has(t.course_id))groups.set(t.course_id,{id:t.course_id,name:t.course_name,project_ids:[]});
  courseGroups=[...groups.values()];
- if(selectedGroup&&!groups.has(selectedGroup))selectedGroup=null;
+ if(selectedGroup&&!groups.has(selectedGroup)&&!catalogLoading)selectedGroup=null;
 }
 const taskSection=document.createElement('section');taskSection.id='course-task-section';taskSection.hidden=true;
 taskSection.innerHTML='<h3>班级学习任务</h3><p class="help">与“我的任务”同步，含已提交任务。学习后提交报告供教师查看；逾期仍可补交。旧版自报完成不等于提交报告。</p><p id="course-task-status" role="status"></p><div id="course-task-list"></div>';
@@ -132,24 +134,27 @@ window.addEventListener('matin-student-tasks-changed',()=>{if(myCatalog()&&!cata
 const groupBack=document.createElement('button');groupBack.type='button';groupBack.id='back-course-groups';groupBack.className='btn';groupBack.textContent='← 返回课程列表';$('course-title').before(groupBack);
 groupBack.onclick=()=>{selectedGroup=null;category='全部';search='';$('course-search').value='';renderLibrary();};
 function renderGroupLibrary(){
+ if(catalogLoading){$('course-title').textContent='课程目录';$('course-subtitle').textContent='正在同步课程与班级任务…';$('course-grid').innerHTML='<p class="empty" role="status">正在读取课程…</p>';return;}
  const term=search.trim().toLocaleLowerCase(),tasks=classTasks();
  const list=courseGroups.filter(g=>g.name.toLocaleLowerCase().includes(term)||tasks.some(t=>t.course_id===g.id&&[t.title,t.project_title,t.class_name].some(x=>String(x||'').toLocaleLowerCase().includes(term))));
  $('course-title').textContent='全部课程';$('course-subtitle').textContent='共 '+list.length+' 个课程目录 · '+(myCatalog()?'进入课程查看班级任务与学习项目':'进入课程查看已发布项目');
  $('course-grid').innerHTML=list.map(g=>{const own=tasks.filter(t=>t.course_id===g.id),pending=own.filter(t=>t.status!=='submitted'&&(window.MatinTasks?.studentState().reports_version===1||t.status!=='completed')).length;return '<article class="course-card"><div class="course-cover"><div class="cover-top"><span class="cover-tag">课程</span></div><strong>'+esc(g.name)+'</strong></div><div class="course-body"><p class="course-desc">'+(myCatalog()?own.length+' 个班级任务 · '+pending+' 个待完成<br>'+g.project_ids.length+' 个公开分享项目':g.project_ids.length+' 个已发布实训项目')+'</p><div class="course-foot"><button type="button" class="btn primary tiny" data-open-group="'+esc(g.id)+'">进入课程 ↗</button></div></div></article>';}).join('')||'<div class="empty">暂无可显示的课程。请清空搜索，或等待教师布置任务、分享项目后同步最新课程。</div>';
 }
 
-function renderLibrary(){const mine=myCatalog();if(mine)mergeTaskGroups();const root=homeMode&&!selectedGroup;
- window.MatinStudentHome?.setView(mine&&root);
+function renderLibrary(){const mine=myCatalog();if(mine)mergeTaskGroups();const root=homeMode&&!selectedGroup,home=mine&&root&&MatinStudent.view!=='courses';
+ window.MatinStudentHome?.setView(home);
+ document.querySelector('#screen-courses .layout').classList.toggle('hidden',home);
+ $('catalog-status').classList.toggle('hidden',home);
  document.querySelector('#screen-courses .hero').classList.toggle('hidden',mine);
- if(mine){document.querySelector('.page-intro h1').textContent=root?'学习首页':'我的课程';document.querySelector('.page-intro p').textContent=root?'查看待办，接着上次的进度学习。':'先查看本班任务，也可进入公开分享项目自主学习。';}
+ if(mine){document.querySelector('.page-intro h1').textContent=home?'学习首页':'我的课程';const className=MatinStudent.membershipState().data?.classes.find(c=>c.id===MatinStudent.classId)?.name;document.querySelector('.page-intro p').textContent=home?'查看待办，接着上次的进度学习。':className?'当前班级：'+className+' · 选择课程，查看班级任务与学习项目。':'按课程查看班级任务与学习项目，选择一门课程开始学习。';}
  if(linkedPublicGroup!==selectedGroup||!mine||root){linkedPublic.open=false;linkedPublicGroup=selectedGroup;}
  linkedPublic.hidden=true;$('course-linked-public-grid').replaceChildren();$('course-grid').hidden=false;
  taskSection.hidden=!mine||root;projectHeading.hidden=!mine||root;
  const taskState=mine?MatinTasks.studentState():null;
- taskWarning.hidden=!mine||taskState.loading||(!taskState.error&&taskState.catalog_version===1);
+ taskWarning.hidden=!mine||home||catalogLoading||taskState.loading||(!taskState.error&&taskState.catalog_version===1);
  taskWarning.textContent=mine?(taskState.error||'班级任务目录尚未升级，请联系教师运行本次 SQL；现有任务仍可从“我的任务”打开。'):'';
- groupBack.classList.toggle('hidden',!homeMode||root);document.querySelector('.subjects').hidden=root||mine;document.querySelector('.layout').style.gridTemplateColumns=root||mine?'1fr':'';
-$('course-search').placeholder=mine?(root?'搜索课程或任务…':'搜索任务、项目或班级…'):root?'搜索课程名称…':'搜索学科、项目或技能…';$('course-search').setAttribute('aria-label',mine?'搜索课程与任务':root?'搜索课程':'搜索项目');$('back-courses').textContent=homeMode?'← 返回项目列表':'← 返回项目';
+ groupBack.classList.toggle('hidden',!homeMode||root);groupBack.textContent=mine?'← 返回我的课程':'← 返回课程列表';document.querySelector('.subjects').hidden=root||mine;document.querySelector('.layout').style.gridTemplateColumns=root||mine?'1fr':'';
+$('course-search').placeholder=mine?(root?'搜索课程或任务…':'搜索任务、项目或班级…'):root?'搜索课程名称…':'搜索学科、项目或技能…';$('course-search').setAttribute('aria-label',mine?'搜索课程与任务':root?'搜索课程':'搜索项目');$('back-courses').textContent=mine?(home?'← 返回学习首页':root?'← 返回我的课程':'← 返回课程任务'):homeMode?'← 返回项目列表':'← 返回项目';
 if(root){renderGroupLibrary();return;}let all=subjects();if(!all.includes(category))category='全部';$('subject-total').textContent=(all.length-1)+' 类';$('subject-list').innerHTML=all.map(s=>`<button type="button" class="subject-item ${s===category?'active':''}" data-subject="${esc(s)}"><span>${s==='全部'?'▦ ': '◇ '}${esc(s)}</span><span class="subject-count">${visibleProjects().filter(c=>s==='全部'||c.category===s).length}</span></button>`).join('');
 const term=search.toLocaleLowerCase();const list=visibleProjects().filter(c=>(category==='全部'||c.category===category)&&(!term||[c.title,c.category,c.desc,c.objective].some(x=>x.toLocaleLowerCase().includes(term))));$('course-title').textContent=homeMode?(courseGroups.find(g=>g.id===selectedGroup)?.name||'实训项目'):(category==='全部'?'实训项目':category);$('course-subtitle').textContent=`共 ${list.length} 个已发布项目 · 选择项目开始学习`;
 const linkedIds=new Set(mine?classTasks().filter(t=>t.course_id===selectedGroup).map(t=>t.project_id):[]),standalone=list.filter(p=>!linkedIds.has(p.id)),linked=list.filter(p=>linkedIds.has(p.id));
@@ -249,7 +254,7 @@ $('settings-open').addEventListener('click',openSettings);$('settings-cancel').a
 $('chat-input').addEventListener('input',()=>rememberProgress());
 window.addEventListener('pagehide',()=>{if(active)rememberProgress()});
 window.addEventListener('hashchange',()=>location.reload());
-async function studentRefresh(){if(active)showCourses();selectedGroup=null;category='全部';search='';$('course-search').value='';await loadCatalog();}
+async function studentRefresh({navigate=false,refreshMembership=false}={}){if(active)showCourses();selectedGroup=null;category='全部';search='';$('course-search').value='';const loading=loadCatalog({refreshMembership});if(navigate){window.scrollTo({top:0,behavior:'instant'});document.querySelector('.page-intro h1').focus({preventScroll:true});}await loading;}
 window.MatinStudentHome?.configure({refresh:()=>loadCatalog({refreshMembership:true})});
 Promise.resolve(window.MatinStudent?.ready(studentRefresh)).then(loadCatalog).catch(e=>notify('学生账号初始化失败：'+e.message));
 })();

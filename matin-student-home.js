@@ -3,7 +3,7 @@
  'use strict';
  const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const root=document.createElement('section');root.id='student-home';root.hidden=true;root.setAttribute('aria-label','学生首页待办');
- root.innerHTML=`<div class="home-heading"><div><h2>学习待办</h2><p id="home-scope"></p></div><button type="button" class="btn" id="home-refresh">刷新待办</button></div>
+ root.innerHTML=`<div class="home-heading"><div><h2>学习待办</h2><p id="home-scope"></p></div><div class="home-heading-actions"><button type="button" class="btn primary" id="home-courses">进入我的课程 →</button><button type="button" class="btn" id="home-refresh">刷新待办</button></div></div>
  <p id="home-status" role="status"></p><div id="home-counts" class="home-counts"></div>
  <div class="home-columns"><section class="home-panel" aria-labelledby="home-todo-title"><div class="home-panel-title"><h3 id="home-todo-title">待完成任务</h3><button type="button" class="home-link" id="home-all-tasks">全部任务与报告 ↗</button></div>
  <div class="home-filters" role="group" aria-label="待办筛选"><button type="button" data-home-filter="soon">未来 7 天</button><button type="button" data-home-filter="overdue">逾期待交</button><button type="button" data-home-filter="all">全部待办</button></div>
@@ -15,7 +15,7 @@
  document.querySelector('#screen-courses .page-intro').after(root);
  const style=document.createElement('style');style.textContent=`
  #student-home[hidden]{display:none!important}#student-home{margin:0 0 26px;scroll-margin-top:92px}#student-home h2{font-size:23px;margin:0 0 5px}#student-home h3{font-size:17px;margin:0}#student-home p{line-height:1.65}#student-home button{font:inherit}#student-home button:disabled{cursor:not-allowed}
- .home-heading,.home-panel-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.home-heading p{margin:0;color:#71809b;font-size:13px}#home-status{font-size:13px;color:#536b91;margin:10px 0;min-height:21px}#home-status.home-error{color:#944b13}
+ .home-heading,.home-panel-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.home-heading-actions{display:flex;flex-wrap:wrap;gap:10px}.home-heading p{margin:0;color:#71809b;font-size:13px}#home-status{font-size:13px;color:#536b91;margin:10px 0;min-height:21px}#home-status.home-error{color:#944b13}
  .home-counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}.home-counts button{text-align:left;border:1px solid #e0e6f3;border-radius:15px;background:#fff;padding:17px 20px;color:#53647d}.home-counts strong{display:block;font-size:28px;color:#293d6d;margin:5px 0}.home-counts small{display:block;font-size:12px;color:#77859c}.home-counts .home-late{background:#fff8f2;border-color:#f2d5bf}.home-counts .home-late strong{color:#a34716}
  .home-columns{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(290px,1fr);gap:20px;align-items:start}.home-panel{min-width:0;padding:22px;background:#fff;border:1px solid #e1e7f2;border-radius:18px}.home-aside{display:grid;gap:18px}.home-link{border:0;background:transparent;padding:6px 0;color:#465fd1;cursor:pointer;font-size:12px!important;text-align:left;line-height:1.5}.home-link:hover{text-decoration:underline}
  .home-filters{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 12px}.home-filters button{border:0;background:#f2f5fa;border-radius:9px;color:#64728a;padding:9px 12px;font-size:13px!important}.home-filters [aria-pressed=true]{background:#e9eeff;color:#3c51c5;font-weight:700}.home-search input{width:100%;border:1px solid #dce3f0;border-radius:10px;padding:10px 12px;color:#26395d;background:#fff}
@@ -82,7 +82,7 @@
  function choose(value){filter=value;page=1;render();}
  root.addEventListener('click',e=>{const tab=e.target.closest('[data-home-filter]');if(tab)choose(tab.dataset.homeFilter);const summary=e.target.closest('[data-home-summary]');if(!summary)return;const value=summary.dataset.homeSummary;if(['soon','overdue'].includes(value)){choose(value);$('home-todo-title').scrollIntoView({block:'start'});}else{const target=$(value==='continue'?'home-continue-title':'home-review-title');target.focus();target.scrollIntoView({block:'start'});}});
  $('home-search').oninput=e=>{query=e.target.value;page=1;render();};$('home-prev').onclick=()=>{page--;render();};$('home-next').onclick=()=>{page++;render();};
- $('home-refresh').onclick=refresh;$('home-all-tasks').onclick=()=>MatinTasks.open();$('home-classes').onclick=()=>MatinStudent.openClasses();$('home-more-reviews').onclick=()=>{moreReviews=!moreReviews;render();};
+ $('home-refresh').onclick=refresh;$('home-courses').onclick=()=>MatinStudent.navigate('courses');$('home-all-tasks').onclick=()=>MatinTasks.open();$('home-classes').onclick=()=>MatinStudent.openClasses();$('home-more-reviews').onclick=()=>{moreReviews=!moreReviews;render();};
  for(const event of ['matin-student-tasks-changed','matin-student-membership-changed'])window.addEventListener(event,render);
  // Reclassify deadlines locally; returning to a visible home refreshes stale server data.
  setInterval(()=>{if(!document.hidden&&!root.hidden&&$('screen-runtime').classList.contains('hidden'))render();},60000);
