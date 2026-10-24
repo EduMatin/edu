@@ -3,6 +3,9 @@
  'use strict';
  const cfg=window.MATIN_CLOUD||{},base=String(cfg.supabaseUrl||'').replace(/\/+$/,''),key='matin_student_session_v1:'+base;
  let session=null,refreshing=null,state=null,hook=()=>{},classId=null,startupError='';
+ let membership={owner:'',data:null,error:'',loading:false},membershipPromise=null,membershipOwner='';
+ const membershipState=()=>membership.owner===session?.user?.id?membership:{data:null,error:'',loading:false};
+ const membershipChanged=()=>window.dispatchEvent(new CustomEvent('matin-student-membership-changed'));
  const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const names={pending:'待教师审核',approved:'已加入',rejected:'申请未通过',removed:'已被移出',left:'已退出 / 已撤回'};
  function persist(v){session=v;try{v?sessionStorage.setItem(key,JSON.stringify(v)):sessionStorage.removeItem(key);}catch{}}
@@ -19,7 +22,9 @@
   const out=await r.json().catch(()=>({}));if(!r.ok||!out.ok){if(r.status===401){persist(null);location.replace(location.pathname+'#my');location.reload();}const error=Error(out.error||'班级服务暂不可用');error.status=r.status;throw error;}return out;
  }
  function mine(){return !new URLSearchParams(location.hash.slice(1)).has('teacher')&&!new URLSearchParams(location.hash.slice(1)).has('course');}
- function changeView(){$('student-classes').classList.add('hidden');if(!mine()){location.hash='my';return;}classId=null;hook();}
+ async function changeView(section='home'){$('student-classes').classList.add('hidden');if(!mine()){location.hash='my';return;}classId=null;if(session)await refresh().catch(()=>{});await hook();if(section==='courses')$('course-title').scrollIntoView({block:'start'});}
+ function openClasses(){if(!session)return showLogin();$('student-classes').classList.remove('hidden');$('student-classes').scrollIntoView({block:'start'});return task(async()=>{await refresh();return '';});}
+ async function viewClass(id){if(!membershipState().data?.classes.some(c=>c.id===id&&c.status==='approved'))return;if(!mine()){location.hash='my';return;}classId=id;$('student-classes').classList.add('hidden');await hook();}
  function showLogin(){ $('student-auth-modal').classList.remove('hidden');$('student-auth-status').textContent='';$('student-email').focus(); }
  function build(){
   const style=document.createElement('style');style.textContent=`#student-bar{padding:12px 24px;background:#eef2ff;display:flex;align-items:center;flex-wrap:wrap;gap:10px}#student-bar span{margin-right:auto;overflow-wrap:anywhere}#student-classes{margin:18px 0;padding:20px;background:white;border:1px solid #dce3f1;border-radius:18px}#student-classes input{padding:10px;border:1px solid #ccd5e7;border-radius:10px;max-width:100%;width:100%}#student-join-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}#student-join-form label{display:grid;gap:6px}#student-class-list article{padding:15px;margin:10px 0;border:1px solid #dce3f1;border-radius:12px}#student-class-list p{overflow-wrap:anywhere}#student-auth-status,#student-class-status{color:#75502e;line-height:1.7}#student-auth-form .modal-footer{justify-content:space-between}@media(max-width:650px){#student-join-form{grid-template-columns:1fr}#student-bar{padding:10px 12px}}`;
@@ -42,21 +47,33 @@
  function renderBar(){
   const bar=$('student-bar');bar.replaceChildren();const label=document.createElement('span');label.textContent=startupError|| (session?'当前账号：'+session.user.email:'登录后申请加入班级，查看我的课程');bar.append(label);
   function btn(text,id,fn){const b=document.createElement('button');b.className='btn tiny';b.id=id;b.textContent=text;b.onclick=fn;bar.append(b);}
-  btn('我的课程','student-my-courses',changeView);
+  btn('学习首页','student-home-open',()=>changeView());
+  btn('我的课程','student-my-courses',()=>changeView('courses'));
   btn('我的任务','student-my-tasks',()=>session?window.MatinTasks.open():showLogin());
   btn('我的班级','student-my-classes',()=>{if(!session)return showLogin();$('student-classes').classList.toggle('hidden');if(!$('student-classes').classList.contains('hidden'))task(async()=>{await refresh();return '';});});
   if(!session)btn('登录 / 注册','student-login-open',showLogin);
   else btn('退出账号','student-logout',async()=>{if(window.MatinLearningSync?.hasPending()&&!await MatinLearningSync.flush()&&!confirm('学习记录尚未同步云端，本机副本已保留。仍要退出账号吗？'))return;const access=session.access_token;persist(null);document.querySelector('main').classList.add('hidden');try{await fetch(base+'/auth/v1/logout',{method:'POST',headers:{apikey:cfg.publishableKey,Authorization:'Bearer '+access},signal:AbortSignal.timeout(5000)});}catch{}location.replace(location.pathname+'#my');location.reload();});
  }
  async function task(fn){const panel=$('student-classes');panel.querySelectorAll('button,input').forEach(x=>x.disabled=true);$('student-class-status').textContent='正在处理…';try{$('student-class-status').textContent=await fn();}catch(e){$('student-class-status').textContent=e.message;}finally{panel.querySelectorAll('button,input').forEach(x=>x.disabled=false);}}
- async function refresh(){state=await api('me');renderClasses();return state;}
+ function refresh(){
+  const owner=session?.user?.id;if(!owner)return Promise.resolve(null);
+  if(membershipPromise&&membershipOwner===owner)return membershipPromise;
+  membershipOwner=owner;membership={owner,data:membershipState().data,error:'',loading:true};membershipChanged();
+  const promise=(async()=>{try{
+   const data=await api('me');if(owner!==session?.user?.id)return null;
+   if(!Array.isArray(data.classes))throw Error('班级数据不完整，请刷新重试');
+   state=data;membership={owner,data,error:'',loading:false};renderClasses();return data;
+  }catch(e){if(owner===session?.user?.id)membership={owner,data:null,error:'审核状态读取失败：'+e.message,loading:false};throw e;
+  }finally{if(owner===session?.user?.id)membershipChanged();if(membershipPromise===promise)membershipPromise=null;}})();
+  membershipPromise=promise;return promise;
+ }
  function renderClasses(){
   $('student-name').value=state.profile?.display_name||'';$('student-number').value=state.profile?.student_no||'';$('student-join-form').classList.toggle('hidden',state.is_teacher);
   const list=$('student-class-list');list.replaceChildren();
   if(state.is_teacher){list.textContent='当前是教师账号。请使用单独的学生账号测试入班审核。';return;}
   if(!state.classes.length)list.textContent='尚未加入班级。若教师已导入名单，请使用名单中的邮箱注册、验证并登录后刷新；也可以向教师索取入班码。';
   for(const c of state.classes){const card=document.createElement('article');card.innerHTML=`<h3>${esc(c.name)}</h3><p>${esc(c.major)} · ${esc(c.grade)}</p><p>${esc(names[c.status])} · ${esc(c.display_name)} / ${esc(c.student_no)}</p>`;
-   if(c.status==='approved'){const b=document.createElement('button');b.className='btn primary tiny';b.textContent='查看班级课程';b.onclick=()=>{if(!mine()){location.hash='my';return;}classId=c.id;hook();$('student-classes').classList.add('hidden');};card.append(b);}
+   if(c.status==='approved'){const b=document.createElement('button');b.className='btn primary tiny';b.textContent='查看班级课程';b.onclick=()=>viewClass(c.id);card.append(b);}
    if(['approved','pending'].includes(c.status)){const b=document.createElement('button');b.className='btn tiny';b.textContent=c.status==='pending'?'撤回申请':'退出班级';b.onclick=()=>{if(!confirm(c.status==='pending'?'撤回此入班申请？':'退出后将失去该班级课程入口，确认退出？'))return;task(async()=>{await api('leave',{class_id:c.id,revision:Number(c.revision)});await refresh();hook();return '已更新班级状态';});};card.append(b);}
    list.append(card);
   }
@@ -74,5 +91,5 @@
  // Prevent browser back/forward cache from reviving another student's rendered conversations.
  window.addEventListener('pagehide',()=>{if(base)document.querySelector('main').classList.add('hidden');});
  window.addEventListener('pageshow',e=>{if(base&&e.persisted)location.reload();});
- window.MatinStudent={ready,api,taskApi:(op,data)=>api(op,data,'tasks'),mine,get userId(){return session?.user?.id||'guest';},get signedIn(){return !!session;},get classId(){return classId;}};
+ window.MatinStudent={ready,api,taskApi:(op,data)=>api(op,data,'tasks'),mine,membershipState,refreshMembership:refresh,openClasses,viewClass,get userId(){return session?.user?.id||'guest';},get signedIn(){return !!session;},get classId(){return classId;}};
 })();

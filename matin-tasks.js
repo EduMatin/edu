@@ -60,11 +60,12 @@
   const owner=studentOwner();if(!owner)return {tasks:[],catalog_version:0};
   if(student.owner===owner&&student.busy)return student;
   const request=++studentRequest;
+  student={...studentState(),owner,loading:true};changed();
   try{
    const d=await MatinStudent.taskApi('list');
    if(request!==studentRequest||owner!==studentOwner())return studentState();
    if(!Array.isArray(d.tasks))throw Error('任务数据不完整，请刷新重试。');
-   student={owner,tasks:d.tasks,catalog_version:d.catalog_version||0,reports_version:d.reports_version||0,error:'',message:'已同步云端任务',busy:false};
+   student={owner,tasks:d.tasks,catalog_version:d.catalog_version||0,reports_version:d.reports_version||0,error:'',message:'已同步云端任务',busy:false,loadedAt:Date.now()};
   }catch(e){
    if(request!==studentRequest||owner!==studentOwner())return studentState();
    student={owner,tasks:[],catalog_version:0,error:'任务读取失败：'+(e.message||'请刷新重试'),busy:false};
@@ -81,7 +82,7 @@
   try{
    const d=await MatinStudent.taskApi(operation,{task_id:task.id});
    if(request!==studentRequest||owner!==studentOwner())return;
-   student.tasks=student.tasks.map(t=>t.id===task.id?{...t,status:operation==='complete'?'completed':['completed','submitted'].includes(t.status)?t.status:'started'}:t);
+   student.tasks=student.tasks.map(t=>t.id===task.id?{...t,updated_at:new Date().toISOString(),status:operation==='complete'?'completed':['completed','submitted'].includes(t.status)?t.status:'started'}:t);
    student.message=operation==='complete'?'已标记完成，课程页与任务列表已同步。':'已打开任务，学习对话保存在当前浏览器。';
    if(operation==='open'){
     const opened=await window.MatinTaskOpen(d.project,task);
@@ -334,7 +335,7 @@
    return success;
   },true);
  };
- window.MatinTasks={loadStudent,studentState,renderStudent,open(row=null,options={}){
+ window.MatinTasks={loadStudent,studentState,renderStudent,studentChangeNotice,openStudent(id){const task=studentState().tasks.find(t=>t.id===id);if(task)return studentAction(task,'open');},open(row=null,options={}){
   if(studentState().busy)return;
   if(active?.busy&&active.writing)return;
   if(active?.teacher&&!discardCreate(active))return;
