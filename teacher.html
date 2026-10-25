@@ -453,6 +453,7 @@ button:active:not(:disabled){transform:scale(.985)}
 <script src="./matin-task-edit.js"></script>
 <script src="./matin-course-outline.js"></script>
 <script src="./matin-project-tasks.js"></script>
+<script src="./matin-review-inbox.js"></script>
 <script>
 (async () => {
   'use strict';
@@ -1456,6 +1457,7 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
   window.MatinClasses.init({account,getCourses:()=>projects,beforeOpen:flushSave});
   window.MatinCourseOutline.init({account,getProjects:()=>projects,beforeWrite:flushSave,notify,redraw:(reset=false)=>{if(reset){dashboardSearch='';dashboardCategory='全部';$('project-search').value='';}renderDashboard();}});
   window.MatinProjectTasks.init({account,beforeOpen:flushSave});
+  window.MatinReviewInbox.init({account});
   store();showView('dashboard');
 })().catch(error=>window.MatinAccount.fatal(error));
 </script>
