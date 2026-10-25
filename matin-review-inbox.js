@@ -7,7 +7,7 @@
  window.MatinReviewInbox={init({account}){
   if(!account)return;
   const css=el('style',`
-   .ri-home{background:white;border:1px solid #dce4f5;border-radius:20px;padding:22px 24px;margin:18px 0 24px;box-shadow:0 8px 28px #243a6c06}
+   .ri-home{background:white;border:1px solid #dce4f5;border-radius:20px;padding:18px 24px;margin:18px 0 24px;box-shadow:0 8px 28px #243a6c06}.ri-home>.ri-hint{margin-bottom:0}
    .ri-header,.ri-actions,.ri-row{display:flex;align-items:center;gap:12px;justify-content:space-between}.ri-header{flex-wrap:wrap}.ri-header h2{font-size:22px;margin:0}.ri-header strong{color:#5049d9}.ri-hint{font-size:13px;color:#70809c;line-height:1.7;margin:10px 0;white-space:pre-wrap}
    .ri-actions{justify-content:flex-start;flex-wrap:wrap}.ri-row{padding:12px 0;border-bottom:1px solid #edf0f7}.ri-row:last-child{border:0}.ri-row>div{min-width:0}.ri-row strong,.ri-row small{display:block;overflow-wrap:anywhere}.ri-row small{color:#72819a;margin-top:5px;font-size:13px;line-height:1.6}.ri-row .btn{flex-shrink:0}.ri-pill{font-size:12px;border-radius:8px;padding:4px 8px;background:#eeedff;color:#5149cd}
    .ri-layer{position:fixed;inset:0;z-index:150;background:#152241aa;display:flex;align-items:center;justify-content:center;padding:20px}.ri-layer[hidden]{display:none!important}.ri-panel{background:white;border-radius:22px;width:min(1120px,100%);max-height:94vh;display:flex;flex-direction:column;min-width:0;color:#253555}.ri-panel>header,.ri-panel>footer{padding:20px 24px;flex-shrink:0;border-bottom:1px solid #e3e9f3}.ri-panel>footer{border-bottom:0;border-top:1px solid #e3e9f3}.ri-body{padding:0 24px 22px;min-height:0;overflow:auto}.ri-panel h2{margin:0;font-size:23px}
@@ -18,8 +18,9 @@
   `);document.head.append(css);
   const home=el('section',undefined,'ri-home');home.id='teacher-review-home';home.setAttribute('aria-label','报告批阅待办');
   const homeHead=el('div',undefined,'ri-header'),title=el('h2','待批阅报告 · 正在读取'),homeActions=el('div',undefined,'ri-actions');
-  const refreshHome=button('刷新待批阅',()=>loadHome()),openCenter=button('进入批阅中心',()=>open(),true);
-  const homeStatus=el('p',undefined,'ri-hint'),homeList=el('div');homeStatus.setAttribute('role','status');homeActions.append(refreshHome,openCenter);homeHead.append(title,homeActions);home.append(homeHead,homeStatus,homeList);
+  const refreshHome=button('刷新待批阅',()=>loadHome()),openCenter=button('进入批阅中心',()=>open(true),true);
+  refreshHome.title='页面可见时每分钟更新，也可手动刷新';
+  const homeStatus=el('p',undefined,'ri-hint');homeStatus.setAttribute('role','status');homeActions.append(refreshHome,openCenter);homeHead.append(title,homeActions);home.append(homeHead,homeStatus);
   document.querySelector('#view-dashboard .dashboard-hero').before(home);
   const nav=button('报告批阅 · …',()=>open());nav.id='teacher-review-open';document.querySelector('.nav').append(nav);
   const root=el('div',undefined,'ri-layer modal-layer');root.id='teacher-review-center';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.setAttribute('aria-labelledby','ri-title');
@@ -39,9 +40,9 @@
   }}
   const fetchQueue=async data=>{const r=await MatinAccount.api({action:'review_inbox',data});if(r.inbox_version!==1||!Array.isArray(r.rows))throw Error('批阅中心尚未升级，请更新教师批阅提醒与评分 SQL 和 matin-courses。');return r;};
   async function loadHome(){const seq=++homeSeq;lastHome=Date.now();refreshHome.disabled=true;homeStatus.textContent='正在同步待批阅报告…';
-   try{const r=await fetchQueue({status:'pending_review',page:1});if(seq!==homeSeq)return;title.textContent='待批阅报告 · '+r.global_pending+' 份';nav.textContent='报告批阅 · '+r.global_pending;renderRows(homeList,r.rows.slice(0,5));
-    homeStatus.textContent=(r.global_pending?'按提交时间先后显示'+Math.min(5,r.rows.length)+'份；点击学生报告即可批阅。':'当前没有待批阅报告。')+' 已同步 '+time(new Date())+'；页面可见时每分钟更新，也可手动刷新。';
-   }catch(e){if(seq!==homeSeq)return;title.textContent='待批阅报告 · 暂未获取';nav.textContent='报告批阅 · !';homeList.replaceChildren();homeStatus.textContent=e.message||'读取失败，请重试。';}
+   try{const r=await fetchQueue({status:'pending_review',page:1});if(seq!==homeSeq)return;title.textContent='待批阅报告 · '+r.global_pending+' 份';nav.textContent='报告批阅 · '+r.global_pending;
+    homeStatus.textContent=(r.global_pending?'进入批阅中心查看名单，每页 20 份，可按班级、姓名或学号查找。':'当前没有待批阅报告。')+' 已同步 '+time(new Date())+'。';
+   }catch(e){if(seq!==homeSeq)return;title.textContent='待批阅报告 · 暂未获取';nav.textContent='报告批阅 · !';homeStatus.textContent=e.message||'读取失败，请重试。';}
    finally{if(seq===homeSeq)refreshHome.disabled=false;}
   }
   async function loadCenter(){if(root.hidden)return;const seq=++centerSeq;const selected=classes.value;status.textContent='正在同步报告列表…';list.replaceChildren();summary.textContent='';count.textContent='';prev.disabled=next.disabled=true;
@@ -49,11 +50,11 @@
     classes.replaceChildren(new Option('全部班级',''));for(const c of r.classes)classes.append(new Option(c.name+(c.archived?'（已归档）':''),c.id));classes.value=selected;
     page=r.page;pages=r.pages;renderRows(list,r.rows);if(!r.rows.length)list.append(el('p','没有符合条件的已提交报告。','ri-hint'));
     summary.textContent='当前筛选范围：待批阅 '+r.counts.pending_review+' · 待学生修改 '+r.counts.revision_required+' · 已通过 '+r.counts.passed;
-    status.textContent='每名学生、每条任务只列最新提交版本；历史版本在报告内查看。已撤回任务和历史成员请从任务完成明细查看。';
+    status.textContent='每页 20 份，按提交时间从早到晚排列；每名学生、每条任务只列最新提交版本。历史版本在报告内查看，已撤回任务和历史成员请从任务完成明细查看。';
     count.textContent='共 '+r.total+' 份 · 第 '+page+' / '+pages+' 页';prev.disabled=page<=1;next.disabled=page>=pages;nav.textContent='报告批阅 · '+r.global_pending;
    }catch(e){if(seq===centerSeq&&!root.hidden){list.replaceChildren();status.textContent=e.message||'读取失败，请刷新重试。';}}
   }
-  function open(){opener=document.activeElement;root.hidden=false;dismiss.focus();void loadCenter();}
+  function open(pendingOnly=false){opener=document.activeElement;if(pendingOnly){states.value='pending_review';classes.value='';search.value='';page=1;}root.hidden=false;dismiss.focus();void loadCenter();}
   function close(){centerSeq++;root.hidden=true;if(opener?.isConnected)opener.focus();}
   classes.onchange=states.onchange=()=>{page=1;void loadCenter();};search.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();page=1;void loadCenter();}};
   root.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close();}if(e.key==='Tab'){const a=[...root.querySelectorAll('button:not(:disabled),select,input')].filter(n=>n.getClientRects().length);if(e.shiftKey&&document.activeElement===a[0]){e.preventDefault();a.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===a.at(-1)){e.preventDefault();a[0].focus();}}});
