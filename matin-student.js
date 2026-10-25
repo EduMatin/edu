@@ -11,7 +11,7 @@
  const membershipChanged=()=>window.dispatchEvent(new CustomEvent('matin-student-membership-changed'));
  const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const names={pending:'待教师审核',approved:'已加入',rejected:'申请未通过',removed:'已被移出',left:'已退出 / 已撤回'};
- function persist(v){session=v;try{v?sessionStorage.setItem(key,JSON.stringify(v)):sessionStorage.removeItem(key);}catch{}}
+ function persist(v){session=v;try{v?sessionStorage.setItem(key,JSON.stringify(v)):sessionStorage.removeItem(key);}catch{}window.dispatchEvent(new CustomEvent('matin-student-auth-changed'));}
  async function auth(path,body,access,method){
   const r=await fetch(base+'/auth/v1/'+path,{method:method||(body?'POST':'GET'),headers:{apikey:cfg.publishableKey,'Content-Type':'application/json',...(access?{Authorization:'Bearer '+access}:{})},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000)});
   const data=await r.json().catch(()=>({}));

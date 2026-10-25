@@ -8,7 +8,10 @@
  const root=el('div',undefined,'tr-layer');root.id='task-reports-modal';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.setAttribute('aria-labelledby','tr-title');
  const panel=el('div',undefined,'tr-panel'),head=el('header'),heading=el('h2');heading.id='tr-title';
  const closeButton=btn('关闭',()=>close()),body=el('div',undefined,'tr-body'),foot=el('footer'),status=el('p',undefined,'tr-status');status.setAttribute('role','status');
- head.append(heading,closeButton);panel.append(head,status,body,foot);root.append(panel);document.body.append(root);
+ const reviewUpdate=el('div',undefined,'tr-note');reviewUpdate.id='student-report-update';reviewUpdate.hidden=true;
+ const updateText=el('p'),updateButton=btn('查看最新批阅',()=>{const c=current;if(c&&!c.teacher&&canLeave())run(c,()=>readReport(c,null));});
+ updateText.setAttribute('role','status');reviewUpdate.append(updateText,updateButton);
+ head.append(heading,closeButton);panel.append(head,status,reviewUpdate,body,foot);root.append(panel);document.body.append(root);
  const css=el('style');css.textContent=`
  .tr-layer{position:fixed;inset:0;z-index:160;background:#101a3db8;display:flex;align-items:center;justify-content:center;padding:20px;color:#253555}
  .tr-layer[hidden]{display:none!important}.tr-panel{background:#fff;border-radius:24px;width:min(1150px,100%);max-height:94vh;display:flex;flex-direction:column;box-shadow:0 24px 100px #101a3d50;min-width:0}
@@ -21,16 +24,31 @@
  .tr-report-section,.tr-message{padding:16px;border:1px solid #dfe6f3;border-radius:12px;margin:12px 0;overflow-wrap:anywhere}.tr-message.user{border-left:4px solid #6c68e5}.tr-note{padding:12px 16px;border-radius:12px;background:#f3f5ff;line-height:1.7}.tr-feedback{border-left:4px solid #42a69b;padding:10px 14px;background:#f0faf7;margin:10px 0;white-space:pre-wrap;overflow-wrap:anywhere}.tr-report-section label{display:grid;gap:8px}
  @media(max-width:650px){.tr-layer{padding:8px}.tr-panel{max-height:96vh;border-radius:16px}.tr-panel>header,.tr-panel>footer{padding:14px}.tr-body{padding:0 14px 14px}.tr-status{padding:0 14px}.tr-summary{grid-template-columns:repeat(2,1fr)}.tr-toolbar input{min-width:0;width:100%}.tr-toolbar label{width:100%}.tr-table thead{display:none}.tr-table tr{display:block;border:1px solid #dfe6f3;border-radius:12px;padding:10px;margin:12px 0}.tr-table td{display:block;border:0;padding:5px 0}.tr-table td:before{content:attr(data-label)'：';color:#73829a}.tr-panel h2{font-size:19px}}
  `;document.head.append(css);
+ css.textContent+='#student-report-update{margin:0 24px 8px;border-left:4px solid #c77a29;max-height:24vh;overflow:auto;flex-shrink:0;background:#fff6e8}#student-report-update[hidden]{display:none!important}';
  let current=null;
+ function reviewSignature(t){return [Number(t?.submission_version)||0,Number(t?.feedback_revision)||0,t?.review_status||''];}
+ function updateReviewNotice(){
+  const c=current;if(!c||c.teacher||!isCurrent(c)){reviewUpdate.hidden=true;return;}
+  const task=window.MatinTasks?.studentState().tasks.find(t=>t.id===c.task.id),seen=c.reviewSeen||reviewSignature(c.task),now=reviewSignature(task);
+  const newer=now[0]>seen[0]||now[0]===seen[0]&&(now[1]>seen[1]||now[1]===seen[1]&&now[2]!==seen[2]);
+  reviewUpdate.hidden=!task||!newer||!['revision_required','passed'].includes(task.review_status);
+  if(reviewUpdate.hidden)return;
+  const message=task.review_status==='revision_required'?'教师已退回报告：'+task.revision_reason+'\n重交截止：'+time(task.resubmit_due_at):'教师已通过报告，可查看最新批阅结果。';
+  const text=message+'\n下方保留上次读取的内容，点击“查看最新批阅”更新。'+(c.dirty?'\n当前输入已保留，查看最新批阅前请先处理尚未保存的内容。':'');
+  if(updateText.textContent!==text)updateText.textContent=text;
+  updateButton.disabled=!!c.busy;
+ }
+ window.addEventListener('matin-student-tasks-changed',updateReviewNotice);
+ window.addEventListener('matin-student-auth-changed',updateReviewNotice);
  function isCurrent(c){return current===c&&(!c.owner||c.owner===window.MatinStudent?.userId);}
  function canLeave(){return !current?.dirty||confirm('评分、批注或学习总结尚未保存，确认放弃这些修改？');}
  function close(){if(current?.busy&&current.writing){status.textContent='正在保存，请稍候。';return;}if(!canLeave())return;const c=current;current=null;root.hidden=true;if(c?.under)c.under.inert=false;if(c?.opener?.isConnected)c.opener.focus();window.dispatchEvent(new CustomEvent('matin-report-closed'));}
- function begin(teacher,task){if(current?.busy||!canLeave())return null;if(current?.under)current.under.inert=false;
+ function begin(teacher,task){if(current?.busy||!canLeave())return null;if(current?.under)current.under.inert=false;reviewUpdate.hidden=true;
   const under=[...document.querySelectorAll('.modal-layer:not(.hidden)')].filter(n=>n!==root&&n.getClientRects().length).at(-1);
   const c={teacher,task,owner:teacher?'':window.MatinStudent?.userId,opener:document.activeElement,under,busy:false,dirty:false,rows:[],filter:'current',search:''};current=c;if(under)under.inert=true;root.hidden=false;body.replaceChildren();foot.replaceChildren();status.textContent='';heading.textContent=task.title;closeButton.focus();return c;
  }
  const api=(c,op,data={})=>c.teacher?MatinAccount.api({action:'task_review',op,data:{task_id:c.task.id,...data}}):MatinStudent.api(op,{task_id:c.task.id,...data},'task_review');
- async function run(c,fn,writing=false){if(!isCurrent(c)||c.busy)return;c.busy=true;c.writing=writing;root.setAttribute('aria-busy','true');status.textContent=writing?'正在保存…':'正在读取…';lock();try{await fn();}catch(e){if(isCurrent(c))status.textContent=e.message||'请求失败，请重试。';}finally{if(isCurrent(c)){c.busy=false;c.writing=false;root.setAttribute('aria-busy','false');lock();if(!root.contains(document.activeElement))closeButton.focus();}}}
+ async function run(c,fn,writing=false){if(!isCurrent(c)||c.busy)return;c.busy=true;c.writing=writing;root.setAttribute('aria-busy','true');status.textContent=writing?'正在保存…':'正在读取…';lock();try{await fn();}catch(e){if(isCurrent(c))status.textContent=e.message||'请求失败，请重试。';}finally{if(isCurrent(c)){c.busy=false;c.writing=false;root.setAttribute('aria-busy','false');lock();updateReviewNotice();if(!root.contains(document.activeElement))closeButton.focus();}}}
  function lock(){root.querySelectorAll('button,input,textarea,select').forEach(e=>e.disabled=!!current?.busy||e.dataset.fixedDisabled==='true');closeButton.disabled=!!(current?.busy&&current.writing);}
  const label=r=>r.review_status==='revision_required'?'需修改重交'+(r.overdue?' · 已逾期':''):r.status==='submitted'?reviewLabel(r.review_status)+(r.late?' · 逾期补交':''):r.overdue?'逾期未交 · '+(r.status==='pending'?'未开始':'进行中'):r.status==='pending'?'未开始':'进行中';
  const filterRow=(c,r)=>{
@@ -95,6 +113,8 @@
 
  function showReport(c,d){c.dirty=false;heading.textContent=(c.teacher?c.student.display_name+' · ':'我的报告 · ')+c.task.title;body.replaceChildren();foot.replaceChildren();const s=d.submission;
   const newest=d.versions[0],historical=s.version!==newest.version;
+  const known=window.MatinTasks?.studentState().tasks.find(t=>t.id===c.task.id&&Number(t.submission_version)===Number(newest.version));
+  c.reviewSeen=[Number(newest.version),historical?Number(known?.feedback_revision)||0:Number(s.feedback_revision)||0,newest.review_status||''];reviewUpdate.hidden=true;
   body.append(el('p',historical?'历史版本 · 第 '+s.version+' 版当时的结果：'+reviewLabel(s.review_status):reviewLabel(s.review_status),'tr-note'));if(s.review_status==='revision_required')body.append(el('p',(historical?'本版本的修改要求：':'修改要求：')+s.revision_reason+'\n重交截止：'+time(s.resubmit_due_at),'tr-feedback'));
   body.append(el('p',`第 ${s.version} 版 · 提交于 ${time(s.submitted_at)}${d.late?' · 逾期补交':''}`,'tr-muted'));
   const tools=el('div',undefined,'tr-toolbar'),versionLabel=el('label','提交版本'),versions=el('select');for(const v of d.versions){const option=el('option','第 '+v.version+' 版 · '+time(v.submitted_at)+(v.review_status?' · '+reviewLabel(v.review_status):''));option.value=v.version;versions.append(option);}versions.value=s.version;versionLabel.append(versions);tools.append(versionLabel);

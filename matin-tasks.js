@@ -56,11 +56,18 @@
    $('tasks-status').textContent=studentState().error||studentState().message||'已同步云端任务';
   }
  };
- async function loadStudent(){
+ let studentLoad=null;
+ function loadStudent(options={}){
+  const owner=studentOwner();
+  if(studentLoad?.owner===owner&&studentLoad.request===studentRequest)return studentLoad.promise;
+  const promise=readStudent(options),entry={owner,request:studentRequest,promise};studentLoad=entry;
+  const finish=()=>{if(studentLoad===entry)studentLoad=null;};promise.then(finish,finish);return promise;
+ }
+ async function readStudent({background=false}={}){
   const owner=studentOwner();if(!owner)return {tasks:[],catalog_version:0};
   if(student.owner===owner&&student.busy)return student;
   const request=++studentRequest;
-  student={...studentState(),owner,loading:true};changed();
+  student={...studentState(),owner,loading:true};if(!background)changed();
   try{
    const d=await MatinStudent.taskApi('list');
    if(request!==studentRequest||owner!==studentOwner())return studentState();
@@ -68,7 +75,12 @@
    student={owner,tasks:d.tasks,catalog_version:d.catalog_version||0,reports_version:d.reports_version||0,workflow_version:d.workflow_version||0,error:'',message:'已同步云端任务',busy:false,loadedAt:Date.now()};
   }catch(e){
    if(request!==studentRequest||owner!==studentOwner())return studentState();
-   student={owner,tasks:[],catalog_version:0,error:'任务读取失败：'+(e.message||'请刷新重试'),busy:false};
+   const message='任务读取失败：'+(e.message||'请刷新重试');
+   // Temporary background failures must not erase the last known review or interrupt learning.
+   // Authorization failures still clear the list; every open/submit is checked by the server.
+   student=background&&student.loadedAt&&e.status!==401&&e.status!==403
+    ?{...student,loading:false,refreshError:message}
+    :{owner,tasks:[],catalog_version:0,error:message,busy:false};
   }
   changed();return studentState();
  }
