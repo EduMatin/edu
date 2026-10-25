@@ -64,7 +64,8 @@ SOFTWARE.
     });
     const inline = text => escape(text)
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>');
+      // Asterisks between variables/numbers or surrounded by spaces are multiplication, not emphasis.
+      .replace(/(?<![\p{L}\p{N}_*])\*(?!\s)([^*\n]*?\S)\*(?![\p{L}\p{N}_*])/gu, '<em>$1</em>');
     const html = tokenized.split(/\r?\n/).map(line => {
       const bullet = bullets && line.match(/^\s*[-•]\s+(.+)/);
       return bullet ? `<div class="md-bullet"><span>•</span><span>${inline(bullet[1])}</span></div>` : inline(line);

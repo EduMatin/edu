@@ -51,6 +51,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 <script src="./matin-config.js"></script>
 <script src="./matin-math.js"></script>
 <script src="./matin-pedagogy.js"></script>
+<script src="./matin-formula-input.js"></script>
 <script src="./matin-student.js"></script>
 <script src="./matin-student-account.js"></script>
 <script src="./matin-task-reports.js"></script>
@@ -201,7 +202,7 @@ function rememberProgress(){if(!active||!runNode)return;
  catch{if(!saveFailed)notify('学习记录保存失败，请及时导出学习报告');saveFailed=true;$('learning-save-status').textContent='保存失败：浏览器存储不可用或空间不足。请导出学习报告，关闭页面可能丢失本次进度。';}
  window.MatinLearningSync.queue(record);
 }
-function stopRequests(){visitId++;controller?.abort();evaluationController?.abort();controller=null;evaluationController=null;busy=false;evalBusy=false;pendingRequest='';}
+function stopRequests(){window.MatinFormulaInput?.close();visitId++;controller?.abort();evaluationController?.abort();controller=null;evaluationController=null;busy=false;evalBusy=false;pendingRequest='';}
 function showCourses(){stopRequests();if(active)rememberProgress();active=null;activeTask=null;$('screen-courses').classList.remove('hidden');$('screen-runtime').classList.add('hidden');renderLibrary();window.scrollTo(0,0)}
 window.MatinTaskOpen=(p,task)=>{const c=normalize(p);if(!c||!task?.id)throw Error('任务项目内容无效');if(active)rememberProgress();return startLearning(c,false,task);};
 function startCourse(id,restart=false){const c=courses.find(x=>x.id===id);if(c)return startLearning(c,restart,null);}
