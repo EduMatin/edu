@@ -21,8 +21,11 @@
    </form></div></div>`;
   const style=document.createElement('style');style.textContent=`#classes-modal .classes-panel{width:min(1100px,96vw);max-width:1100px;max-height:90vh;overflow:auto}#classes-modal p{line-height:1.7}#classes-modal .classes-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}#classes-modal .actions{flex-wrap:wrap;gap:8px}#classes-search{min-width:120px;flex:1;padding:10px;border:1px solid #ccd5e7;border-radius:10px}#classes-list{max-height:55vh;overflow:auto}#classes-modal .class-card{padding:16px;margin:10px 0;border:1px solid #dce3f1;border-radius:14px;background:#f8faff;overflow-wrap:anywhere}#classes-modal fieldset{border:1px solid #dce3f1;border-radius:12px;margin:14px 0;padding:12px}#class-courses{max-height:210px;overflow:auto}#class-legacy label,#class-courses label{display:flex;gap:10px;align-items:flex-start;padding:8px}#class-legacy input,#class-courses input{width:auto;flex-shrink:0}#classes-status{min-height:26px;color:#4c539d}#classes-modal h3{margin:4px 0 12px}@media(max-width:760px){#classes-modal .classes-layout{grid-template-columns:1fr}#classes-list{max-height:220px}}`;
   style.textContent+='#classes-view{font:inherit;color:#42547b;background:#fff;min-height:42px;max-width:100%;padding:10px 12px;border:1px solid #ccd5e7;border-radius:10px}#classes-view:focus-visible{outline:3px solid #b8c8ff;outline-offset:2px}';
+  style.textContent+='#classes-modal .class-archive{color:#4e49bd;border-color:#d7d8fb;background:#efefff}#classes-modal .class-more-toggle[aria-expanded="true"]{background:#edf1fa}#classes-modal .class-more-panel[hidden]{display:none}#classes-modal .class-more-panel{margin-top:12px;padding:12px;border:1px solid #e0e5ef;border-radius:10px;background:#fff}#classes-modal .class-more-panel p{margin:0 0 10px;font-size:13px;color:#68778e}#classes-modal .class-more-panel .btn{color:#a83742;border-color:#ecd2d5}#classes-modal .class-card :focus-visible{outline:3px solid #b8c8ff;outline-offset:2px}';
   document.head.append(style);document.body.append(root);
-  const $=id=>document.getElementById(id);let rows=[],current=null,busy=false,changed=false,loaded=false,loadError='',courseContext=null,formOutlineRevision=0;
+  const $=id=>document.getElementById(id);let rows=[],current=null,busy=false,changed=false,loaded=false,loadError='',courseContext=null,formOutlineRevision=0,activeMore=null;
+  function closeMore(focus=false){if(!activeMore)return;const {trigger,panel}=activeMore;panel.hidden=true;trigger.setAttribute('aria-expanded','false');activeMore=null;if(focus&&trigger.isConnected)trigger.focus();}
+  root.addEventListener('click',e=>{if(activeMore&&!activeMore.trigger.contains(e.target)&&!activeMore.panel.contains(e.target))closeMore();});
   const outline=()=>window.MatinCourseOutline.controller.snapshot();
   window.MatinClasses.state=()=>({rows:[...rows],loaded,error:loadError});
   const projectGroup=(id,layout)=>layout.members.find(m=>m.project_id===id&&layout.groups.some(g=>g.id===m.group_id))?.group_id;
@@ -65,6 +68,7 @@
 
   }
   function render(){
+   closeMore();
    renderCourseInfo();
    const q=$('classes-search').value.trim().toLowerCase();const visible=rows.filter(r=>($('classes-view').value==='all'||!!r.archived_at===($('classes-view').value==='archived'))&&[r.name,r.major,r.grade].join(' ').toLowerCase().includes(q));
    $('classes-count').textContent=`共 ${rows.length} 个班级 · 当前显示 ${visible.length} 个`;
@@ -80,17 +84,23 @@
     if(layout&&(r.course_group_ids||[]).some(id=>!titles.has(id)))courses.textContent+='；部分课程目录已删除，保存班级可清理关联';
     const actions=document.createElement('div');actions.className='actions';
     const e=document.createElement('button');e.type='button';e.className='btn';e.textContent='编辑';e.onclick=()=>{if(!busy&&discard())edit(r);};
-    const d=document.createElement('button');d.type='button';d.className='btn';d.textContent='删除';d.onclick=async()=>{
-     if(busy||!discard()||!confirm(`删除班级“${r.name}”？仅无成员、无导入名单、无任务的空班级可删除；已有教学记录请使用归档。课程内容会保留。`))return;
+    const d=document.createElement('button');d.type='button';d.className='btn';d.textContent='删除空班级';d.onclick=async()=>{
+     if(busy||!discard()||!confirm(`删除空班级“${r.name}”？仅无成员、无导入名单、无任务的空班级可删除；已有教学记录请使用归档。课程内容会保留。`))return;
+     closeMore();
      await request(async()=>{await window.MatinAccount.api({action:'class_delete',id:r.id,revision:Number(r.revision)});rows=rows.filter(x=>x.id!==r.id);edit();render();return '班级已删除，课程内容已保留。';});
+     if(more.isConnected)more.focus();else $('classes-search').focus();
     };
     const members=document.createElement('button');members.type='button';members.className='btn';members.textContent='学生与入班审核';members.onclick=()=>{if(!busy&&discard())window.MatinEnrollment.open(r);};
     const tasks=document.createElement('button');tasks.type='button';tasks.className='btn';tasks.textContent='任务管理';tasks.onclick=()=>{if(!busy&&discard())window.MatinTasks.open(r);};
-    const archive=document.createElement('button');archive.type='button';archive.className='btn';archive.textContent=r.archived_at?'恢复到常用班级':'归档班级';archive.onclick=async()=>{
+    const archive=document.createElement('button');archive.type='button';archive.className='btn class-archive';archive.textContent=r.archived_at?'恢复到常用班级':'归档班级';archive.onclick=async()=>{
      if(busy||!discard()||!confirm((r.archived_at?'恢复班级“':'归档班级“')+r.name+'”？归档仅从常用列表收起，保留成员、任务、进度、报告和批注；现有学生仍可学习和提交。'))return;
      await request(async()=>{const result=await MatinAccount.api({action:'class_archive',id:r.id,revision:Number(r.revision),archived:!r.archived_at});rows=rows.map(x=>x.id===r.id?{...x,...result.class}:x);edit();render();return r.archived_at?'班级已恢复。':'班级已归档，可切换“已归档”继续查看或恢复。';});
     };
-    actions.append(e,members,tasks,archive,d);card.append(h,info,courses,actions);list.append(card);
+    const more=document.createElement('button');more.type='button';more.className='btn class-more-toggle';more.textContent='更多 ▾';more.setAttribute('aria-label','更多班级操作：'+r.name);more.setAttribute('aria-expanded','false');
+    const morePanel=document.createElement('div');morePanel.className='class-more-panel';morePanel.id='class-more-'+r.id;morePanel.hidden=true;more.setAttribute('aria-controls',morePanel.id);
+    const deleteHint=document.createElement('p');deleteHint.id='class-delete-hint-'+r.id;deleteHint.textContent='仅无成员、无导入名单、无任务的空班级可删除。有教学记录的班级请使用“归档班级”，保留记录供后续查阅。';d.setAttribute('aria-describedby',deleteHint.id);morePanel.append(deleteHint,d);
+    more.onclick=()=>{if(busy)return;const wasOpen=!morePanel.hidden;closeMore();if(!wasOpen){morePanel.hidden=false;more.setAttribute('aria-expanded','true');activeMore={trigger:more,panel:morePanel};}};
+    actions.append(e,members,tasks,archive,more);card.append(h,info,courses,actions,morePanel);list.append(card);
    }
   }
   async function request(fn){lock(true);$('classes-status').textContent='正在处理…';try{$('classes-status').textContent=await fn();}catch(e){$('classes-status').textContent=e.message;}finally{lock(false);}}
@@ -103,10 +113,10 @@
    $('classes-search').value='';root.classList.remove('hidden');if(!changed)await refresh();$('classes-close').focus();}
   window.MatinClasses.openCourse=id=>open(id,true);
   button.onclick=()=>open();
-  function close(){if(busy||!discard())return;changed=false;current=null;root.classList.add('hidden');button.focus();}
+  function close(){if(busy||!discard())return;closeMore();changed=false;current=null;root.classList.add('hidden');button.focus();}
   $('classes-close').onclick=close;
   root.addEventListener('keydown',e=>{
-   if(e.key==='Escape')$('classes-close').click();
+   if(e.key==='Escape'){if(activeMore){e.preventDefault();e.stopPropagation();closeMore(true);return;}$('classes-close').click();}
    if(e.key==='Tab'){
     const items=[...root.querySelectorAll('button:not(:disabled),input:not(:disabled),textarea:not(:disabled),select:not(:disabled)')].filter(x=>x.getClientRects().length);
     if(!items.length){e.preventDefault();return;}
