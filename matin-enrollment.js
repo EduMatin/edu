@@ -17,8 +17,10 @@
  const $=id=>document.getElementById(id),api=(op,data={})=>window.MatinAccount.api({action:'membership',op,data:{...data,class_id:active.id}});
  const style=document.createElement('style');style.textContent='#enrollment-modal{z-index:120}#enrollment-modal p{line-height:1.7;overflow-wrap:anywhere}#enrollment-modal .actions{display:flex;gap:8px;flex-wrap:wrap}#enrollment-invite{padding:14px;background:#eef2ff;border-radius:12px;margin:12px 0;overflow-wrap:anywhere}#enrollment-list article{padding:14px;border:1px solid #dce3f1;border-radius:12px;margin:12px 0}#enrollment-status{color:#78502e;min-height:24px}';document.head.append(style);
  style.textContent+='#enrollment-modal .enrollment-filters{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin:16px 0}#enrollment-modal .enrollment-filters label{display:grid;gap:6px}#enrollment-modal .enrollment-filters input,#enrollment-modal select{width:100%;min-width:0;padding:10px;border:1px solid #ccd5e7;border-radius:10px}#enrollment-modal input[type=checkbox]{width:18px;height:18px;vertical-align:middle}#enrollment-modal .enrollment-batch{align-items:center;padding:12px;background:#f1f4ff;border-radius:12px}#enrollment-batch-hint{font-size:13px;color:#627298}#enrollment-modal .enrollment-pages{align-items:center;justify-content:flex-end}#enrollment-page{margin-right:auto}#enrollment-list article>label{display:block;color:#435be2;margin-bottom:8px}@media(max-width:600px){#enrollment-modal .enrollment-filters{grid-template-columns:1fr}#enrollment-modal .modal{padding:20px}#enrollment-modal h2{font-size:22px}#enrollment-modal .btn{white-space:normal}}';
+ style.textContent+='#enrollment-modal [hidden]{display:none!important}';
  function buttons(){
   root.querySelectorAll('button,input,select').forEach(b=>b.disabled=busy);
+  for(const id of ['invite-create','invite-rotate','invite-disable','enrollment-import','enrollment-approve','enrollment-reject','enrollment-select-page'])$(id).hidden=!!active?.class_ended_at;
   $('enrollment-import').disabled=busy||!importSupported||!window.MatinRosterImport;
   const eligible=pageRows.filter(m=>m.status==='pending');
   $('enrollment-select-page').disabled=busy||!batchSupported||!eligible.length;
@@ -27,15 +29,15 @@
   for(const id of ['enrollment-approve','enrollment-reject'])$(id).disabled=busy||!batchSupported||!selected.size;
   $('enrollment-prev').disabled=busy||page<=1;$('enrollment-next').disabled=busy||page>=totalPages;
   $('enrollment-selected').textContent='已勾选 '+selected.size+' 人';
-  $('enrollment-batch-hint').textContent=batchSupported?'只处理勾选的待审核学生；更换筛选或翻页会清空勾选。':'批量审核尚未启用，请先完成学生账号自助服务的数据库和函数更新。';
+  $('enrollment-batch-hint').textContent=active?.class_ended_at?'结课名单只读，停止入班、导入与审核。':batchSupported?'只处理勾选的待审核学生；更换筛选或翻页会清空勾选。':'批量审核尚未启用，请先完成学生账号自助服务的数据库和函数更新。';
  }
  async function task(fn){if(busy)return;busy=true;buttons();$('enrollment-status').textContent='正在处理…';try{const message=await fn();$('enrollment-status').textContent=message||'已加载最新班级成员状态'+(importSupported?'':'；批量导入尚未启用，请完成数据库和函数升级。');}catch(e){$('enrollment-status').textContent=e.message;}finally{busy=false;buttons();}}
- async function load(){const requestClass=active.id,data=await api('roster');if(active.id!==requestClass)return;const inv=data.invite,box=$('enrollment-invite');box.replaceChildren();
-  const info=document.createElement('p');info.textContent=!inv?'尚未生成入班码。':!inv.enabled?'入班申请已关闭。':new Date(inv.expires_at)<=new Date()?'入班码已过期，请更换。':'入班码：'+inv.code+'（有效期至 '+new Date(inv.expires_at).toLocaleDateString('zh-CN')+'）';box.append(info);
+ async function load(){const requestClass=active.id,data=await api('roster');if(active.id!==requestClass)return;active={...active,class_ended_at:data.class_ended_at};const inv=data.invite,box=$('enrollment-invite');box.replaceChildren();
+  const info=document.createElement('p');info.textContent=active.class_ended_at?'已结束教学 · 只读名单（结课时的资料）。停止入班与审核。':!inv?'尚未生成入班码。':!inv.enabled?'入班申请已关闭。':new Date(inv.expires_at)<=new Date()?'入班码已过期，请更换。':'入班码：'+inv.code+'（有效期至 '+new Date(inv.expires_at).toLocaleDateString('zh-CN')+'）';box.append(info);
   if(inv?.enabled&&new Date(inv.expires_at)>new Date()){const b=document.createElement('button');b.className='btn';b.textContent='复制入班码';b.onclick=async()=>{try{await navigator.clipboard.writeText(inv.code);$('enrollment-status').textContent='入班码已复制，请提供给本班学生';}catch{$('enrollment-status').textContent='复制失败，请手动选中上方入班码复制';}};box.append(b);}
-  importSupported=data.import_supported===true;batchSupported=data.batch_review_supported===true;
+  importSupported=!active.class_ended_at&&data.import_supported===true;batchSupported=!active.class_ended_at&&data.batch_review_supported===true;
   const imports=Array.isArray(data.imports)?data.imports:[];
-  $('enrollment-summary').textContent='已加入 '+data.members.filter(m=>m.status==='approved').length+' 人 · 待审核 '+data.members.filter(m=>m.status==='pending').length+' 人 · 待账号关联 '+imports.filter(m=>m.status==='awaiting_account').length+' 人';
+  $('enrollment-summary').textContent=(active.class_ended_at?'已结束教学 · 只读名单 · ':'')+'已加入 '+data.members.filter(m=>m.status==='approved').length+' 人 · 待审核 '+data.members.filter(m=>m.status==='pending').length+' 人 · 待账号关联 '+imports.filter(m=>m.status==='awaiting_account').length+' 人';
   const rank={pending:0,approved:1,awaiting_account:2};
   roster=[...data.members,...imports.map(m=>({...m,imported:true}))].sort((a,b)=>(rank[a.status]??3)-(rank[b.status]??3)||String(a.student_no).localeCompare(String(b.student_no),'zh-CN',{numeric:true})||String(a.student_id||a.id).localeCompare(String(b.student_id||b.id)));selected.clear();render();
  }
@@ -48,14 +50,14 @@
   for(const m of pageRows.filter(m=>!m.imported)){const a=document.createElement('article'),h=document.createElement('h3'),p=document.createElement('p'),actions=document.createElement('div');actions.className='actions';h.textContent=m.display_name+' · '+m.student_no;p.textContent=m.email+' · '+labels[m.status];a.append(h,p,actions);a.dataset.studentId=m.student_id;
    if(m.status==='pending'&&batchSupported){const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.dataset.selectStudent=m.student_id;check.checked=selected.has(m.student_id);check.onchange=()=>{check.checked?selected.set(m.student_id,{student_id:m.student_id,revision:Number(m.revision),display_name:m.display_name,student_no:m.student_no}):selected.delete(m.student_id);buttons();};label.append(check,document.createTextNode(' 勾选 '+m.display_name+'（'+m.student_no+'）'));a.prepend(label);}
    if(m.phone){const phone=document.createElement('p');phone.textContent='电话：'+m.phone;a.insertBefore(phone,actions);}
-   const options=m.status==='pending'?[['approved','通过'],['rejected','拒绝']]:m.status==='approved'?[['removed','移出班级']]:m.status==='removed'?[['pending','允许重新审核']]:[];
+   const options=active.class_ended_at?[]:m.status==='pending'?[['approved','通过'],['rejected','拒绝']]:m.status==='approved'?[['removed','移出班级']]:m.status==='removed'?[['pending','允许重新审核']]:[];
    for(const [decision,title]of options){const b=document.createElement('button');b.className='btn';b.textContent=title;b.onclick=()=>{if(!confirm(title+'：'+m.display_name+'（'+m.student_no+'）？'))return;task(async()=>{await api('review',{student_id:m.student_id,revision:Number(m.revision),decision});await load();});};actions.append(b);}list.append(a);
   }
   for(const m of pageRows.filter(m=>m.imported)){
    const a=document.createElement('article'),h=document.createElement('h3'),p=document.createElement('p'),phone=document.createElement('p');h.textContent=m.display_name+' · '+m.student_no;
-   p.textContent=m.email+' · '+(m.status==='awaiting_account'?'待账号关联：学生验证此邮箱并登录后自动加入':'原关联账号已删除，请联系管理员');
+   p.textContent=m.email+' · '+(m.status==='awaiting_account'?(active.class_ended_at?'结课时尚未关联账号；结课期间不会自动入班':'待账号关联：学生验证此邮箱并登录后自动加入'):'原关联账号已删除，请联系管理员');
    phone.textContent='电话：'+(m.phone||'未填写');a.append(h,p,phone);
-   if(m.status==='awaiting_account'){
+   if(m.status==='awaiting_account'&&!active.class_ended_at){
     const b=document.createElement('button');b.type='button';b.className='btn';b.textContent='撤销此导入';
     b.onclick=()=>{if(confirm('撤销 '+m.display_name+' 的待关联名单？撤销后，该邮箱不会通过这条导入自动入班。'))task(async()=>{await api('import_remove',{id:m.id,revision:Number(m.revision)});await load();});};a.append(b);
    }

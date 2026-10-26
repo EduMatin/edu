@@ -26,7 +26,7 @@
  async function token(){if(!session)throw Error('请先登录学生账号');if(session.expires_at*1000<Date.now()+60000){if(!refreshing)refreshing=auth('token?grant_type=refresh_token',{refresh_token:session.refresh_token}).then(adopt).finally(()=>refreshing=null);await refreshing;}return session.access_token;}
  async function api(op,data={},action='membership'){
   const r=await fetch(base+'/functions/v1/matin-courses',{method:'POST',headers:{'Content-Type':'application/json',apikey:cfg.publishableKey,Authorization:'Bearer '+await token()},body:JSON.stringify({action,op,data}),signal:AbortSignal.timeout(25000)});
-  const out=await r.json().catch(()=>({}));if(!r.ok||!out.ok){if(r.status===401){persist(null);location.replace(location.pathname+'#my');location.reload();}const error=Error(out.error||'班级服务暂不可用');error.status=r.status;throw error;}return out;
+  const out=await r.json().catch(()=>({}));if(!r.ok||!out.ok){if(r.status===401){persist(null);location.replace(location.pathname+'#my');location.reload();}const error=Error(out.error||'班级服务暂不可用');error.status=r.status;error.code=out.code;throw error;}return out;
  }
  function mine(){return !new URLSearchParams(location.hash.slice(1)).has('teacher')&&!new URLSearchParams(location.hash.slice(1)).has('course');}
  function updateNavigation(){for(const [id,page] of [['student-home-open','home'],['student-my-courses','courses'],['student-my-tasks','tasks'],['student-my-classes','classes']]){const b=$(id);if(!b)continue;if(session&&mine()&&view===page)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');}}
@@ -105,11 +105,11 @@
   const hints={pending:'教师审核后即可查看班级课程和任务。',rejected:'请核对入班资料，联系教师后可重新申请。',removed:'已失去此班级的课程和任务权限，如需恢复请联系教师。',left:'如需再次加入，请向教师确认入班码。'};
   for(const c of rows.slice((classPage-1)*6,classPage*6)){
    const card=document.createElement('article');card.dataset.classId=c.id;
-   card.innerHTML='<span class="student-class-badge '+(c.status==='approved'?'approved':c.status==='pending'?'pending':'')+'">'+esc(names[c.status]||'状态待确认')+'</span><h3>'+esc(c.name)+'</h3><p>'+esc([c.major,c.grade].filter(Boolean).join(' · '))+'</p><p>'+esc([c.display_name,c.student_no].filter(Boolean).join(' / '))+'</p>';
-   if(hints[c.status]){const hint=document.createElement('p');hint.textContent=hints[c.status];card.append(hint);}
+   card.innerHTML='<span class="student-class-badge '+(c.status==='approved'?'approved':c.status==='pending'?'pending':'')+'">'+esc(c.class_ended_at?'已结束教学 · 只读':names[c.status]||'状态待确认')+'</span><h3>'+esc(c.name)+'</h3><p>'+esc([c.major,c.grade].filter(Boolean).join(' · '))+'</p><p>'+esc([c.display_name,c.student_no].filter(Boolean).join(' / '))+'</p>';
+   if(hints[c.status]||c.class_ended_at){const hint=document.createElement('p');hint.textContent=c.class_ended_at?'教学已结束，班级资料与学习记录保留为只读档案。':hints[c.status];card.append(hint);}
    const actions=document.createElement('div');actions.className='student-page-actions';
-   if(c.status==='approved'){for(const [label,section] of [['查看班级课程','courses'],['查看班级任务','tasks']]){const b=document.createElement('button');b.type='button';b.className='btn tiny'+(section==='courses'?' primary':'');b.textContent=label;b.onclick=()=>viewClass(c.id,section);actions.append(b);}}
-   if(['approved','pending'].includes(c.status)){const b=document.createElement('button');b.type='button';b.className='btn tiny student-leave';b.textContent=c.status==='pending'?'撤回申请':'退出班级';b.onclick=()=>{if(!confirm(c.status==='pending'?'撤回此入班申请？':'退出后将失去该班级课程入口，确认退出？'))return;task(async()=>{await api('leave',{class_id:c.id,revision:Number(c.revision)});await refresh();hook();return '已更新班级状态';});};actions.append(b);}
+   if(c.status==='approved'){for(const [label,section] of [['查看班级课程','courses'],['查看班级任务','tasks']]){const b=document.createElement('button');b.type='button';b.className='btn tiny'+(section==='courses'?' primary':'');b.textContent=c.class_ended_at&&section==='tasks'?'查看任务档案':label;b.onclick=()=>viewClass(c.id,section);actions.append(b);}}
+   if(!c.class_ended_at&&['approved','pending'].includes(c.status)){const b=document.createElement('button');b.type='button';b.className='btn tiny student-leave';b.textContent=c.status==='pending'?'撤回申请':'退出班级';b.onclick=()=>{if(!confirm(c.status==='pending'?'撤回此入班申请？':'退出后将失去该班级课程入口，确认退出？'))return;task(async()=>{await api('leave',{class_id:c.id,revision:Number(c.revision)});await refresh();hook();return '已更新班级状态';});};actions.append(b);}
    actions.querySelectorAll('button').forEach(b=>b.disabled=classBusy);card.append(actions);list.append(card);
   }
  }

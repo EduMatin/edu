@@ -35,8 +35,8 @@
   let homeSeq=0,centerSeq=0,page=1,pages=1,opener=null,lastHome=0;
   function openReport(row){window.MatinTaskReports.teacherReport({id:row.task_id,title:row.title,class_id:row.class_id,active:true},{student_id:row.student_id,display_name:row.display_name});}
   function renderRows(target,rows){target.replaceChildren();for(const row of rows){const item=el('article',undefined,'ri-row');item.dataset.reviewStudent=row.student_id;item.dataset.reviewTask=row.task_id;
-   const info=el('div');info.append(el('strong',row.display_name+' · '+row.title),el('small',row.class_name+(row.archived_at?'（已归档班级）':'')+' · 学号 '+row.student_no+' · '+row.project_title),el('small','第 '+row.version+' 版 · '+time(row.submitted_at)+' 提交 · '+label(row.review_status)+(row.teacher_score!=null?' · 教师评分 '+row.teacher_score+' / 100':'')));
-   item.append(info,button(row.review_status==='pending_review'?'立即批阅':'查看报告',()=>openReport(row),row.review_status==='pending_review'));target.append(item);
+   const info=el('div');info.append(el('strong',row.display_name+' · '+row.title),el('small',row.class_name+(row.archived_at?'（已归档班级）':'')+' · 学号 '+row.student_no+' · '+row.project_title),el('small','第 '+row.version+' 版 · '+time(row.submitted_at)+' 提交 · '+(row.class_ended_at?'结课档案 · 原状态：':'')+label(row.review_status)+(row.teacher_score!=null?' · 教师评分 '+row.teacher_score+' / 100':'')));
+   item.append(info,button(!row.class_ended_at&&row.review_status==='pending_review'?'立即批阅':'查看报告',()=>openReport(row),!row.class_ended_at&&row.review_status==='pending_review'));target.append(item);
   }}
   const fetchQueue=async data=>{const r=await MatinAccount.api({action:'review_inbox',data});if(r.inbox_version!==1||!Array.isArray(r.rows))throw Error('批阅中心尚未升级，请更新教师批阅提醒与评分 SQL 和 matin-courses。');return r;};
   async function loadHome(){const seq=++homeSeq;lastHome=Date.now();refreshHome.disabled=true;homeStatus.textContent='正在同步待批阅报告…';
@@ -61,7 +61,7 @@
   window.addEventListener('matin-report-reviewed',()=>{void loadHome();if(!root.hidden)void loadCenter();});
   window.addEventListener('matin-report-closed',()=>{if(document.activeElement===document.body){if(!root.hidden)dismiss.focus();else openCenter.focus();}});
   function refreshVisible(){if(document.visibilityState!=='visible'||Date.now()-lastHome<15000)return;if(home.getClientRects().length)void loadHome();if(!root.hidden&&!root.inert)void loadCenter();}
-  window.addEventListener('focus',refreshVisible);document.addEventListener('visibilitychange',refreshVisible);setInterval(refreshVisible,60000);
+  window.addEventListener('matin-class-teaching-changed',()=>{void loadHome();if(!root.hidden)void loadCenter();});window.addEventListener('focus',refreshVisible);document.addEventListener('visibilitychange',refreshVisible);setInterval(refreshVisible,60000);
   void loadHome();
  }};
 })();

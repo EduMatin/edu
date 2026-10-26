@@ -26,7 +26,7 @@
   if(owner!==next){owner=next;signature='';lastAttempt=0;list.replaceChildren();list.hidden=true;toggle.textContent='查看修改要求';toggle.setAttribute('aria-expanded','false');}
   if(!eligible()){notice.hidden=true;document.getElementById('student-review-count')?.remove();return;}
   if(bar&&notice.previousElementSibling!==bar)bar.after(notice);
-  const state=MatinTasks.studentState(),rows=state.tasks.filter(t=>t.active!==false&&t.available!==false&&t.review_status==='revision_required').sort((a,b)=>Date.parse(a.resubmit_due_at)-Date.parse(b.resubmit_due_at)||String(a.id).localeCompare(String(b.id)));
+  const state=MatinTasks.studentState(),rows=state.tasks.filter(t=>!t.class_ended_at&&t.active!==false&&t.available!==false&&t.review_status==='revision_required').sort((a,b)=>Date.parse(a.resubmit_due_at)-Date.parse(b.resubmit_due_at)||String(a.id).localeCompare(String(b.id)));
   let badge=document.getElementById('student-review-count');
   if(rows.length&&nav){if(!badge){badge=el('span');badge.id='student-review-count';nav.append(badge);}badge.textContent='待修改 '+rows.length;}
   else badge?.remove();

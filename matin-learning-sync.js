@@ -16,17 +16,18 @@
  function backup(c,record,label){if(!record)return;try{localStorage.setItem(c.key+':recovery:'+label+':'+Date.now(),JSON.stringify(record));}catch{throw Error('本机备份空间不足，请先导出备份，暂未替换记录。');}}
  function describe(r){return r?(r.nodeName||r.nodeId)+' · '+r.messages.length+' 条对话 · '+r.evaluations.length+' 次评价':'尚无记录';}
  function paint(c=current){if(c!==current)return;mount();panel.hidden=!c;if(!c)return;
-  $('status').textContent=c.writing?'正在同步学习记录…':c.conflict?'检测到多设备修改，自动上传已暂停。请选择要继续的版本。':c.error?'尚未同步：'+c.error:c.dirty?'学习记录待上传，关闭前请确认同步成功。':'✓ 学习记录已同步云端，可换设备继续学习';
+  $('status').textContent=c.readOnly?'班级已结束教学 · 云端档案为只读。本机未同步内容会保留，可导出备份；重新开放教学后请刷新任务再进入。':c.writing?'正在同步学习记录…':c.conflict?'检测到多设备修改，自动上传已暂停。请选择要继续的版本。':c.error?'尚未同步：'+c.error:c.dirty?'学习记录待上传，关闭前请确认同步成功。':'✓ 学习记录已同步云端，可换设备继续学习';
   if(c.storageError)$('status').textContent+=' 本机缓存空间不足，请导出备份。';
-  $('compare').hidden=!c.conflict;$('compare').textContent=c.conflict?'本机：'+describe(c.record)+'；云端：'+describe(c.remote?.record):'';
-  $('use-remote').hidden=$('use-local').hidden=!c.conflict;
-  $('retry').disabled=!!c.writing;$('use-remote').disabled=$('use-local').disabled=!!c.writing;
+  $('compare').hidden=c.readOnly||!c.conflict;$('compare').textContent=c.conflict?'本机：'+describe(c.record)+'；云端：'+describe(c.remote?.record):'';
+  $('use-remote').hidden=$('use-local').hidden=c.readOnly||!c.conflict;
+  $('retry').disabled=c.readOnly||!!c.writing;$('use-remote').disabled=$('use-local').disabled=!!c.writing;
  }
  function payload(c){const h=new URLSearchParams(location.hash.slice(1));return {project_id:c.projectId,...(c.taskId?{task_id:c.taskId}:{}),...(h.has('teacher')?{teacher_token:h.get('teacher')}:{ }),...(h.has('course')?{course_token:h.get('course')}:{})};}
  async function api(c,op,extra={}){if(!MatinStudent.signedIn||MatinStudent.userId!==c.user)throw Error('账号已变化，请重新登录');return MatinStudent.api(op,{...payload(c),...extra},'learning_sync');}
  function validate(d){if(!Number.isSafeInteger(d.revision)||d.revision<0||!(d.record===null||d.record&&d.record.version===1&&Array.isArray(d.record.messages)&&Array.isArray(d.record.evaluations)))throw Error('云端学习记录服务尚未升级或返回数据无效');return d;}
  async function read(c){return validate(await api(c,'read'));}
  async function reconcile(c){const remote=await read(c);c.remote=remote;c.ready=true;c.error='';
+  if(remote.class_ended_at){c.readOnly=true;persist(c);return;}
   if(c.write&&remote.mutation_id===c.write.id&&signature(remote.record)===signature(c.write.record)){c.revision=remote.revision;c.write=null;c.dirty=signature(c.record)!==signature(remote.record);}
   if(c.revision===null&&!remote.record)c.revision=0;
   if(c.dirty){
@@ -36,17 +37,17 @@
   }else{c.record=remote.record||c.record;c.dirty=!remote.record&&!!c.record;}
   c.revision=remote.revision;c.conflict=false;persist(c);
  }
- async function flush(c=current){if(!c)return true;if(c.writing)return c.writing;if(c.ready&&!c.dirty)return true;if(c.ready&&c.conflict)return false;
+ async function flush(c=current){if(!c)return true;if(c.readOnly)return false;if(c.writing)return c.writing;if(c.ready&&!c.dirty)return true;if(c.ready&&c.conflict)return false;
   c.writing=(async()=>{try{
    if(!c.ready){await reconcile(c);if(c!==current)return false;}
-   if(c.conflict)return false;
+   if(c.readOnly||c.conflict)return false;
    while(c.dirty){
     if(!c.write){c.write={id:crypto.randomUUID(),record:clone(c.record)};persist(c);}
     const sent=c.write,d=await api(c,'write',{revision:c.revision,mutation_id:sent.id,record:sent.record});
     if(!Number.isSafeInteger(d.revision)||d.revision<1)throw Error('云端学习记录服务尚未升级');
     c.revision=d.revision;c.write=null;c.error='';c.dirty=signature(c.record)!==signature(sent.record);persist(c);
    }return true;
-  }catch(e){c.error=e.message;if(e.status===409){c.conflict=true;try{c.remote=await read(c);backup(c,c.record,'conflict-local');}catch(err){c.error=err.message;}}return false;
+  }catch(e){c.error=e.message;if(e.status===423){c.readOnly=true;persist(c);window.dispatchEvent(new CustomEvent('matin-class-ended',{detail:{taskId:c.taskId}}));}if(e.status===409){c.conflict=true;try{c.remote=await read(c);backup(c,c.record,'conflict-local');}catch(err){c.error=err.message;}}return false;
   }finally{c.writing=null;paint(c);}})();paint(c);return c.writing;
  }
  async function prepare(options){clearTimeout(timer);if(current)await flush(current);
@@ -54,10 +55,10 @@
   const c={...options,user:MatinStudent.userId,record:clone(options.local),revision:null,dirty:false,ready:false,write:null,conflict:false,error:'',writing:null};
   try{const m=JSON.parse(localStorage.getItem(c.key+':cloud')||'null');if(m&&(m.revision===null||Number.isSafeInteger(m.revision)&&m.revision>=0)){c.revision=m.revision;c.dirty=!!m.dirty;c.write=m.write||null;if(m.dirty)c.record=m.record;else if(options.local&&signature(options.local)!==signature(m.record))c.dirty=true;}}
   catch{c.error='本机同步缓存无法读取';}
-  previous=current;current=c;try{await reconcile(c);}catch(e){c.error=e.message;c.ready=false;}paint(c);return {record:clone(c.record)};
+  previous=current;current=c;try{await reconcile(c);}catch(e){c.error=e.message;c.ready=false;}paint(c);return {record:clone(c.record),class_ended_at:c.remote?.class_ended_at};
  }
- function queue(record){const c=current;if(!c)return;const changed=signature(record)!==signature(c.record);c.record=clone(record);if(changed)c.dirty=true;persist(c);paint(c);clearTimeout(timer);if(c.dirty&&c.ready&&!c.conflict&&!c.error)timer=setTimeout(()=>void flush(c),700);}
- async function retry(){const c=current;if(!c)return;
+ function queue(record){const c=current;if(!c)return;const changed=signature(record)!==signature(c.record);c.record=clone(record);if(changed)c.dirty=true;persist(c);paint(c);clearTimeout(timer);if(c.dirty&&c.ready&&!c.readOnly&&!c.conflict&&!c.error)timer=setTimeout(()=>void flush(c),700);}
+ async function retry(){const c=current;if(!c||c.readOnly)return;
   if(!c.ready||c.conflict){try{await reconcile(c);if(!c.dirty&&c.record){localStorage.setItem(c.key,JSON.stringify(c.record));await c.reload();return;}}catch(e){c.error=e.message;paint(c);return;}}
   await flush(c);
  }
@@ -70,5 +71,5 @@
  window.addEventListener('online',()=>void retry());
  window.addEventListener('beforeunload',e=>{if(current?.dirty){e.preventDefault();e.returnValue='';}});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)void flush();});
- window.MatinLearningSync={prepare,queue,flush,cancel:()=>{current=previous;previous=null;paint();},accept:()=>{previous=null;},hasConflict:()=>!!current?.conflict,hasPending:()=>!!current?.dirty};
+ window.MatinLearningSync={markReadOnly(){if(current){current.readOnly=true;clearTimeout(timer);persist(current);paint();}},prepare,queue,flush,cancel:()=>{current=previous;previous=null;paint();},accept:()=>{previous=null;},hasConflict:()=>!!current?.conflict,hasPending:()=>!!current?.dirty};
 })();

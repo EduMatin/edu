@@ -26,7 +26,7 @@
  let visible=false,refreshHook=async()=>{},refreshing=false,filter='soon',page=1,query='',moreReviews=false,owner='',scope='',initialized=false;
  const pageSize=5,week=7*24*60*60*1000;
  const date=value=>Number.isFinite(Date.parse(value))?new Date(value).toLocaleString('zh-CN',{month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}):'截止时间待确认';
- const pending=(t,s)=>t.active!==false&&t.status!=='submitted'&&(s.reports_version===1||t.status!=='completed');
+ const pending=(t,s)=>!t.class_ended_at&&t.active!==false&&t.status!=='submitted'&&(s.reports_version===1||t.status!=='completed');
  function empty(container,text){container.innerHTML='<p class="home-empty">'+esc(text)+'</p>';}
  function openTask(id){if(!visible||!MatinStudent.mine()||!MatinStudent.signedIn)return;return MatinTasks.openStudent(id);}
  function render(){
@@ -36,7 +36,7 @@
   const s=MatinTasks.studentState(),membership=MatinStudent.membershipState(),m=membership.owner&&membership.owner!==nextOwner?{}:membership,now=Date.now(),all=s.tasks.filter(t=>!scope||t.class_id===scope),todo=all.filter(t=>pending(t,s));
   const overdue=todo.filter(t=>Date.parse(t.effective_due_at||t.due_at)<=now),soon=todo.filter(t=>Date.parse(t.effective_due_at||t.due_at)>now&&Date.parse(t.effective_due_at||t.due_at)<=now+week);
   const resumes=todo.filter(t=>t.available&&['started','completed','revision_required'].includes(t.status)).sort((a,b)=>(Date.parse(b.updated_at)||0)-(Date.parse(a.updated_at)||0)||String(a.id).localeCompare(String(b.id)));
-  const classes=m.data?.classes||[],waiting=classes.filter(c=>c.status==='pending').length,taskUnknown=!!s.error||!!s.loading||!s.loadedAt;
+  const classes=m.data?.classes||[],waiting=classes.filter(c=>!c.class_ended_at&&c.status==='pending').length,taskUnknown=!!s.error||!!s.loading||!s.loadedAt;
   if(!initialized&&!taskUnknown){filter=todo.some(t=>t.review_status==='revision_required')?'revision':overdue.length?'overdue':soon.length?'soon':'all';initialized=true;}
   const selected=classes.find(c=>c.id===scope);$('home-scope').textContent=(scope?(selected?.name||'当前班级'):'全部已加入班级')+' · 未来 7 天截止与逾期待交任务';
   const errors=[s.error,m.error].filter(Boolean);$('home-status').classList.toggle('home-error',!!errors.length);
@@ -74,7 +74,7 @@
   else if(!ordered.length)empty(reviews,'尚未加入班级。点击“管理班级”，输入教师提供的入班码；导入名单的学生请使用名单邮箱验证并登录。');
   else for(const c of ordered.slice(0,moreReviews?ordered.length:3)){
    const labels={approved:['已通过 · 已加入','可以查看本班课程与任务。'],pending:['待教师审核','教师通过后，任务会出现在首页。'],rejected:['申请未通过','请联系教师核对姓名、学号及班级。'],removed:['已被移出班级','当前无法学习本班任务，如有疑问请联系教师。'],left:['已退出 / 已撤回','如需重新加入，请向教师确认入班码。']},label=labels[c.status]||['状态待确认','请刷新或联系教师。'];
-   const card=document.createElement('article');card.className='home-review';card.innerHTML='<h4>'+esc(c.name)+'</h4><span class="home-badge '+esc(c.status)+'">'+label[0]+'</span><p>'+label[1]+'</p>';
+   if(c.class_ended_at)label.splice(0,2,'已结束教学 · 只读','可查看本班任务、学习记录与报告。');const card=document.createElement('article');card.className='home-review';card.innerHTML='<h4>'+esc(c.name)+'</h4><span class="home-badge '+esc(c.status)+'">'+label[0]+'</span><p>'+label[1]+'</p>';
    if(c.status==='approved'){const b=document.createElement('button');b.type='button';b.className='home-link';b.textContent='查看本班课程';b.onclick=()=>MatinStudent.viewClass(c.id);card.append(b);}reviews.append(card);
   }
   if(focusKey){const target=(focusRegion||root).querySelector('[data-home-task="'+CSS.escape(focusKey)+'"]');target?.focus({preventScroll:true});}

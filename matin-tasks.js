@@ -87,6 +87,7 @@
  async function studentAction(task,operation){
   const owner=studentOwner(),state=studentState(),navigationRevision=window.MatinStudent?.navigationRevision;
   if(!owner||state.busy||!state.tasks.some(t=>t.id===task.id&&t.available))return;
+  if(task.class_ended_at){if(operation==='open')window.MatinTaskReports.learningArchive(task);return;}
   if(operation==='complete'&&!confirm('确认已完成此任务的学习要求？这将记录为学生自报完成。'))return;
   const request=++studentRequest,ctx=active&&!active.teacher?active:null;
   student.busy=true;student.error='';student.message='正在保存操作，请稍候…';
@@ -102,6 +103,7 @@
     if(opened!==false&&active===ctx)close(true,false);
    }
   }catch(e){
+   if(e.status===423){student.busy=false;await loadStudent();const frozen=studentState().tasks.find(t=>t.id===task.id);if(frozen?.class_ended_at&&operation==='open'&&navigationRevision===window.MatinStudent?.navigationRevision)window.MatinTaskReports.learningArchive(frozen);return;}
    if(request===studentRequest&&owner===studentOwner()){
     student.error='操作未完成：'+(e.message||'请刷新后重试');
     // An authorization failure must not leave an old card usable.
@@ -130,28 +132,29 @@
   container.replaceChildren();
   for(const t of tasks){
    const reports=studentState().reports_version===1;
-   if(pendingOnly&&(t.status==='submitted'||!reports&&t.status==='completed'))continue;
+   if(pendingOnly&&(t.class_ended_at||t.status==='submitted'||!reports&&t.status==='completed'))continue;
    const card=document.createElement('article');card.className='student-task-card'+(compact?' student-task-compact':'');card.dataset.taskId=t.id;
-   const tag=document.createElement('span');tag.className='student-task-tag';tag.textContent='班级任务';
+   const tag=document.createElement('span');tag.className='student-task-tag';tag.textContent=t.class_ended_at?'已结束教学 · 只读档案':'班级任务';
    const h=document.createElement('h3');h.textContent=t.title;
    const source=document.createElement('p');source.className='student-task-source';
    source.textContent=[t.course_name,t.project_title?'项目：'+t.project_title:'',t.class_name].filter(Boolean).join(' · ');
    const status=document.createElement('p');status.className='student-task-meta';
    const late=Date.parse(t.effective_due_at||t.due_at)<Date.now();
    status.textContent=new Date(t.effective_due_at||t.due_at).toLocaleString('zh-CN')+(t.review_status==='revision_required'?' 重交截止 · ':' 截止 · ')+(t.review_status==='revision_required'?'需修改重交'+(late?' · 已逾期':''):t.review_status==='passed'?'已通过':t.status==='submitted'?(t.review_status?'待教师批阅':'已提交')+(t.late_submission?' · 逾期补交':''):t.status==='completed'?(reports?(late?'逾期未交 · ':'')+'旧版自报完成 · 尚未提交报告':'已完成（自报）'):(late?'已逾期 · ':'')+(t.status==='started'?'进行中':'待开始'));
+   if(t.class_ended_at)status.textContent='结课于 '+new Date(t.class_ended_at).toLocaleString('zh-CN')+' · 保留结课时的学习记录与批阅结果';
    const desc=document.createElement('p');desc.textContent=t.instructions;
    const note=document.createElement('p');note.className='student-task-source';
    note.textContent=t.delivery_mode==='class_snapshot'?'班级学习版本 · 内容以布置时保存的版本为准':'教师公开分享版本';
-   card.append(tag,h,source,status);if(t.review_status==='revision_required')card.append(Object.assign(document.createElement('p'),{className:'student-task-change deadline-earlier',textContent:'修改要求：'+t.revision_reason}));const change=studentChangeNotice(t);if(change)card.append(change);if(compact){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='学习要求与任务说明';details.append(summary,desc,note);card.append(details);}else card.append(desc,note);
+   card.append(tag,h,source,status);if(!t.class_ended_at&&t.review_status==='revision_required')card.append(Object.assign(document.createElement('p'),{className:'student-task-change deadline-earlier',textContent:'修改要求：'+t.revision_reason}));const change=studentChangeNotice(t);if(change)card.append(change);if(compact){const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='学习要求与任务说明';details.append(summary,desc,note);card.append(details);}else card.append(desc,note);
    const actions=document.createElement('div');actions.className='student-task-actions';
    if(t.available){
-    for(const [label,op] of [[t.review_status==='revision_required'?'修改并重交':t.review_status==='passed'?'查看学习记录':t.status==='pending'?'开始学习':t.status==='completed'?'查看学习记录':'继续学习','open'],...(reports||t.status==='completed'?[]:[['标记已完成','complete']])]){
+    for(const [label,op] of [[t.class_ended_at?'查看学习档案':t.review_status==='revision_required'?'修改并重交':t.review_status==='passed'?'查看学习记录':t.status==='pending'?'开始学习':t.status==='completed'?'查看学习记录':'继续学习','open'],...(t.class_ended_at||reports||t.status==='completed'?[]:[['标记已完成','complete']])]){
      const b=document.createElement('button');b.type='button';b.className='btn'+(op==='open'?' primary':'');b.textContent=label;b.dataset.taskAction=op;
      b.disabled=studentState().busy;b.onclick=()=>studentAction(t,op);actions.append(b);
     }
    }else{const unavailable=document.createElement('p');unavailable.textContent='任务项目暂不可用，请联系教师。';actions.append(unavailable);}
    if(t.submission_version){const report=document.createElement('button');report.type='button';report.className='btn';report.textContent='查看已提交报告'+(t.reviewed_at?' · 有教师批注':'');report.disabled=studentState().busy;report.onclick=()=>window.MatinTaskReports.student(t);actions.append(report);}
-   if(!compact&&reports&&t.status!=='submitted'){const hint=document.createElement('p');hint.className='student-task-source';hint.textContent='进入学习后点击“提交学习报告”，教师即可查看你的报告。';card.append(hint);}
+   if(!t.class_ended_at&&!compact&&reports&&t.status!=='submitted'){const hint=document.createElement('p');hint.className='student-task-source';hint.textContent='进入学习后点击“提交学习报告”，教师即可查看你的报告。';card.append(hint);}
    card.append(actions);container.append(card);
   }
   if(!container.childElementCount){const p=document.createElement('p');p.className='help';p.textContent=pendingOnly?'暂无待完成任务，可取消“只看待完成事项”查看已完成任务。':'暂无符合条件的班级任务。';container.append(p);}
@@ -182,7 +185,8 @@
   // Reading data must not trap the user inside the dialog.
   $('tasks-close').disabled=false;$('tasks-return').disabled=false;
   if(ctx.teacher){
-   const unavailable=ctx.loadState!=='ready'||!ctx.projects.length;
+   const unavailable=!!ctx.row?.class_ended_at||ctx.loadState!=='ready'||!ctx.projects.length;
+   $('tasks-new').hidden=!!ctx.row?.class_ended_at||ctx.view==='create';
    $('tasks-form').querySelectorAll('button,input,select,textarea').forEach(e=>e.disabled=ctx.busy||unavailable);
    $('tasks-back').disabled=$('tasks-cancel-create').disabled=ctx.busy&&ctx.writing;
    $('tasks-prev').disabled=ctx.busy||ctx.page<=1;
@@ -223,13 +227,14 @@
     if(active!==ctx)return;
     if(tasks.status==='rejected')throw tasks.reason;
     d=tasks.value;
-    const layout=outline.status==='fulfilled'?outline.value?.layout:null;
+    const layout=d.class_outline||(outline.status==='fulfilled'?outline.value?.layout:null);
     ctx.layout=layout&&Array.isArray(layout.groups)&&Array.isArray(layout.members)?layout:null;
    }else d=await loadStudent();
    if(active!==ctx)return;
    if(!Array.isArray(d.tasks)||(ctx.teacher&&!Array.isArray(d.projects)))throw Error('任务数据不完整，请刷新重试。');
    if(d.error)throw Error(d.error);
    if(ctx.teacher&&d.assignment_mode!=='class_snapshot')throw Error('任务服务尚未更新，请联系管理员完成升级后刷新。');
+   if(ctx.teacher){ctx.row.class_ended_at=d.class_ended_at;ctx.row.class_end_reason=d.class_end_reason;$('tasks-title').textContent=d.class_ended_at?'任务与报告档案 · 只读':'任务管理';root.querySelector('.tasks-hint').textContent=d.class_ended_at?'已结束教学。可查看任务、完成明细、历次报告与批阅记录，并导出名单；如需补交或补批，请在班级管理中重新开放教学。':'点击“完成明细”查看学生进度、报告、批注及导出名单。截止后仍可补交。';}
    ctx.projects=ctx.teacher?d.projects:[];ctx.tasks=d.tasks;ctx.reports=d.reports_version===1;ctx.loadState='ready';if(ctx.teacher){courseFilters(ctx);window.dispatchEvent(new CustomEvent('matin-teacher-tasks-changed',{detail:{classId:ctx.row.id,data:d}}));}projectNotice(ctx,old);renderTasks(ctx,d.tasks);
   }catch(e){
    if(active===ctx){ctx.projects=[];ctx.tasks=[];ctx.loadState='error';ctx.pages=1;projectNotice(ctx);$('tasks-list').textContent='任务读取失败，请刷新重试。';$('tasks-summary').replaceChildren();$('tasks-pages').hidden=true;if(ctx.teacher)window.dispatchEvent(new CustomEvent('matin-teacher-tasks-changed',{detail:{classId:ctx.row.id,error:e.message||'请刷新重试'}}));}
@@ -241,8 +246,8 @@
   const member=ctx.layout?.members.find(m=>m.project_id===id),group=ctx.layout?.groups.find(g=>g.id===member?.group_id);
   return group||{id:'ungrouped',name:ctx.layout?'未归类 / 原课程已移除':'课程待确认'};
  };
- const taskProject=(ctx,t)=>ctx.projects.find(p=>p.id===t.project_id)?.title||t.project_title||'原项目（'+t.project_id+'）';
- const taskStatus=t=>!t.active?'withdrawn':Date.parse(t.due_at)<Date.now()?'overdue':'upcoming';
+ const taskProject=(ctx,t)=>t.class_ended_at?t.project_title||'任务项目':ctx.projects.find(p=>p.id===t.project_id)?.title||t.project_title||'原项目（'+t.project_id+'）';
+ const taskStatus=t=>!t.active?'withdrawn':Date.parse(t.due_at)<(t.class_ended_at?Date.parse(t.class_ended_at):Date.now())?'overdue':'upcoming';
  const statusNames={withdrawn:'已撤回',overdue:'已截止',upcoming:'未截止'};
  function courseFilters(ctx){
   const courses=new Map();for(const p of [...ctx.projects,...ctx.tasks.map(t=>({id:t.project_id}))]){const c=courseFor(ctx,p.id);courses.set(c.id,c.name);}
@@ -271,13 +276,13 @@
    const row=document.createElement('tr');row.dataset.taskId=t.id;
    const name=document.createElement('td');name.append(el('h3',t.title),el('p',courseFor(ctx,t.project_id).name+' · '+taskProject(ctx,t)));
    const more=document.createElement('details');more.className='tasks-extra';more.append(el('summary','任务要求与管理'),el('p',t.instructions||'未填写学习要求。'),el('p',t.delivery_mode==='class_snapshot'?'班级学习版本 · 内容以布置时保存的版本为准。':'旧版任务 · 使用公开分享版本。'));
-   if(t.active)more.append(button(ctx,'撤回任务',async()=>{if(!confirm('撤回“'+t.title+'”后，学生将不再看到此任务，确认？'))return;await api(ctx,'cancel',{task_id:t.id,revision:Number(t.revision)});try{await load(ctx);}catch{return '任务已撤回，列表刷新失败，请点击“刷新任务”确认。';}return '任务已撤回。';}));name.append(more);
+   if(t.active&&!t.class_ended_at)more.append(button(ctx,'撤回任务',async()=>{if(!confirm('撤回“'+t.title+'”后，学生将不再看到此任务，确认？'))return;await api(ctx,'cancel',{task_id:t.id,revision:Number(t.revision)});try{await load(ctx);}catch{return '任务已撤回，列表刷新失败，请点击“刷新任务”确认。';}return '任务已撤回。';}));name.append(more);
    const date=el('td',new Date(t.due_at).toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}));date.dataset.label='截止时间';
    const state=document.createElement('td'),status=taskStatus(t);state.dataset.label='任务状态';state.append(el('span',statusNames[status],'tasks-badge '+status));
    const count=el('td',(ctx.reports?(t.submitted_count||0):(t.completed_count||0))+' 人');count.dataset.label=ctx.reports?'已提交报告':'自报完成';
    if(t.review_counts)count.append(el('p','待批阅 '+t.review_counts.pending_review+' · 需修改 '+t.review_counts.revision_required+' · 已通过 '+t.review_counts.passed));
    const actions=document.createElement('td'),detail=el('button','完成明细','btn tasks-detail-button');detail.type='button';detail.onclick=()=>window.MatinTaskReports.teacher(t);actions.append(detail);
-   if(window.MatinTaskEdit){if(t.active){const edit=el('button','编辑 / 延期','btn tasks-detail-button');edit.type='button';edit.onclick=()=>MatinTaskEdit.edit(t,()=>load(ctx));actions.append(edit);}const history=el('button','修改记录','btn tasks-detail-button');history.type='button';history.onclick=()=>MatinTaskEdit.history(t,true);actions.append(history);}
+   if(window.MatinTaskEdit){if(t.active&&!t.class_ended_at){const edit=el('button','编辑 / 延期','btn tasks-detail-button');edit.type='button';edit.onclick=()=>MatinTaskEdit.edit(t,()=>load(ctx));actions.append(edit);}const history=el('button','修改记录','btn tasks-detail-button');history.type='button';history.onclick=()=>MatinTaskEdit.history(t,true);actions.append(history);}
    row.append(name,date,state,count,actions);body.append(row);
   }
   if(visible.length)list.append(table);else list.append(el('p',tasks.length?'没有符合条件的任务，请调整课程、状态或搜索条件。':'尚未布置任务，点击右上方“新建任务”开始。','tasks-empty'));
@@ -331,7 +336,7 @@
  $('tasks-back').onclick=backToList;$('tasks-cancel-create').onclick=backToList;
  $('tasks-project').onchange=()=>{if(active)selectedProjectState(active);};
  $('tasks-form').onsubmit=e=>{
-  e.preventDefault();const ctx=active;if(!ctx?.teacher||ctx.busy)return;
+  e.preventDefault();const ctx=active;if(!ctx?.teacher||ctx.busy||ctx.row.class_ended_at)return;
   const projectId=$('tasks-project').value,title=$('tasks-name').value.trim(),due=new Date($('tasks-due').value);
   const selected=ctx.projects.find(p=>p.id===projectId);
   if(ctx.loadState!=='ready'||!selected){$('tasks-status').textContent='本班暂无可选项目，请先检查课程关联和云端保存状态。';return;}
@@ -357,7 +362,7 @@
   if(active?.teacher&&!discardCreate(active))return;
   if(active?.underlay)active.underlay.inert=active.underlayInert;
   const underlay=[...document.querySelectorAll('.modal-layer:not(.hidden)')].filter(e=>e!==root).at(-1);
-  const ctx={teacher:!!row,row:row?{id:row.id,name:row.name}:null,busy:false,writing:false,projects:[],tasks:[],layout:null,loadState:'loading',opener:document.activeElement,underlay,underlayInert:underlay?.inert,view:'list',page:1,pages:1,filters:{course:typeof options.courseId==='string'?options.courseId:'',query:'',state:'active',sort:'newest'}};
+  const ctx={teacher:!!row,row:row?{...row}:null,busy:false,writing:false,projects:[],tasks:[],layout:null,loadState:'loading',opener:document.activeElement,underlay,underlayInert:underlay?.inert,view:'list',page:1,pages:1,filters:{course:typeof options.courseId==='string'?options.courseId:'',query:'',state:'active',sort:'newest'}};
   active=ctx;
   if(underlay)underlay.inert=true;
   root.classList.toggle('teacher-tasks',ctx.teacher);$('tasks-search').value='';$('tasks-state').value='active';$('tasks-sort').value='newest';$('tasks-course').replaceChildren(new Option('全部课程',''));$('tasks-summary').replaceChildren();$('tasks-outline-warning').hidden=true;setView(ctx,'list');
