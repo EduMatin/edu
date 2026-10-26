@@ -327,14 +327,14 @@ button:active:not(:disabled){transform:scale(.985)}
     <button type="button" id="classes-open"><span class="nav-icon">▤</span> 班级管理</button>
 
   </nav>
-  <div class="topright"><span class="topnote" id="save-status">本机浏览器保存</span><a class="btn" id="student-entry" href="./index.html" target="_blank" rel="noopener">↗ 查看学生端</a><button class="btn" id="settings-open" type="button">✦ AI 模型设置</button></div>
+  <div class="topright"><span class="topnote" id="save-status">本机浏览器保存</span><a class="btn" id="student-entry" href="./index.html#my&amp;view=home" target="_blank" rel="noopener" title="在新标签页打开；用学生账号登录后查看课程、任务、班级和学习进度">↗ 打开学生学习中心</a><button class="btn" id="settings-open" type="button">✦ AI 模型设置</button></div>
 </header>
 <main class="container">
   <section id="view-dashboard">
     <div class="dash-kicker"><span class="activity-dot"></span> MATIN · TEACHER STUDIO <span class="kicker-right">TEACHER WORKSPACE · V8.0</span></div>
     <div class="dashboard-hero">
       <div class="hero-copy"><div class="hero-eyebrow">✦ AI-POWERED LEARNING DESIGN</div><h1>设计专业课程，<br><em>安排每一班的学习。</em></h1><p>在课程中创建教学项目，选择班级并布置学习任务。学生从班级任务进入学习、提交报告；也可独立开启项目的公开分享，供学生自主学习。</p>
-      <div class="actions"><button type="button" class="btn hero-action" id="new-course-button">＋ 新建课程</button><button type="button" class="btn hero-action hidden" id="new-project-button">＋ 在此课程新建项目</button><button type="button" class="btn hero-secondary" id="import-button">⇧ 导入已有项目</button><button type="button" class="btn hero-secondary" id="cloud-help-button">☁ 云端发布说明</button><button type="button" class="btn hero-secondary" id="teacher-home-open">↗ 教师课程主页</button><button type="button" class="btn hero-secondary" id="publish-catalog-button">⇩ 离线导出课程库</button></div></div>
+      <div class="actions"><button type="button" class="btn hero-action" id="new-course-button">＋ 新建课程</button><button type="button" class="btn hero-action hidden" id="new-project-button">＋ 在此课程新建项目</button><button type="button" class="btn hero-secondary" id="import-button">⇧ 导入已有项目</button><button type="button" class="btn hero-secondary" id="cloud-help-button">☁ 云端发布说明</button><button type="button" class="btn hero-secondary" id="teacher-home-open" title="管理和预览公开分享的课程，复制分享链接">↗ 公开课程分享页</button><button type="button" class="btn hero-secondary" id="publish-catalog-button">⇩ 离线导出课程库</button></div></div>
       <div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="hero-glow"></div><div class="hero-node hero-node-a"><b>◇</b><span>故事设计</span></div><div class="hero-node hero-node-b"><b>✦</b><span>AI 对话</span></div><div class="hero-node hero-node-c"><b>◎</b><span>智能评估</span></div><svg viewBox="0 0 340 255"><path d="M70 118 C132 118 125 64 181 88 S245 154 287 164" fill="none" stroke="#b9d3ff" stroke-width="2" stroke-dasharray="6 7" opacity=".7"/><path d="M78 140 C155 155 185 202 257 176" fill="none" stroke="#90a5ff" stroke-width="2" stroke-dasharray="6 7" opacity=".6"/></svg></div>
     </div>
     <div class="stats-grid"><div class="metric-card"><span class="metric-icon indigo">▦</span><div><div class="metric-value" id="metric-projects">0</div><div class="metric-label">实训项目</div></div><span class="metric-foot">PROJECTS</span></div><div class="metric-card"><span class="metric-icon cyan">◇</span><div><div class="metric-value" id="metric-nodes">0</div><div class="metric-label">剧情节点</div></div><span class="metric-foot">SCENES</span></div><div class="metric-card"><span class="metric-icon emerald">⌁</span><div><div class="metric-value" id="metric-branches">0</div><div class="metric-label">流程连线</div></div><span class="metric-foot">BRANCHES</span></div><div class="metric-card metric-ai"><span class="metric-icon amber">✦</span><div><div class="metric-value" id="metric-model">离线</div><div class="metric-label">当前 AI 引擎</div></div><span class="metric-foot">MODEL</span></div></div>
@@ -403,12 +403,12 @@ button:active:not(:disabled){transform:scale(.985)}
 
 <div id="teacher-home-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="teacher-home-title">
  <div class="modal">
-  <h2 id="teacher-home-title">教师课程主页</h2>
-  <p>一个链接展示你所有已发布课程，之后发布的新课程也会自动加入。学生点击「同步最新课程」即可更新列表；草稿和其他教师的课程不会展示。</p>
-  <p>持有链接的人都可以查看主页中的已发布课程，请仅分享给需要的学生。</p>
-  <div class="cloud-field hidden" id="teacher-home-link-box"><label for="teacher-home-link">我的主页链接</label><input id="teacher-home-link" readonly><div class="actions"><button type="button" class="btn" id="teacher-home-copy">复制主页链接</button><a class="btn" id="teacher-home-visit" target="_blank" rel="noopener">预览学生页面 ↗</a></div></div>
+  <h2 id="teacher-home-title">公开课程分享页</h2>
+  <p>用一个链接展示你已开启公开分享的课程项目，供访问者浏览和自主学习。之后新开启公开分享的项目也会自动加入；草稿和其他教师的项目不会展示。</p>
+  <p>持有链接的人都可以查看这些公开项目。班级任务、提交报告和学习进度请从“打开学生学习中心”进入，用学生账号登录查看。</p>
+  <div class="cloud-field hidden" id="teacher-home-link-box"><label for="teacher-home-link">公开课程分享链接</label><input id="teacher-home-link" readonly><div class="actions"><button type="button" class="btn" id="teacher-home-copy">复制分享链接</button><a class="btn" id="teacher-home-visit" target="_blank" rel="noopener">预览公开分享页 ↗</a></div></div>
   <p id="teacher-home-status" role="status"></p>
-  <div class="actions" style="flex-wrap:wrap"><button type="button" class="btn primary" id="teacher-home-create">开启主页</button><button type="button" class="btn hidden" id="teacher-home-rotate">更换主页链接</button><button type="button" class="btn hidden" id="teacher-home-disable">关闭主页</button><button type="button" class="btn" id="teacher-home-close">关闭窗口</button></div>
+  <div class="actions" style="flex-wrap:wrap"><button type="button" class="btn primary" id="teacher-home-create">开启分享页</button><button type="button" class="btn hidden" id="teacher-home-rotate">更换分享链接</button><button type="button" class="btn hidden" id="teacher-home-disable">停用分享页</button><button type="button" class="btn" id="teacher-home-close">关闭窗口</button></div>
  </div>
 </div>
 
@@ -631,7 +631,7 @@ button:active:not(:disabled){transform:scale(.985)}
     pendingCloudAction={id,action};
     $('cloud-title').textContent=action==='unpublish'?'关闭项目公开分享':action==='rotate'?'更换分享链接':'开启项目公开分享';
     $('cloud-summary').textContent=action==='unpublish'?`下架「${p.title}」后旧链接失效，云端草稿保留。`:action==='rotate'?'更换后旧链接立即失效，请重新向学生分享。':`发布「${p.title}」的当前版本。只有获得课程链接的人才能打开；请仅分享给本班学生。`;
-    cloudNotice('登录账号拥有这门课程。保存草稿不会改变学生正在使用的发布版本。开启教师课程主页后，本次发布也会更新主页中的课程。');
+    cloudNotice('登录账号拥有这门课程。保存草稿不会改变学生正在使用的发布版本。开启公开课程分享页后，本次发布也会更新分享页中的项目。');
     $('cloud-confirm').disabled=false;$('cloud-confirm').textContent=action==='unpublish'?'关闭公开分享':action==='rotate'?'更换链接':'开启公开分享';
     showShare(id);$('cloud-publish-modal').classList.remove('hidden');
   };
@@ -654,7 +654,7 @@ button:active:not(:disabled){transform:scale(.985)}
     renderHome(null);
     try{
       const data=await window.MatinAccount.api({action});renderHome(data.token);
-      $('teacher-home-status').textContent=data.token?'主页已开启。已发布课程会自动出现在此链接中。':'主页未开启。关闭主页不会下架课程，原有单门课程链接仍然有效。';
+      $('teacher-home-status').textContent=data.token?'分享页已开启。已开启公开分享的项目会自动汇总到此链接。':'分享页未开启或已停用。班级任务和单个项目分享链接仍可使用。';
     }catch(e){
       $('teacher-home-status').textContent=e.message+'。请关闭窗口后重新打开确认状态。';
       // Do not offer activation when the existing state could not be read.
@@ -662,15 +662,14 @@ button:active:not(:disabled){transform:scale(.985)}
     }finally{homeBusy=false;homeControls.forEach(id=>$(id).disabled=false);}
   }
   $('teacher-home-open').onclick=()=>{
-    if(!account){notify('请在已配置云端的教师端登录后使用课程主页。');return;}
+    if(!account){notify('请在已配置云端的教师端登录后管理公开课程分享页。');return;}
     $('teacher-home-modal').classList.remove('hidden');homeRequest('home_get');
   };
-  $('student-entry').onclick=e=>{if(account){e.preventDefault();$('teacher-home-open').click();}};
   $('teacher-home-create').onclick=()=>homeRequest('home_create');
-  $('teacher-home-rotate').onclick=()=>{if(confirm('更换后，旧主页链接将失效。需要重新向学生分享新链接。继续？'))homeRequest('home_rotate');};
-  $('teacher-home-disable').onclick=()=>{if(confirm('关闭后，学生将无法通过主页链接读取课程。单门课程链接仍有效。继续？'))homeRequest('home_disable');};
+  $('teacher-home-rotate').onclick=()=>{if(confirm('更换后，旧的公开课程分享页链接将失效，需要重新分享新链接。班级任务和单个项目分享链接不受影响。继续？'))homeRequest('home_rotate');};
+  $('teacher-home-disable').onclick=()=>{if(confirm('停用后，访问者无法通过此汇总链接读取公开课程。班级任务和单个项目分享链接不受影响。继续？'))homeRequest('home_disable');};
   $('teacher-home-close').onclick=()=>{if(!homeBusy)$('teacher-home-modal').classList.add('hidden');};
-  $('teacher-home-copy').onclick=async()=>{if(!homeToken)return;try{await navigator.clipboard.writeText($('teacher-home-link').value);$('teacher-home-status').textContent='主页链接已复制。';}catch{$('teacher-home-link').select();$('teacher-home-status').textContent='请按 Ctrl+C 复制主页链接。';}};
+  $('teacher-home-copy').onclick=async()=>{if(!homeToken)return;try{await navigator.clipboard.writeText($('teacher-home-link').value);$('teacher-home-status').textContent='公开课程分享链接已复制。';}catch{$('teacher-home-link').select();$('teacher-home-status').textContent='请按 Ctrl+C 复制分享链接。';}};
   $('teacher-home-modal').onclick=e=>{if(e.target===$('teacher-home-modal')&&!homeBusy)$('teacher-home-modal').classList.add('hidden');};
   const closeCloudPublish=()=>{$('cloud-publish-modal').classList.add('hidden');pendingCloudAction=null;};
   const confirmCloudPublish=async()=>{

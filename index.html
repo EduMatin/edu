@@ -115,8 +115,9 @@ if(isHome){const validIds=new Set(courses.map(p=>p.id)),assigned=new Set();
  const rest=courses.filter(p=>!assigned.has(p.id)).map(p=>p.id);if(rest.length)courseGroups.push({id:'ungrouped',name:'未归类项目',project_ids:rest});
  if(selectedGroup&&!courseGroups.some(g=>g.id===selectedGroup))selectedGroup=null;
 }
-$('catalog-status').textContent=isHome?'教师课程主页 · 选择课程后查看已发布项目':'已打开教师分享的课程 · 内容以教师发布的版本为准';
- document.querySelector('.page-intro h1').textContent=isHome?'教师课程主页':'探索你的学习空间';
+$('catalog-status').textContent=isHome?'公开课程分享页 · 选择课程后浏览公开项目，自主学习':'已打开教师分享的课程 · 内容以教师发布的版本为准';
+ document.querySelector('.page-intro h1').textContent=isHome?'公开课程分享页':'探索你的学习空间';
+ if(isHome)document.querySelector('.page-intro p').textContent='这里展示教师公开分享的课程项目，供自主学习。班级任务请进入“学习首页”，登录学生账号后查看。';
  document.querySelector('.brand').href='./index.html'+location.hash;$('catalog-status').className='status-line';
 }catch(e){courses=[];$('catalog-status').textContent='无法打开课程：'+e.message+'。请联系教师取得有效链接。';$('catalog-status').className='status-line warning';}
 catalogLoading=false;renderLibrary();return;}
