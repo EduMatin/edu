@@ -8,7 +8,7 @@
   root.innerHTML=`<div class="modal classes-panel">
    <div class="actions"><h2 id="classes-title" style="margin-right:auto">班级管理</h2><button type="button" class="btn" id="classes-close">关闭</button></div>
    <p>管理自己的专业、年级和班级。一个班级可关联多门课程，同一课程也可用于多个班级。</p>
-   <p class="notice">审核通过的学生可在“我的课程”查看班级关联的已发布项目。原有教师主页和项目分享链接仍独立有效。</p>
+   <p class="notice">教学中的班级保留在常用列表。完成教学与批阅后，先“结束教学”，再归档保存只读资料。</p>
    <p id="classes-context" class="notice" hidden></p>
    <p id="classes-status" role="status" aria-live="polite"></p>
    <div class="classes-layout"><section><div class="actions"><select id="classes-view" aria-label="班级范围"><option value="active">常用班级</option><option value="archived">已归档</option><option value="ended">已结束教学</option><option value="all">全部班级</option></select><input id="classes-search" aria-label="搜索班级" placeholder="搜索专业、年级、班级"><button type="button" class="btn" id="classes-refresh">刷新列表</button><button type="button" class="btn" id="classes-new">新建班级</button></div><p id="classes-count"></p><div id="classes-list"></div></section>
@@ -21,7 +21,7 @@
    </form></div></div>`;
   const style=document.createElement('style');style.textContent=`#classes-modal .classes-panel{width:min(1100px,96vw);max-width:1100px;max-height:90vh;overflow:auto}#classes-modal p{line-height:1.7}#classes-modal .classes-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}#classes-modal .actions{flex-wrap:wrap;gap:8px}#classes-search{min-width:120px;flex:1;padding:10px;border:1px solid #ccd5e7;border-radius:10px}#classes-list{max-height:55vh;overflow:auto}#classes-modal .class-card{padding:16px;margin:10px 0;border:1px solid #dce3f1;border-radius:14px;background:#f8faff;overflow-wrap:anywhere}#classes-modal fieldset{border:1px solid #dce3f1;border-radius:12px;margin:14px 0;padding:12px}#class-courses{max-height:210px;overflow:auto}#class-legacy label,#class-courses label{display:flex;gap:10px;align-items:flex-start;padding:8px}#class-legacy input,#class-courses input{width:auto;flex-shrink:0}#classes-status{min-height:26px;color:#4c539d}#classes-modal h3{margin:4px 0 12px}@media(max-width:760px){#classes-modal .classes-layout{grid-template-columns:1fr}#classes-list{max-height:220px}}`;
   style.textContent+='#classes-view{font:inherit;color:#42547b;background:#fff;min-height:42px;max-width:100%;padding:10px 12px;border:1px solid #ccd5e7;border-radius:10px}#classes-view:focus-visible{outline:3px solid #b8c8ff;outline-offset:2px}';
-  style.textContent+='#classes-modal .class-archive{color:#4e49bd;border-color:#d7d8fb;background:#efefff}#classes-modal .class-more-toggle[aria-expanded="true"]{background:#edf1fa}#classes-modal .class-more-panel[hidden]{display:none}#classes-modal .class-more-panel{margin-top:12px;padding:12px;border:1px solid #e0e5ef;border-radius:10px;background:#fff}#classes-modal .class-more-panel p{margin:0 0 10px;font-size:13px;color:#68778e}#classes-modal .class-more-panel .btn{color:#a83742;border-color:#ecd2d5}#classes-modal .class-card :focus-visible{outline:3px solid #b8c8ff;outline-offset:2px}';
+  style.textContent+='#classes-modal .class-archive-hint{font-size:13px;color:#68778e;margin-bottom:0}#classes-modal .class-archive:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}#classes-modal .class-archive{color:#4e49bd;border-color:#d7d8fb;background:#efefff}#classes-modal .class-more-toggle[aria-expanded="true"]{background:#edf1fa}#classes-modal .class-more-panel[hidden]{display:none}#classes-modal .class-more-panel{margin-top:12px;padding:12px;border:1px solid #e0e5ef;border-radius:10px;background:#fff}#classes-modal .class-more-panel p{margin:0 0 10px;font-size:13px;color:#68778e}#classes-modal .class-more-panel .btn{color:#a83742;border-color:#ecd2d5}#classes-modal .class-card :focus-visible{outline:3px solid #b8c8ff;outline-offset:2px}';
   style.textContent+='#classes-modal [hidden]{display:none!important}';
   document.head.append(style);document.body.append(root);
   const $=id=>document.getElementById(id);let rows=[],current=null,busy=false,changed=false,loaded=false,loadError='',courseContext=null,formOutlineRevision=0,activeMore=null;
@@ -50,7 +50,7 @@
   window.MatinAccount.canLeave=()=>{if(busy){alert('班级操作正在处理中，请稍候。');return false;}return oldCanLeave()&&(!changed||confirm('班级资料尚未保存，确定离开？'));};
   window.addEventListener('beforeunload',e=>{if(changed||busy){e.preventDefault();e.returnValue='';}});
   const discard=()=>!changed||confirm('放弃尚未保存的班级修改？');
-  function lock(value){busy=value;root.querySelectorAll('button,input,textarea,select').forEach(el=>el.disabled=value);$('class-save').disabled=value||!loaded;}
+  function lock(value){busy=value;root.querySelectorAll('button,input,textarea,select').forEach(el=>el.disabled=value||el.dataset.requiresEnded==='true');$('class-save').disabled=value||!loaded;}
   function edit(row=null){
    current=row;changed=false;$('class-heading').textContent=row?'编辑班级':'新建班级';
    for(const key of ['name','major','grade','notes'])$('class-'+key).value=row?.[key]||'';
@@ -68,7 +68,7 @@
    $('class-legacy-box').hidden=!unresolved.length;
 
   }
-  function teaching(row){window.MatinClassTeaching.open(row,updated=>{rows=rows.map(r=>r.id===row.id?{...r,...updated}:r);edit();render();});}
+  function teaching(row){window.MatinClassTeaching.open(row,updated=>{rows=rows.map(r=>r.id===row.id?{...r,...updated}:r);if(row.archived_at&&!updated.archived_at&&!updated.class_ended_at)$('classes-view').value='active';edit();render();});}
   function render(){
    closeMore();
    renderCourseInfo();
@@ -79,7 +79,7 @@
    let layout;try{layout=outline().layout;}catch{}
    const titles=new Map((layout?.groups||[]).map(g=>[g.id,g.name]));
    for(const r of visible){
-    const card=document.createElement('article');card.className='class-card';const h=document.createElement('h3');h.textContent=r.name+(r.class_ended_at?' · 已结束教学 · 只读':'')+(r.archived_at?' · 已归档':'');
+    const card=document.createElement('article');card.className='class-card';const h=document.createElement('h3');h.textContent=r.name+(r.class_ended_at?' · 已结束教学 · 只读':' · 教学中')+(r.archived_at?' · 已归档':'');
     const info=document.createElement('p');info.textContent=[r.major||'未填写专业',r.grade||'未填写年级'].join(' · ');
     const courses=document.createElement('p');courses.textContent='授课课程：'+(layout?([...groupLinks(r,layout)].filter(id=>titles.has(id)).map(id=>titles.get(id)).join('、')||'尚未关联'):'课程目录尚未加载');
     const legacy=(r.matin_class_courses||[]).filter(c=>!layout||!projectGroup(c.course_id,layout));if(legacy.length)courses.textContent+='；有 '+legacy.length+' 个旧版项目关联待归类';
@@ -87,7 +87,7 @@
     const actions=document.createElement('div');actions.className='actions';
     const e=document.createElement('button');e.type='button';e.className='btn';e.hidden=!!r.class_ended_at;e.textContent=r.class_ended_at?'教学状态与记录':'编辑';e.onclick=()=>{if(!busy&&discard()){if(r.class_ended_at)teaching(r);else edit(r);}};
     const d=document.createElement('button');d.type='button';d.className='btn';d.textContent='删除空班级';d.onclick=async()=>{
-     if(busy||!discard()||!confirm(`删除空班级“${r.name}”？仅无成员、无导入名单、无任务的空班级可删除；已有教学记录请使用归档。课程内容会保留。`))return;
+     if(busy||!discard()||!confirm(`删除空班级“${r.name}”？仅无成员、无导入名单、无任务的空班级可删除；已有教学记录请在结束教学后归档。课程内容会保留。`))return;
      closeMore();
      await request(async()=>{await window.MatinAccount.api({action:'class_delete',id:r.id,revision:Number(r.revision)});rows=rows.filter(x=>x.id!==r.id);edit();render();return '班级已删除，课程内容已保留。';});
      if(more.isConnected)more.focus();else $('classes-search').focus();
@@ -95,15 +95,15 @@
     const members=document.createElement('button');members.type='button';members.className='btn';members.textContent=r.class_ended_at?'学生名单（只读）':'学生与入班审核';members.onclick=()=>{if(!busy&&discard())window.MatinEnrollment.open(r);};
     const tasks=document.createElement('button');tasks.type='button';tasks.className='btn';tasks.textContent=r.class_ended_at?'任务与报告档案':'任务管理';tasks.onclick=()=>{if(!busy&&discard())window.MatinTasks.open(r);};
     const end=document.createElement('button');end.type='button';end.className='btn';end.textContent=r.class_ended_at?'教学状态与记录':'结束教学';end.onclick=()=>{if(!busy&&discard())teaching(r);};
-    const archive=document.createElement('button');archive.type='button';archive.className='btn class-archive';archive.textContent=r.archived_at?'恢复到常用班级':'归档班级';archive.onclick=async()=>{
-     if(busy||!discard()||!confirm((r.archived_at?'恢复班级“':'归档班级“')+r.name+'”？归档仅从常用列表收起，保留成员、任务、进度、报告和批注；归档不会改变教学状态；已结课班级仍为只读。'))return;
+    const archive=document.createElement('button');archive.type='button';archive.className='btn class-archive';archive.textContent=r.archived_at?'恢复到常用班级':'归档班级';archive.dataset.requiresEnded=String(!r.archived_at&&!r.class_ended_at);archive.disabled=archive.dataset.requiresEnded==='true';archive.title=archive.disabled?'请先结束教学，再归档班级':'';archive.setAttribute('aria-describedby','archive-hint-'+r.id);archive.onclick=async()=>{
+     if(busy||(!r.archived_at&&!r.class_ended_at)||!discard()||!confirm(r.archived_at?'将“'+r.name+'”恢复到常用班级？仍保持结课只读；如需补交或补批，请另行重新开放教学。':'将已结束教学的“'+r.name+'”归档？资料保留为只读档案，可在“已归档”中查阅。'))return;
      await request(async()=>{const result=await MatinAccount.api({action:'class_archive',id:r.id,revision:Number(r.revision),archived:!r.archived_at});rows=rows.map(x=>x.id===r.id?{...x,...result.class}:x);edit();render();return r.archived_at?'班级已恢复。':'班级已归档，可切换“已归档”继续查看或恢复。';});
     };
     const more=document.createElement('button');more.type='button';more.className='btn class-more-toggle';more.textContent='更多 ▾';more.setAttribute('aria-label','更多班级操作：'+r.name);more.setAttribute('aria-expanded','false');
     const morePanel=document.createElement('div');morePanel.className='class-more-panel';morePanel.id='class-more-'+r.id;morePanel.hidden=true;more.setAttribute('aria-controls',morePanel.id);
-    const deleteHint=document.createElement('p');deleteHint.id='class-delete-hint-'+r.id;deleteHint.textContent='仅无成员、无导入名单、无任务的空班级可删除。有教学记录的班级请使用“归档班级”，保留记录供后续查阅。';d.setAttribute('aria-describedby',deleteHint.id);morePanel.append(deleteHint,d);
+    const deleteHint=document.createElement('p');deleteHint.id='class-delete-hint-'+r.id;deleteHint.textContent='仅无成员、无导入名单、无任务的空班级可删除。有教学记录的班级请先结束教学，再归档保存。';d.setAttribute('aria-describedby',deleteHint.id);morePanel.append(deleteHint,d);
     more.onclick=()=>{if(busy)return;const wasOpen=!morePanel.hidden;closeMore();if(!wasOpen){morePanel.hidden=false;more.setAttribute('aria-expanded','true');activeMore={trigger:more,panel:morePanel};}};
-    actions.append(e,members,tasks,end,archive,more);card.append(h,info,courses,actions,morePanel);list.append(card);
+    const archiveHint=document.createElement('p');archiveHint.id='archive-hint-'+r.id;archiveHint.className='class-archive-hint';archiveHint.textContent=r.archived_at?'已结课归档，可查阅和导出资料。':r.class_ended_at?'已结束教学，可归档保存。':'结束教学后可归档。';actions.append(e,members,tasks,end,archive,more);card.append(h,info,courses,actions,archiveHint,morePanel);list.append(card);
    }
   }
   async function request(fn){lock(true);$('classes-status').textContent='正在处理…';try{$('classes-status').textContent=await fn();}catch(e){$('classes-status').textContent=e.message;}finally{lock(false);}}
