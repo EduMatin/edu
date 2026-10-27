@@ -65,5 +65,5 @@
   }
   function fatal(error){panel();document.getElementById('account-form').innerHTML='<h1>云端课程未能加载</h1><p id="account-status"></p><button type="button" id="account-retry">重试</button><button type="button" id="account-exit">退出账号</button>';status().textContent=error.message;
     document.getElementById('account-retry').onclick=()=>location.reload();document.getElementById('account-exit').onclick=()=>{persist(null);location.reload();};}
-  window.MatinAccount={enabled,ready,api,fatal,canLeave:()=>true};
+  window.MatinAccount={enabled,ready,api,classAI:async(payload,signal)=>window.MatinClassAI.request(base,cfg.publishableKey,await token(),payload,signal),fatal,canLeave:()=>true};
 })();

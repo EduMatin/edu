@@ -391,8 +391,8 @@ button:active:not(:disabled){transform:scale(.985)}
 <div id="settings-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="model-heading">
   <div class="modal"><div class="modal-head"><h2 id="model-heading">AI 模型与接口</h2><button type="button" class="btn tiny" id="settings-close">✕ 关闭</button></div>
     <p class="notice" style="margin-bottom:18px">正式给学生使用时，请把模型调用放到后端。GitHub Pages 上的前端代码无法安全保管教师 API Key。学生自带 API Key 只适合受信任的个人设备临时测试，可能受浏览器跨域限制；正式班级使用请切换“班级统一 AI”，教师密钥只放在后台服务器，刷新后课堂访问码需重新输入。</p>
-    <div class="field"><label for="provider-select">选择服务商</label><select id="provider-select"><option value="offline">离线 · 按自定义剧本规则回复（无需 Key）</option><option value="classroom">班级统一 AI · 教师提供密钥（学生免 Key）</option><option value="deepseek">DeepSeek</option><option value="qwen">阿里云百炼 / 通义千问</option><option value="zhipu">智谱 GLM</option><option value="kimi">Moonshot / Kimi</option><option value="gemini">Google Gemini</option><option value="custom">自定义 OpenAI 兼容接口</option></select></div>
-    <div id="classroom-extra" class="hidden"><div class="field"><label for="classroom-url">教师后台地址（HTTPS）</label><input id="classroom-url" type="url" placeholder="https://your-matin-api.onrender.com" /></div><div class="field"><label for="classroom-code">课堂访问码（不是 API Key）</label><input id="classroom-code" type="password" autocomplete="off" placeholder="教师发放的课堂访问码" /></div><p class="small-note">访问码仅保存在当前标签页内存中，不会写进 GitHub 或 localStorage。首次免费托管启动可能需要等待。</p></div><div id="api-extra" class="hidden"><div class="field"><label for="api-key-input">临时 API Key</label><input id="api-key-input" type="password" autocomplete="off" placeholder="仅在你自己的设备填写" /></div><div class="field"><label for="model-input">模型名称</label><input id="model-input" type="text" placeholder="例如 deepseek-chat" /></div><div id="custom-extra" class="field hidden"><label for="custom-url-input">API 基础地址（Base URL）</label><input id="custom-url-input" type="url" placeholder="https://your-api.example/v1" /></div></div>
+    <div class="field"><label for="provider-select">选择服务商</label><select id="provider-select"><option value="offline">离线 · 按自定义剧本规则回复（无需 Key）</option><option value="classroom_auto">班级 AI · 按账号自动接入（推荐）</option><option value="classroom">独立旧版后台 · 访问码（高级）</option><option value="deepseek">DeepSeek</option><option value="qwen">阿里云百炼 / 通义千问</option><option value="zhipu">智谱 GLM</option><option value="kimi">Moonshot / Kimi</option><option value="gemini">Google Gemini</option><option value="custom">自定义 OpenAI 兼容接口</option></select></div>
+    <p id="class-auto-note" class="hidden">使用当前教师账号连接平台 AI，无需填写访问码或个人密钥。审核通过的学生从班级任务自动接入；在左侧“AI 使用量”查看班级和学生调用情况，无需设置额度。教师生成剧本、预览和评价计入教师备课。</p><div id="classroom-extra" class="hidden"><div class="field"><label for="classroom-url">教师后台地址（HTTPS）</label><input id="classroom-url" type="url" placeholder="https://your-matin-api.onrender.com" /></div><div class="field"><label for="classroom-code">课堂访问码（不是 API Key）</label><input id="classroom-code" type="password" autocomplete="off" placeholder="教师发放的课堂访问码" /></div><p class="small-note">访问码仅保存在当前标签页内存中，不会写进 GitHub 或 localStorage。首次免费托管启动可能需要等待。</p></div><div id="api-extra" class="hidden"><div class="field"><label for="api-key-input">临时 API Key</label><input id="api-key-input" type="password" autocomplete="off" placeholder="仅在你自己的设备填写" /></div><div class="field"><label for="model-input">模型名称</label><input id="model-input" type="text" placeholder="例如 deepseek-chat" /></div><div id="custom-extra" class="field hidden"><label for="custom-url-input">API 基础地址（Base URL）</label><input id="custom-url-input" type="url" placeholder="https://your-api.example/v1" /></div></div>
     <div class="actions" style="justify-content:flex-end;margin-top:18px"><button type="button" class="btn" id="settings-cancel">取消</button><button type="button" class="btn" id="settings-test">测试连接</button><button type="button" class="btn primary" id="settings-save">保存设置</button></div>
   </div>
 </div>
@@ -444,6 +444,7 @@ button:active:not(:disabled){transform:scale(.985)}
  </div>
 </div>
 
+<script src="./matin-class-ai.js"></script>
 <script src="./matin-account.js"></script>
 <script src="./matin-class-teaching.js"></script>
 <script src="./matin-classes.js"></script>
@@ -458,6 +459,7 @@ button:active:not(:disabled){transform:scale(.985)}
 <script src="./matin-review-inbox.js"></script>
 <script src="./matin-course-matrix.js"></script>
 <script src="./matin-teaching-plans.js"></script>
+<script src="./matin-ai-usage.js"></script>
 <script src="./matin-pedagogy.js"></script>
 <script>
 (async () => {
@@ -557,9 +559,9 @@ button:active:not(:disabled){transform:scale(.985)}
   let abortRequest = null;
   const modelDefaults = {deepseek:'deepseek-chat',qwen:'qwen-plus',zhipu:'glm-4-flash',kimi:'moonshot-v1-8k',gemini:'gemini-3.5-flash-lite',custom:''};
   const endpoints = { deepseek:'https://api.deepseek.com/chat/completions',qwen:'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',zhipu:'https://open.bigmodel.cn/api/paas/v4/chat/completions',kimi:'https://api.moonshot.cn/v1/chat/completions' };
-  const providers = ['classroom','offline','deepseek','qwen','zhipu','kimi','gemini','custom'];
-  const config = {provider:'offline',model:'',url:'',key:'',classroomUrl:'',classroomCode:''};
-  try { const saved=JSON.parse(localStorage.getItem(PREF_KEY) || '{}'); if (providers.includes(saved.provider)) config.provider=saved.provider; if(typeof saved.model==='string') config.model=saved.model; if(typeof saved.url==='string') config.url=saved.url; if(typeof saved.classroomUrl==='string') config.classroomUrl=saved.classroomUrl; } catch {}
+  const providers = ['classroom_auto','classroom','offline','deepseek','qwen','zhipu','kimi','gemini','custom'];
+  const config = {provider:account?'classroom_auto':'offline',model:'',url:'',key:'',classroomUrl:'',classroomCode:''};
+  try { const saved=JSON.parse(localStorage.getItem(PREF_KEY) || '{}'); if (providers.includes(saved.provider)) config.provider=saved.provider==='classroom'&&!saved.legacyClassroom&&account?'classroom_auto':saved.provider; if(typeof saved.model==='string') config.model=saved.model; if(typeof saved.url==='string') config.url=saved.url; if(typeof saved.classroomUrl==='string') config.classroomUrl=saved.classroomUrl; } catch {}
   const currentProject = () => projects.find(p=>p.id===projectId) || projects[0];
   const currentNode = () => currentProject()?.nodes.find(n=>n.id===selectedNodeId) || currentProject()?.nodes[0];
   const store = () => { if(account)return saveCloud(); try {localStorage.setItem(STORE_KEY,JSON.stringify(projects)); $('save-status').textContent='✓ 已保存在本机'; return true;} catch(e) {$('save-status').textContent='⚠ 本机存储失败';notify('浏览器保存失败，请立即导出 JSON 备份。');return false;} };
@@ -694,7 +696,7 @@ button:active:not(:disabled){transform:scale(.985)}
     $('metric-projects').textContent=String(projects.length);
     $('metric-nodes').textContent=String(projects.reduce((sum,p)=>sum+p.nodes.length,0));
     $('metric-branches').textContent=String(projects.reduce((sum,p)=>sum+(p.edges||[]).length,0));
-    $('metric-model').textContent=config.provider==='offline'?'离线剧本':config.provider==='classroom'?'班级 AI':config.provider==='gemini'?'Gemini':config.provider==='deepseek'?'DeepSeek':config.provider==='qwen'?'Qwen':config.provider.toUpperCase();
+    $('metric-model').textContent=config.provider==='offline'?'离线剧本':['classroom','classroom_auto'].includes(config.provider)?'班级 AI':config.provider==='gemini'?'Gemini':config.provider==='deepseek'?'DeepSeek':config.provider==='qwen'?'Qwen':config.provider.toUpperCase();
     const categories=['全部',...new Set(projects.map(p=>p.category||'未分类'))];
     if(!categories.includes(dashboardCategory))dashboardCategory='全部';
     $('category-chips').innerHTML=categories.map(c=>`<button class="chip ${c===dashboardCategory?'active':''}" data-filter="${esc(c)}" type="button">${esc(c)}</button>`).join('');
@@ -875,7 +877,7 @@ button:active:not(:disabled){transform:scale(.985)}
     }
     $('teacher-next-button').textContent=choices.length?'请从上方分支中选择下一阶段':'教师演示：结束本次实训 ✓';
     $('teacher-next-button').disabled=runComplete||sending||evaluationBusy||choices.length>0||!MatinPedagogy.allowed(n,null,lastAnswers,activeEvaluation(),config.provider==='offline');
-    $('runtime-model-name').textContent=config.provider==='offline'?'离线剧本演示 · 不自动判分':config.provider==='classroom'?'班级统一 AI · 教师服务器 · 不自动判分':`模型反馈：${config.provider} / ${config.model||modelDefaults[config.provider]||'自定义模型'}`;
+    $('runtime-model-name').textContent=config.provider==='offline'?'离线剧本演示 · 不自动判分':['classroom','classroom_auto'].includes(config.provider)?'班级统一 AI · 教师服务器 · 不自动判分':`模型反馈：${config.provider} / ${config.model||modelDefaults[config.provider]||'自定义模型'}`;
     $('send-button').disabled=sending||evaluationBusy||runComplete;$('send-button').textContent=sending?'生成中…':'发送 ↗';$('evaluate-button').disabled=sending||evaluationBusy||runComplete;$('evaluate-button').textContent=evaluationBusy?'✦ 正在分析回答…':'✦ 评价本阶段回答 ↗';$('quick-hint').disabled=sending||evaluationBusy||runComplete;renderEvaluation();messagesRender();
   };
   const startRuntime = () => {
@@ -926,7 +928,7 @@ button:active:not(:disabled){transform:scale(.985)}
     $('ai-gen-file').value='';$('ai-gen-file-label').textContent='也可以只输入课程名称生成';
     $('ai-gen-material-count').textContent='0 / 16000 字符';
     aiGenHidePreview();aiGenStatus('准备就绪：生成后可以先预览，再决定保存方式。');
-    const modelLabel=config.provider==='offline'?'当前为离线模式，需要先设置真实 AI 模型':config.provider==='classroom'?'班级统一 AI · 教师服务器':`${config.provider.toUpperCase()} · ${config.model||modelDefaults[config.provider]||'自定义模型'}`;
+    const modelLabel=config.provider==='offline'?'当前为离线模式，需要先设置真实 AI 模型':['classroom','classroom_auto'].includes(config.provider)?'班级统一 AI · 教师服务器':`${config.provider.toUpperCase()} · ${config.model||modelDefaults[config.provider]||'自定义模型'}`;
     $('ai-gen-model-info').textContent='当前模型：'+modelLabel+'。不会自动覆盖已发布课程，生成消耗模型额度。';
     $('ai-gen-modal').classList.remove('hidden');
     $('ai-gen-title-input').focus();
@@ -967,6 +969,7 @@ button:active:not(:disabled){transform:scale(.985)}
     aiGenStatus(`已载入 ${file.name}。请确认资料提取无误，再开始生成。`,'success');
   };
   const requestAiScenario = async (instruction,signal) => {
+    if(config.provider==='classroom_auto')return window.MatinAccount.classAI({system:'你是教学剧本结构化设计助手。只返回符合要求的 JSON，不要输出解释。',messages:[{role:'user',content:instruction}],context:{purpose:'scenario'}},signal);
     if(config.provider==='offline')throw Error('当前还是离线模式。请先在「AI 模型设置」选择 Gemini 等模型并填写 API Key。');
     if(config.provider==='classroom'){
       if(!config.classroomUrl||!config.classroomCode)throw Error('请先配置班级统一 AI 的后台地址和课堂访问码。');
@@ -1107,6 +1110,7 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
   const askModel = async (node,p,history,signal,systemOverride) => {
     const sys=systemOverride||buildSystemPrompt(node,p);MatinPedagogy.assertCapacity(sys,history);
     if(config.provider==='offline') throw new Error('当前为离线模式');
+    if(config.provider==='classroom_auto')return (await window.MatinAccount.classAI({system:sys,messages:history.map(m=>({role:m.role,content:m.text})),context:{purpose:systemOverride?'evaluation':'preview'}},signal)).replace(/\[PASS_NODE\]/g,'');
     if(config.provider==='classroom'){
       if(!config.classroomUrl || !config.classroomCode) throw new Error('请在 AI 模型设置中填写后台地址和课堂访问码。');
       const resp=await fetch(config.classroomUrl.replace(/\/+$/,'')+'/api/chat',{method:'POST',signal,headers:{'Content-Type':'application/json','X-Classroom-Code':config.classroomCode},body:JSON.stringify({system:sys,messages:history.map(m=>({role:m.role,content:m.text}))})});
@@ -1155,13 +1159,13 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
   const exportTranscript = () => {const text=chatHistory.map(m=>`${m.time} [阶段${m.node+1}] ${m.sender||'学生'}：\n${m.text}`).join('\n\n');downloadText(nameSafe(currentProject().title)+'-实训对话.txt',text,'text/plain');};
   const openSettings = () => {$('settings-modal').classList.remove('hidden');$('provider-select').value=config.provider;$('api-key-input').value=config.key;$('model-input').value=config.model||modelDefaults[config.provider]||'';$('custom-url-input').value=config.url;$('classroom-url').value=config.classroomUrl;$('classroom-code').value=config.classroomCode;syncSettings();};
   const closeSettings = ()=>$('settings-modal').classList.add('hidden');
-  const syncSettings = () => {const prov=$('provider-select').value;$('api-extra').classList.toggle('hidden',prov==='offline'||prov==='classroom');$('classroom-extra').classList.toggle('hidden',prov!=='classroom');$('custom-extra').classList.toggle('hidden',prov!=='custom');};
+  const syncSettings = () => {const prov=$('provider-select').value;$('api-extra').classList.toggle('hidden',['offline','classroom','classroom_auto'].includes(prov));$('classroom-extra').classList.toggle('hidden',prov!=='classroom');$('class-auto-note').classList.toggle('hidden',prov!=='classroom_auto');$('settings-test').textContent=prov==='classroom_auto'?'检查接入权限':'测试连接';$('custom-extra').classList.toggle('hidden',prov!=='custom');};
   const saveSettings = () => {
     const provider=$('provider-select').value;
     if(!providers.includes(provider))return notify('未知模型服务商');
     const model=$('model-input').value.trim();const url=$('custom-url-input').value.trim();const key=$('api-key-input').value.trim();
-    if(provider!=='offline'&&provider!=='classroom'&&!key)return notify('请先输入临时 API Key。');
-    if(provider!=='offline'&&provider!=='classroom'&&!model)return notify('请填写模型名称。');
+    if(!['offline','classroom','classroom_auto'].includes(provider)&&!key)return notify('请先输入临时 API Key。');
+    if(!['offline','classroom','classroom_auto'].includes(provider)&&!model)return notify('请填写模型名称。');
     if(provider==='custom') {let parsed;try {parsed=new URL(url);} catch {return notify('自定义 API 地址不是合法 URL');}if(parsed.protocol!=='https:' && !(parsed.protocol==='http:' && ['localhost','127.0.0.1'].includes(parsed.hostname)))return notify('自定义接口必须是 HTTPS 或本机 localhost');}
     const classroomUrl=$('classroom-url').value.trim().replace(/\/+$/,'');const classroomCode=$('classroom-code').value.trim();
     if(provider==='classroom'){
@@ -1169,8 +1173,8 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
       if(parsed.protocol!=='https:'&&!(parsed.protocol==='http:'&&['localhost','127.0.0.1'].includes(parsed.hostname)))return notify('后台需要 HTTPS 或本机 localhost');
       if(!classroomCode)return notify('请填写课堂访问码');
     }
-    Object.assign(config,{provider,model,url,key:provider==='offline'||provider==='classroom'?'':key,classroomUrl,classroomCode:provider==='classroom'?classroomCode:''});
-    try{localStorage.setItem(PREF_KEY,JSON.stringify({provider,model,url,classroomUrl}));}catch{}
+    Object.assign(config,{provider,model,url,key:['offline','classroom','classroom_auto'].includes(provider)?'':key,classroomUrl,classroomCode:provider==='classroom'?classroomCode:''});
+    try{localStorage.setItem(PREF_KEY,JSON.stringify({provider,model,url,classroomUrl,legacyClassroom:provider==='classroom'}));}catch{}
     closeSettings();if(view==='runtime')renderRuntime();notify('设置已更新；密钥和课堂访问码均仅在当前页面内存中。');
   };
   // Flow chart: native SVG edges + pointer-driven nodes; no external diagram dependency.
@@ -1426,10 +1430,12 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
   $('settings-cancel').addEventListener('click',closeSettings);
   $('settings-modal').addEventListener('click',e=>{if(e.target===$('settings-modal'))closeSettings();});
   $('provider-select').addEventListener('change',()=>{$('model-input').value=modelDefaults[$('provider-select').value]||'';syncSettings();});
+  window.addEventListener('matin-ai-usage-pending',()=>notify('AI 已回复；用量暂未确认，不影响本次操作。'));
   $('settings-save').addEventListener('click',saveSettings);
   $('settings-test').addEventListener('click',async()=>{
     const provider=$('provider-select').value;
     if(provider==='offline')return notify('当前离线模式不需要连接网络。');
+    if(provider==='classroom_auto'){try{await window.MatinAccount.api({action:'class_ai',op:'access',data:{purpose:'test'}});notify('教师账号权限已确认，实际模型连接将在使用时检查。');}catch(e){notify(e.message);}return;}
     const btn=$('settings-test');btn.disabled=true;btn.textContent='连接测试中…';
     try{
       let answer;
