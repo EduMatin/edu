@@ -73,7 +73,7 @@
   if(session&&window.MatinStudentAccount)btn('个人资料','student-profile-open',()=>MatinStudentAccount.openProfile());
   if(!session)btn('登录 / 注册','student-login-open',showLogin);
   else btn('退出账号','student-logout',async()=>{if(window.MatinLearningSync?.hasPending()&&!await MatinLearningSync.flush()&&!confirm('学习记录尚未同步云端，本机副本已保留。仍要退出账号吗？'))return;const access=session.access_token;persist(null);document.querySelector('main').classList.add('hidden');try{await fetch(base+'/auth/v1/logout',{method:'POST',headers:{apikey:cfg.publishableKey,Authorization:'Bearer '+access},signal:AbortSignal.timeout(5000)});}catch{}location.replace(location.pathname+'#my');location.reload();});
-  updateNavigation();
+  updateNavigation();window.dispatchEvent(new CustomEvent('matin-student-navigation-rendered'));
  }
  async function task(fn){if(classBusy)return;classBusy=true;const panel=$('student-classes');panel.querySelectorAll('button,input,select').forEach(x=>x.disabled=true);$('student-class-status').textContent='正在处理…';try{$('student-class-status').textContent=await fn();}catch(e){$('student-class-status').textContent=e.message;}finally{classBusy=false;panel.querySelectorAll('button,input,select').forEach(x=>x.disabled=false);$('student-join-status').textContent=$('student-class-status').textContent;renderClasses();}}
  function refresh(){

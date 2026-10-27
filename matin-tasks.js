@@ -100,7 +100,7 @@
    student.message=operation==='complete'?'已标记完成，课程页与任务列表已同步。':'已打开任务，学习对话保存在当前浏览器。';
    if(operation==='open'&&navigationRevision===window.MatinStudent?.navigationRevision){
     const opened=await window.MatinTaskOpen(d.project,task);
-    if(opened!==false&&active===ctx)close(true,false);
+    if(opened!==false){if(active===ctx)close(true,false);window.dispatchEvent(new CustomEvent('matin-student-task-opened',{detail:{task_id:task.id}}));}
    }
   }catch(e){
    if(e.status===423){student.busy=false;await loadStudent();const frozen=studentState().tasks.find(t=>t.id===task.id);if(frozen?.class_ended_at&&operation==='open'&&navigationRevision===window.MatinStudent?.navigationRevision)window.MatinTaskReports.learningArchive(frozen);return;}

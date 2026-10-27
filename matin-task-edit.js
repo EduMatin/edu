@@ -43,7 +43,7 @@
    if(h.before_data.instructions!==h.after_data.instructions){const details=el('details');details.append(el('summary','学习要求已修改 · 查看前后内容'),el('p','修改前：\n'+(h.before_data.instructions||'（空）')),el('p','修改后：\n'+(h.after_data.instructions||'（空）')));card.append(details);}
    if(h.reason)card.append(el('p','原因：'+h.reason));body.append(card);
   }
-  footer.append(btn('刷新修改记录',()=>run(c,()=>history(c))));if(d.has_more)footer.append(btn('加载更早记录',()=>run(c,()=>history(c,true))));status.textContent='已读取 '+c.history.length+' 条修改记录';
+  footer.append(btn('刷新修改记录',()=>run(c,()=>history(c))));if(d.has_more)footer.append(btn('加载更早记录',()=>run(c,()=>history(c,true))));status.textContent='已读取 '+c.history.length+' 条修改记录';if(!c.teacher)window.dispatchEvent(new CustomEvent('matin-student-task-change-read',{detail:{task_id:c.id,revisions:c.history.map(h=>Number(h.revision))}}));
  }
  root.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close();}if(e.key==='Tab'){const ns=[...root.querySelectorAll('button:not(:disabled),input:not(:disabled),textarea:not(:disabled),summary')].filter(n=>n.getClientRects().length);if(e.shiftKey&&document.activeElement===ns[0]){e.preventDefault();ns.at(-1)?.focus();}else if(!e.shiftKey&&document.activeElement===ns.at(-1)){e.preventDefault();ns[0]?.focus();}}});
  window.MatinTaskEdit={edit(task,onSaved){const c=begin(task,true,onSaved);if(c){footer.append(btn('重试读取',()=>run(c,()=>loadEdit(c))));run(c,()=>loadEdit(c));}},history(task,teacher=false){const c=begin(task,teacher);if(c){footer.append(btn('重试读取',()=>run(c,()=>history(c))));run(c,()=>history(c));}}};

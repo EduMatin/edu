@@ -85,7 +85,7 @@
   const data=[headers,...rows.map(r=>[c.roster.class_name,c.task.title,r.display_name,r.student_no,r.email,r.membership==='approved'?'在班':'历史成员',label(r),r.legacy_completed?'是':'否',time(c.task.due_at),time(r.updated_at),time(r.submitted_at),r.version||'',time(r.reviewed_at),r.review_status?reviewLabel(r.review_status):'',r.revision_reason||'',time(r.resubmit_due_at),r.teacher_score??'未评分'])];
   const blob=new Blob(['\ufeff'+data.map(row=>row.map(csvValue).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=el('a');a.href=url;a.download=(c.roster.class_name+'-'+c.task.title+'-任务明细').replace(/[\\/:*?"<>|]/g,'_').slice(0,90)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status.textContent='已导出当前筛选的 '+rows.length+' 名学生（CSV UTF-8）。';
  }
- async function readReport(c,row,version){const d=await api(c,'report',{student_id:row?.student_id,version});if(!isCurrent(c))return;c.reportData=d;c.student=row;showReport(c,d);status.textContent='已读取第 '+d.submission.version+' 版报告';}
+ async function readReport(c,row,version){const d=await api(c,'report',{student_id:row?.student_id,version});if(!isCurrent(c))return;c.reportData=d;c.student=row;showReport(c,d);status.textContent='已读取第 '+d.submission.version+' 版报告';if(!c.teacher)window.dispatchEvent(new CustomEvent('matin-student-report-read',{detail:{task_id:c.task.id,version:d.submission.version}}));}
  function reportBody(report,container,{annotations=[],editable=false,archive=false,onChange=()=>{}}={}){
   const nodes=new Map((report.nodes||[]).map(n=>[n.id,n.name]));
   container.append(el('p','项目：'+report.project_title+' · 当前阶段：'+(nodes.get(report.node_id)||report.node_id),'tr-muted'));
@@ -173,11 +173,11 @@
     if(r.draft)body.append(el('h3','已同步的未发送草稿'),el('p',r.draft,'tr-report-section'));
     foot.append(btn('导出学习档案',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify({task,record:r,updated_at:d.updated_at},null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='Matin学习档案.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}));
    }else body.append(el('p','结课前尚无已同步学习记录。已提交报告可从任务卡片单独查看。'));
-   foot.append(btn('关闭',close));status.textContent='已读取云端档案';
+   foot.append(btn('关闭',close));status.textContent='已读取云端档案';window.dispatchEvent(new CustomEvent('matin-student-learning-archive-read',{detail:{task_id:task.id}}));
   });},
   teacherReport(task,row){const c=begin(true,task);if(c){foot.append(btn('重试读取',()=>run(c,()=>readReport(c,row))));run(c,()=>readReport(c,row));}},
   teacher(task,options={}){const c=begin(true,task);if(c){if(['overdue','current','pending_review','revision_required'].includes(options.filter))c.filter=options.filter;foot.append(btn('重试读取',()=>run(c,()=>roster(c))));run(c,()=>roster(c));}},
-  student(task){const c=begin(false,task);if(c){foot.append(btn('重试读取',()=>run(c,()=>readReport(c,null))));run(c,()=>readReport(c,null));}},
+  student(task,options={}){const c=begin(false,task);if(c){foot.append(btn('重试读取',()=>run(c,()=>readReport(c,null,options.version))));run(c,()=>readReport(c,null,options.version));}},
   submit(task,report){const c=begin(false,task);if(!c)return;run(c,async()=>{
    const state=await MatinTasks.loadStudent();if(!isCurrent(c))return;
    const latest=state.tasks.find(t=>t.id===task.id&&t.available);if(!latest||!state.reports_version)throw Error('任务暂不可提交，请刷新任务并确认报告服务已升级。');
