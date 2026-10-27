@@ -4,7 +4,7 @@
  let active=null;
  const root=document.createElement('div');root.id='tasks-modal';root.className='modal-layer hidden';root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.setAttribute('aria-labelledby','tasks-title');
  root.innerHTML=`<div class="modal tasks-panel">
- <header class="tasks-header"><div><p id="tasks-breadcrumb">学习中心</p><h2 id="tasks-title">我的任务</h2></div><div class="actions"><button type="button" class="btn" id="tasks-refresh">刷新任务</button><button type="button" class="btn primary" id="tasks-new">新建任务</button><button type="button" class="btn" id="tasks-close">关闭</button></div></header>
+ <header class="tasks-header"><div><p id="tasks-breadcrumb">学习中心</p><h2 id="tasks-title">我的任务</h2></div><div class="actions"><button type="button" class="btn" id="tasks-refresh">刷新任务</button><button type="button" class="btn" id="tasks-batch" hidden>批量布置</button><button type="button" class="btn primary" id="tasks-new">新建任务</button><button type="button" class="btn" id="tasks-close">关闭</button></div></header>
  <div id="tasks-body">
  <section id="tasks-manager"><div id="tasks-summary" aria-live="polite"></div><div class="tasks-filters">
  <label>课程<select id="tasks-course"><option value="">全部课程</option></select></label>
@@ -193,6 +193,7 @@
    $('tasks-next').disabled=ctx.busy||ctx.page>=ctx.pages;
   }
   $('tasks-refresh').textContent=ctx.busy&&!ctx.writing?'加载中…':'刷新任务';
+  $('tasks-batch').hidden=!ctx.teacher||!!ctx.row?.class_ended_at||ctx.view==='create'||!window.MatinTeachingPlans?.open;
  }
  function projectNotice(ctx,old=''){
   if(!ctx.teacher)return;
@@ -319,6 +320,7 @@
  });
  const refresh=()=>{const ctx=active;if(ctx)run(ctx,()=>load(ctx));};
  $('tasks-refresh').onclick=refresh;$('tasks-pending').onchange=refresh;
+ $('tasks-batch').onclick=()=>{const ctx=active;if(ctx?.teacher&&!ctx.busy&&!ctx.row.class_ended_at)window.MatinTeachingPlans?.open({class_id:ctx.row.id});};
  for(const [id,key,event] of [['tasks-course','course','change'],['tasks-search','query','input'],['tasks-state','state','change'],['tasks-sort','sort','change']])$(id).addEventListener(event,()=>{
   const ctx=active;if(!ctx?.teacher||ctx.busy)return;ctx.filters[key]=$(id).value;ctx.page=1;renderTasks(ctx,ctx.tasks);
  });
@@ -355,6 +357,7 @@
   },true);
  };
  window.addEventListener('matin-report-reviewed',()=>{const ctx=active;if(ctx?.teacher&&!ctx.busy)run(ctx,()=>load(ctx));});
+ window.addEventListener('matin-teaching-plan-published',event=>{const ctx=active;if(ctx?.teacher&&!ctx.busy&&event.detail.classIds.includes(ctx.row.id))run(ctx,()=>load(ctx));window.dispatchEvent(new CustomEvent('matin-teacher-tasks-changed'));});
  window.MatinTasks={loadStudent,studentState,renderStudent,studentChangeNotice,openStudent(id){const task=studentState().tasks.find(t=>t.id===id);if(task)return studentAction(task,'open');},open(row=null,options={}){
   if(!row&&window.MatinStudentPages&&window.MatinStudent?.navigate)return MatinStudent.navigate('tasks');
   if(studentState().busy)return;

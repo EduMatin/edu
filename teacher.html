@@ -457,6 +457,7 @@ button:active:not(:disabled){transform:scale(.985)}
 <script src="./matin-teacher-home.js"></script>
 <script src="./matin-review-inbox.js"></script>
 <script src="./matin-course-matrix.js"></script>
+<script src="./matin-teaching-plans.js"></script>
 <script src="./matin-pedagogy.js"></script>
 <script>
 (async () => {
@@ -1455,6 +1456,7 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
   window.MatinProjectTasks.init({account,beforeOpen:flushSave});
   window.MatinReviewInbox.init({account});
   window.MatinCourseMatrix.init({account,beforeOpen:flushSave});
+  window.MatinTeachingPlans.init({account,beforeOpen:flushSave});
   store();showView('dashboard');
 })().catch(error=>window.MatinAccount.fatal(error));
 </script>

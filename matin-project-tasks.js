@@ -54,6 +54,7 @@
   refresh.onclick=()=>load(classId);
   manage.onclick=async()=>{const row=classes.find(r=>r.id===classId),courseId=group;if(!row)return;if(beforeOpen&&!await beforeOpen())return;window.MatinTasks.open(row,{courseId});};
   window.addEventListener('matin-teacher-tasks-changed',e=>{if(!account||!classes.some(r=>r.id===e.detail?.classId))return;cache.set(e.detail.classId,{loading:false,error:e.detail.error||'',data:e.detail.data||null});draw();});
+  window.addEventListener('matin-teaching-plan-published',e=>{if(!account)return;const ids=e.detail?.classIds||[];for(const id of ids)cache.delete(id);if(group&&ids.includes(classId))void load(classId);});
   window.MatinProjectTasks.render=render;render();
  }};
 })();
