@@ -94,6 +94,7 @@
     };
     const members=document.createElement('button');members.type='button';members.className='btn';members.textContent=r.class_ended_at?'学生名单（只读）':'学生与入班审核';members.onclick=()=>{if(!busy&&discard())window.MatinEnrollment.open(r);};
     const tasks=document.createElement('button');tasks.type='button';tasks.className='btn';tasks.textContent=r.class_ended_at?'任务与报告档案':'任务管理';tasks.onclick=()=>{if(!busy&&discard())window.MatinTasks.open(r);};
+    const matrix=document.createElement('button');matrix.type='button';matrix.className='btn';matrix.textContent='课程学习明细';matrix.onclick=()=>{if(!busy&&discard())window.MatinCourseMatrix?.open({class_id:r.id});};
     const end=document.createElement('button');end.type='button';end.className='btn';end.textContent=r.class_ended_at?'教学状态与记录':'结束教学';end.onclick=()=>{if(!busy&&discard())teaching(r);};
     const archive=document.createElement('button');archive.type='button';archive.className='btn class-archive';archive.textContent=r.archived_at?'恢复到常用班级':'归档班级';archive.dataset.requiresEnded=String(!r.archived_at&&!r.class_ended_at);archive.disabled=archive.dataset.requiresEnded==='true';archive.title=archive.disabled?'请先结束教学，再归档班级':'';archive.setAttribute('aria-describedby','archive-hint-'+r.id);archive.onclick=async()=>{
      if(busy||(!r.archived_at&&!r.class_ended_at)||!discard()||!confirm(r.archived_at?'将“'+r.name+'”恢复到常用班级？仍保持结课只读；如需补交或补批，请另行重新开放教学。':'将已结束教学的“'+r.name+'”归档？资料保留为只读档案，可在“已归档”中查阅。'))return;
@@ -103,7 +104,7 @@
     const morePanel=document.createElement('div');morePanel.className='class-more-panel';morePanel.id='class-more-'+r.id;morePanel.hidden=true;more.setAttribute('aria-controls',morePanel.id);
     const deleteHint=document.createElement('p');deleteHint.id='class-delete-hint-'+r.id;deleteHint.textContent='仅无成员、无导入名单、无任务的空班级可删除。有教学记录的班级请先结束教学，再归档保存。';d.setAttribute('aria-describedby',deleteHint.id);morePanel.append(deleteHint,d);
     more.onclick=()=>{if(busy)return;const wasOpen=!morePanel.hidden;closeMore();if(!wasOpen){morePanel.hidden=false;more.setAttribute('aria-expanded','true');activeMore={trigger:more,panel:morePanel};}};
-    const archiveHint=document.createElement('p');archiveHint.id='archive-hint-'+r.id;archiveHint.className='class-archive-hint';archiveHint.textContent=r.archived_at?'已结课归档，可查阅和导出资料。':r.class_ended_at?'已结束教学，可归档保存。':'结束教学后可归档。';actions.append(e,members,tasks,end,archive,more);card.append(h,info,courses,actions,archiveHint,morePanel);list.append(card);
+    const archiveHint=document.createElement('p');archiveHint.id='archive-hint-'+r.id;archiveHint.className='class-archive-hint';archiveHint.textContent=r.archived_at?'已结课归档，可查阅和导出资料。':r.class_ended_at?'已结束教学，可归档保存。':'结束教学后可归档。';actions.append(e,members,tasks,matrix,end,archive,more);card.append(h,info,courses,actions,archiveHint,morePanel);list.append(card);
    }
   }
   async function request(fn){lock(true);$('classes-status').textContent='正在处理…';try{$('classes-status').textContent=await fn();}catch(e){$('classes-status').textContent=e.message;}finally{lock(false);}}
