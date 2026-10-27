@@ -21,7 +21,7 @@
   const refreshHome=button('刷新待批阅',()=>loadHome()),openCenter=button('进入批阅中心',()=>open(true),true);
   refreshHome.title='页面可见时每分钟更新，也可手动刷新';
   const homeStatus=el('p',undefined,'ri-hint');homeStatus.setAttribute('role','status');homeActions.append(refreshHome,openCenter);homeHead.append(title,homeActions);home.append(homeHead,homeStatus);
-  document.querySelector('#view-dashboard .dashboard-hero').before(home);
+  if(!window.MatinTeacherHome)document.querySelector('#view-dashboard .dashboard-hero').before(home);
   const nav=button('报告批阅 · …',()=>open());nav.id='teacher-review-open';document.querySelector('.nav').append(nav);
   const root=el('div',undefined,'ri-layer modal-layer');root.id='teacher-review-center';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.setAttribute('aria-labelledby','ri-title');
   const panel=el('section',undefined,'ri-panel'),head=el('header',undefined,'ri-header'),centerTitle=el('h2','报告批阅中心');centerTitle.id='ri-title';
@@ -32,14 +32,14 @@
   for(const [text,input] of [['班级',classes],['批阅状态',states],['搜索报告',search]]){const l=el('label',text);l.append(input);filters.append(l);}filters.append(apply);
   const summary=el('p',undefined,'ri-hint'),status=el('p',undefined,'ri-hint'),list=el('div');status.setAttribute('role','status');
   body.append(filters,summary,status,list);const count=el('span'),prev=button('上一页',()=>{page--;void loadCenter();}),next=button('下一页',()=>{page++;void loadCenter();}),refresh=button('刷新报告',()=>loadCenter());foot.append(count,prev,next,refresh);panel.append(head,body,foot);root.append(panel);document.body.append(root);
-  let homeSeq=0,centerSeq=0,page=1,pages=1,opener=null,lastHome=0;
+  let homeSeq=0,centerSeq=0,page=1,pages=1,opener=null,lastHome=0,todoHome=null;
   function openReport(row){window.MatinTaskReports.teacherReport({id:row.task_id,title:row.title,class_id:row.class_id,active:true},{student_id:row.student_id,display_name:row.display_name});}
   function renderRows(target,rows){target.replaceChildren();for(const row of rows){const item=el('article',undefined,'ri-row');item.dataset.reviewStudent=row.student_id;item.dataset.reviewTask=row.task_id;
    const info=el('div');info.append(el('strong',row.display_name+' · '+row.title),el('small',row.class_name+(row.archived_at?'（已归档班级）':'')+' · 学号 '+row.student_no+' · '+row.project_title),el('small','第 '+row.version+' 版 · '+time(row.submitted_at)+' 提交 · '+(row.class_ended_at?'结课档案 · 原状态：':'')+label(row.review_status)+(row.teacher_score!=null?' · 教师评分 '+row.teacher_score+' / 100':'')));
    item.append(info,button(!row.class_ended_at&&row.review_status==='pending_review'?'立即批阅':'查看报告',()=>openReport(row),!row.class_ended_at&&row.review_status==='pending_review'));target.append(item);
   }}
   const fetchQueue=async data=>{const r=await MatinAccount.api({action:'review_inbox',data});if(r.inbox_version!==1||!Array.isArray(r.rows))throw Error('批阅中心尚未升级，请更新教师批阅提醒与评分 SQL 和 matin-courses。');return r;};
-  async function loadHome(){const seq=++homeSeq;lastHome=Date.now();refreshHome.disabled=true;homeStatus.textContent='正在同步待批阅报告…';
+  async function loadHome(){if(todoHome)return todoHome.refresh({manual:true});const seq=++homeSeq;lastHome=Date.now();refreshHome.disabled=true;homeStatus.textContent='正在同步待批阅报告…';
    try{const r=await fetchQueue({status:'pending_review',page:1});if(seq!==homeSeq)return;title.textContent='待批阅报告 · '+r.global_pending+' 份';nav.textContent='报告批阅 · '+r.global_pending;
     homeStatus.textContent=(r.global_pending?'进入批阅中心查看名单，每页 20 份，可按班级、姓名或学号查找。':'当前没有待批阅报告。')+' 已同步 '+time(new Date())+'。';
    }catch(e){if(seq!==homeSeq)return;title.textContent='待批阅报告 · 暂未获取';nav.textContent='报告批阅 · !';homeStatus.textContent=e.message||'读取失败，请重试。';}
@@ -59,9 +59,9 @@
   classes.onchange=states.onchange=()=>{page=1;void loadCenter();};search.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();page=1;void loadCenter();}};
   root.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close();}if(e.key==='Tab'){const a=[...root.querySelectorAll('button:not(:disabled),select,input')].filter(n=>n.getClientRects().length);if(e.shiftKey&&document.activeElement===a[0]){e.preventDefault();a.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===a.at(-1)){e.preventDefault();a[0].focus();}}});
   window.addEventListener('matin-report-reviewed',()=>{void loadHome();if(!root.hidden)void loadCenter();});
-  window.addEventListener('matin-report-closed',()=>{if(document.activeElement===document.body){if(!root.hidden)dismiss.focus();else openCenter.focus();}});
-  function refreshVisible(){if(document.visibilityState!=='visible'||Date.now()-lastHome<15000)return;if(home.getClientRects().length)void loadHome();if(!root.hidden&&!root.inert)void loadCenter();}
+  window.addEventListener('matin-report-closed',()=>{if(document.activeElement===document.body){if(!root.hidden)dismiss.focus();else if(todoHome)document.querySelector('[data-todo-kind="pending_review"]')?.focus();else openCenter.focus();}});
+  function refreshVisible(){if(document.visibilityState!=='visible'||Date.now()-lastHome<15000)return;lastHome=Date.now();if(home.getClientRects().length)void loadHome();if(!root.hidden&&!root.inert)void loadCenter();}
   window.addEventListener('matin-class-teaching-changed',()=>{void loadHome();if(!root.hidden)void loadCenter();});window.addEventListener('focus',refreshVisible);document.addEventListener('visibilitychange',refreshVisible);setInterval(refreshVisible,60000);
-  void loadHome();
+  if(window.MatinTeacherHome)todoHome=MatinTeacherHome.init({account,openReports:()=>open(true),setReportCount:n=>{nav.textContent='报告批阅 · '+(n===null?'!':n);}});else void loadHome();
  }};
 })();

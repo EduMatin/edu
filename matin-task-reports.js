@@ -176,7 +176,7 @@
    foot.append(btn('关闭',close));status.textContent='已读取云端档案';
   });},
   teacherReport(task,row){const c=begin(true,task);if(c){foot.append(btn('重试读取',()=>run(c,()=>readReport(c,row))));run(c,()=>readReport(c,row));}},
-  teacher(task){const c=begin(true,task);if(c){foot.append(btn('重试读取',()=>run(c,()=>roster(c))));run(c,()=>roster(c));}},
+  teacher(task,options={}){const c=begin(true,task);if(c){if(['overdue','current','pending_review','revision_required'].includes(options.filter))c.filter=options.filter;foot.append(btn('重试读取',()=>run(c,()=>roster(c))));run(c,()=>roster(c));}},
   student(task){const c=begin(false,task);if(c){foot.append(btn('重试读取',()=>run(c,()=>readReport(c,null))));run(c,()=>readReport(c,null));}},
   submit(task,report){const c=begin(false,task);if(!c)return;run(c,async()=>{
    const state=await MatinTasks.loadStudent();if(!isCurrent(c))return;
