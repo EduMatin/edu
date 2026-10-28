@@ -100,11 +100,12 @@
      if(busy||(!r.archived_at&&!r.class_ended_at)||!discard()||!confirm(r.archived_at?'将“'+r.name+'”恢复到常用班级？仍保持结课只读；如需补交或补批，请另行重新开放教学。':'将已结束教学的“'+r.name+'”归档？资料保留为只读档案，可在“已归档”中查阅。'))return;
      await request(async()=>{const result=await MatinAccount.api({action:'class_archive',id:r.id,revision:Number(r.revision),archived:!r.archived_at});rows=rows.map(x=>x.id===r.id?{...x,...result.class}:x);edit();render();return r.archived_at?'班级已恢复。':'班级已归档，可切换“已归档”继续查看或恢复。';});
     };
+    const exportArchive=document.createElement('button');exportArchive.type='button';exportArchive.className='btn';exportArchive.textContent='导出教学档案';exportArchive.onclick=()=>{if(!busy&&discard())window.MatinTeachingArchive?.open(r);};
     const more=document.createElement('button');more.type='button';more.className='btn class-more-toggle';more.textContent='更多 ▾';more.setAttribute('aria-label','更多班级操作：'+r.name);more.setAttribute('aria-expanded','false');
     const morePanel=document.createElement('div');morePanel.className='class-more-panel';morePanel.id='class-more-'+r.id;morePanel.hidden=true;more.setAttribute('aria-controls',morePanel.id);
     const deleteHint=document.createElement('p');deleteHint.id='class-delete-hint-'+r.id;deleteHint.textContent='仅无成员、无导入名单、无任务的空班级可删除。有教学记录的班级请先结束教学，再归档保存。';d.setAttribute('aria-describedby',deleteHint.id);morePanel.append(deleteHint,d);
     more.onclick=()=>{if(busy)return;const wasOpen=!morePanel.hidden;closeMore();if(!wasOpen){morePanel.hidden=false;more.setAttribute('aria-expanded','true');activeMore={trigger:more,panel:morePanel};}};
-    const archiveHint=document.createElement('p');archiveHint.id='archive-hint-'+r.id;archiveHint.className='class-archive-hint';archiveHint.textContent=r.archived_at?'已结课归档，可查阅和导出资料。':r.class_ended_at?'已结束教学，可归档保存。':'结束教学后可归档。';actions.append(e,members,tasks,matrix,end,archive,more);card.append(h,info,courses,actions,archiveHint,morePanel);list.append(card);
+    const archiveHint=document.createElement('p');archiveHint.id='archive-hint-'+r.id;archiveHint.className='class-archive-hint';archiveHint.textContent=r.archived_at?'已结课归档，可查阅和导出资料。':r.class_ended_at?'已结束教学，可归档保存。':'结束教学后可归档。';actions.append(e,members,tasks,matrix,exportArchive,end,archive,more);card.append(h,info,courses,actions,archiveHint,morePanel);list.append(card);
    }
   }
   async function request(fn){lock(true);$('classes-status').textContent='正在处理…';try{$('classes-status').textContent=await fn();}catch(e){$('classes-status').textContent=e.message;}finally{lock(false);}}

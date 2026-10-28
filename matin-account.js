@@ -58,7 +58,7 @@
   async function api(body){
     const access=await token();
     const res=await fetch(base+'/functions/v1/matin-courses',{method:body?'POST':'GET',headers:{'Content-Type':'application/json',apikey:cfg.publishableKey,Authorization:'Bearer '+access},
-      ...(body?{body:JSON.stringify(body)}:{}),cache:'no-store',signal:AbortSignal.timeout(25000)});
+      ...(body?{body:JSON.stringify(body)}:{}),cache:'no-store',signal:AbortSignal.timeout(body?.action==='teaching_archive'?60000:25000)});
     const data=await res.json().catch(()=>({}));
     if(!res.ok||!data.ok){const error=Error(data.error||'云端请求失败');error.status=res.status;throw error;}
     return data;
