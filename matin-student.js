@@ -136,5 +136,6 @@
  // Prevent browser back/forward cache from reviving another student's rendered conversations.
  window.addEventListener('pagehide',()=>{if(base)document.querySelector('main').classList.add('hidden');});
  window.addEventListener('pageshow',e=>{if(base&&e.persisted)location.reload();});
- window.MatinStudent={ready,api,classAI:async(payload,signal)=>window.MatinClassAI.request(base,cfg.publishableKey,await token(),payload,signal),taskApi:(op,data)=>api(op,data,'tasks'),mine,membershipState,refreshMembership:refresh,openClasses,viewClass,navigate:changeView,get navigationRevision(){return navigationRevision;},get view(){return view;},get userId(){return session?.user?.id||'guest';},get signedIn(){return !!session;},get classId(){return classId;}};
+ const aiClient=window.MatinClassAI.client({base,key:cfg.publishableKey,user:()=>session?.user?.id||'',token,role:'student'});
+ window.MatinStudent={ready,api,classAI:(payload,signal)=>aiClient.request(payload,signal),taskApi:(op,data)=>api(op,data,'tasks'),mine,membershipState,refreshMembership:refresh,openClasses,viewClass,navigate:changeView,get navigationRevision(){return navigationRevision;},get view(){return view;},get userId(){return session?.user?.id||'guest';},get signedIn(){return !!session;},get classId(){return classId;}};
 })();

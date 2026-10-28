@@ -969,8 +969,8 @@ button:active:not(:disabled){transform:scale(.985)}
     aiGenHidePreview();
     aiGenStatus(`已载入 ${file.name}。请确认资料提取无误，再开始生成。`,'success');
   };
-  const requestAiScenario = async (instruction,signal) => {
-    if(config.provider==='classroom_auto')return window.MatinAccount.classAI({system:'你是教学剧本结构化设计助手。只返回符合要求的 JSON，不要输出解释。',messages:[{role:'user',content:instruction}],context:{purpose:'scenario'}},signal);
+  const requestAiScenario = async (instruction,signal,recovery) => {
+    if(config.provider==='classroom_auto')return window.MatinAccount.classAI({system:'你是教学剧本结构化设计助手。只返回符合要求的 JSON，不要输出解释。',messages:[{role:'user',content:instruction}],context:{purpose:'scenario'},recovery},signal);
     if(config.provider==='offline')throw Error('当前还是离线模式。请先在「AI 模型设置」选择 Gemini 等模型并填写 API Key。');
     if(config.provider==='classroom'){
       if(!config.classroomUrl||!config.classroomCode)throw Error('请先配置班级统一 AI 的后台地址和课堂访问码。');
@@ -1076,12 +1076,12 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
 4. 不编造参考资料未提及的研究数据、具体实验成果、课程标准出处。专业安全操作应提示遵从实际规程。
 5. 所有字段均使用简体中文，确保为严格 JSON（字符串换行必须转义）。`;
     try{
-      const response=await requestAiScenario(instruction,aiGenerateController.signal);
+      const response=await requestAiScenario(instruction,aiGenerateController.signal,{title,count,category,objective,roleMode,roleNames,materials,level,branches,projectId:currentProject()?.id||'',kind:'scenario'});
       const result=parseAiScenario(response,count,{title,category,objective,roleMode,roleNames});
       aiDraft=result;renderAiPreview(result);aiGenStatus(`已生成 ${result.nodes.length} 个节点（要求 ${count} 个），并构建 ${result.edges.length} 条流程连线。建议先预览与校对，默认新建副本保留原剧本。`,'success');
       // Preview stays in the same modal; persistent bottom action bar remains accessible.
     }catch(e){aiGenStatus(e.name==='AbortError'?'模型请求超时或已取消，请缩短课程资料后重试。':'生成失败：'+e.message,'error');}
-    finally{clearTimeout(timer);aiGenerateBusy=false;aiGenerateController=null;button.disabled=false;button.textContent='✦ 重新生成';}
+    finally{clearTimeout(timer);aiGenerateBusy=false;aiGenerateController=null;button.disabled=false;button.textContent='✦ 生成 / 恢复原结果';}
   };
   const applyAiDraft = mode => {
     if(!aiDraft)return aiGenStatus('请先生成并预览剧本。','error');
@@ -1111,7 +1111,7 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
   const askModel = async (node,p,history,signal,systemOverride) => {
     const sys=systemOverride||buildSystemPrompt(node,p);MatinPedagogy.assertCapacity(sys,history);
     if(config.provider==='offline') throw new Error('当前为离线模式');
-    if(config.provider==='classroom_auto')return (await window.MatinAccount.classAI({system:sys,messages:history.map(m=>({role:m.role,content:m.text})),context:{purpose:systemOverride?'evaluation':'preview'}},signal)).replace(/\[PASS_NODE\]/g,'');
+    if(config.provider==='classroom_auto')return (await window.MatinAccount.classAI({system:sys,messages:history.map(m=>({role:m.role,content:m.text})),context:{purpose:systemOverride?'evaluation':'preview'},recovery:{title:p.title,projectId:p.id,nodeId:node.id,nodeSignature:JSON.stringify(node),evidence:JSON.stringify(chatHistory.filter(m=>m.node===runIndex&&['user','assistant'].includes(m.role)).map(m=>({role:m.role,text:m.text})))}},signal)).replace(/\[PASS_NODE\]/g,'');
     if(config.provider==='classroom'){
       if(!config.classroomUrl || !config.classroomCode) throw new Error('请在 AI 模型设置中填写后台地址和课堂访问码。');
       const resp=await fetch(config.classroomUrl.replace(/\/+$/,'')+'/api/chat',{method:'POST',signal,headers:{'Content-Type':'application/json','X-Classroom-Code':config.classroomCode},body:JSON.stringify({system:sys,messages:history.map(m=>({role:m.role,content:m.text}))})});
@@ -1143,6 +1143,7 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
     if(sending||evaluationBusy||runComplete||view!=='runtime')return;
     const input=$('user-input');const text=input.value.trim();if(!text)return;
     const node=currentProject().nodes[runIndex];const p=currentProject();const generation=runtimeGeneration;const stage=runIndex;
+    if(config.provider==='classroom_auto'&&MatinClassAI.hasUnresolved({purpose:'preview',project_id:p.id,node_id:node.id},text)){MatinClassAI.open();return;}
     input.value='';say('user',text,'学生');renderRuntime();
     if(config.provider==='offline'){say('assistant',MatinPedagogy.respectful(offlineAnswer(text,node),node),node.roleName);return;}
     sending=true;renderRuntime();
@@ -1431,7 +1432,31 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
   $('settings-cancel').addEventListener('click',closeSettings);
   $('settings-modal').addEventListener('click',e=>{if(e.target===$('settings-modal'))closeSettings();});
   $('provider-select').addEventListener('change',()=>{$('model-input').value=modelDefaults[$('provider-select').value]||'';syncSettings();});
+  window.MatinAIRecoveryApply=async record=>{
+    const meta=record.meta,kind=record.payload.context?.purpose,p=currentProject();
+    if(aiGenerateBusy||sending||evaluationBusy)throw Error('请等待当前 AI 操作完成。');
+    if(kind==='scenario'){
+      if(!meta.count||meta.projectId!==(p?.id||''))throw Error('请先回到原项目，再恢复生成预览；也可导出结果。');
+      const draft=parseAiScenario(record.result.reply,meta.count,meta);
+      for(const [field,value] of Object.entries({'title-input':meta.title,category:meta.category,objective:meta.objective,count:meta.count,roles:meta.roleMode,'role-names':meta.roleNames,material:meta.materials,level:meta.level}))$('ai-gen-'+field).value=value||'';
+      $('ai-gen-branches').checked=!!meta.branches;
+      $('ai-gen-material-count').textContent=$('ai-gen-material').value.length+' / 16000 字符';$('ai-gen-file-label').textContent='已恢复原请求参考资料';
+      $('ai-gen-modal').classList.remove('hidden');aiDraft=draft;renderAiPreview(draft);aiGenStatus('已恢复原请求的剧本预览，请核对后保存为副本。未再次调用模型。','success');return '已恢复生成预览；关闭本窗口即可检查。';
+    }
+    const n=p?.nodes[runIndex],evidence=JSON.stringify(chatHistory.filter(m=>m.node===runIndex&&['user','assistant'].includes(m.role)).map(m=>({role:m.role,text:m.text})));
+    if(view!=='runtime'||runComplete||p?.id!==meta.projectId||n?.id!==meta.nodeId||JSON.stringify(n)!==meta.nodeSignature||evidence!==meta.evidence)throw Error('当前预览阶段或回答已变化，未插入原结果。可查看、导出回复。');
+    if(kind==='evaluation'){
+      const answers=chatHistory.filter(m=>m.node===runIndex&&m.role==='user').map(m=>m.text),result=MatinPedagogy.parseEvaluation(record.result.reply,n,answers);
+      if(runEvaluations.some(e=>e.visit===runVisitSerial&&e.nodeId===n.id&&Object.keys(result).every(k=>JSON.stringify(e[k])===JSON.stringify(result[k]))))return '这份评价已在当前预览中，无需重复添加。';
+      runEvaluations.push({visit:runVisitSerial,nodeId:n.id,nodeName:n.name,studentCount:answers.length,at:new Date().toISOString(),model:record.result.model||'classroom_auto',...result});renderRuntime();
+    }else if(kind==='preview'){
+      if($('user-input').value.trim()===record.payload.messages.at(-1)?.content)$('user-input').value='';
+      say('assistant',MatinPedagogy.respectful(record.result.reply,n),n.roleName);
+    }else throw Error('此结果不可用于当前预览。');
+    return '已恢复到当前教师预览，未再次调用模型。';
+  };
   window.addEventListener('matin-ai-usage-pending',()=>notify('AI 已回复；用量暂未确认，不影响本次操作。'));
+  window.addEventListener('matin-ai-recovery-warning',e=>notify(e.detail));
   $('settings-save').addEventListener('click',saveSettings);
   $('settings-test').addEventListener('click',async()=>{
     const provider=$('provider-select').value;
