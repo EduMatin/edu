@@ -40,16 +40,25 @@
  }
  window.addEventListener('matin-student-tasks-changed',updateReviewNotice);
  window.addEventListener('matin-student-auth-changed',updateReviewNotice);
- function isCurrent(c){return current===c&&(!c.owner||c.owner===window.MatinStudent?.userId);}
- function canLeave(){return !current?.dirty||confirm('评分、批注或学习总结尚未保存，确认放弃这些修改？');}
- function close(){if(current?.busy&&current.writing){status.textContent='正在保存，请稍候。';return;}if(!canLeave())return;const c=current;current=null;root.hidden=true;if(c?.under)c.under.inert=false;if(c?.opener?.isConnected)c.opener.focus();window.dispatchEvent(new CustomEvent('matin-report-closed'));}
- function begin(teacher,task){if(current?.busy||!canLeave())return null;if(current?.under)current.under.inert=false;reviewUpdate.hidden=true;
+ function isCurrent(c){return current===c&&c.owner===(c.teacher?window.MatinAccount?.userId:window.MatinStudent?.userId);}
+ function releaseDraft(c){c?.draft?.dispose();if(c)c.draft=null;}
+ function draftChanged(c){c.dirty=true;c.draft?.changed();}
+ function canLeave(){return !current?.dirty||current.draft?.flush()||confirm('本机草稿未能保存。建议取消并导出草稿；仍要离开并放弃当前输入吗？');}
+ function bindDraft(c,kind,baseline,read,apply,editable=true){
+  if(!window.MatinReportDrafts||!c.owner||c.owner==='guest')return;
+  c.draft=MatinReportDrafts.mount({container:body,scope:[String(window.MATIN_CLOUD?.supabaseUrl||'').replace(/\/+$/,''),c.owner,kind,c.task.id,c.teacher?c.student.student_id:c.owner],baseline,initial:read(),read,apply,editable,isOwner:()=>isCurrent(c),onDirty:value=>c.dirty=value});
+ }
+ window.addEventListener('beforeunload',e=>{if(current?.dirty&&!current.draft?.flush()){e.preventDefault();e.returnValue='';}});
+ window.addEventListener('pagehide',()=>{current?.draft?.flush();});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)current?.draft?.flush();});
+ function close(){if(current?.busy&&current.writing){status.textContent='正在保存，请稍候。';return;}if(!canLeave())return;const c=current;releaseDraft(c);current=null;root.hidden=true;if(c?.under)c.under.inert=false;if(c?.opener?.isConnected)c.opener.focus();window.dispatchEvent(new CustomEvent('matin-report-closed'));}
+ function begin(teacher,task){if(current?.busy||!canLeave())return null;releaseDraft(current);if(current?.under)current.under.inert=false;reviewUpdate.hidden=true;
   const under=[...document.querySelectorAll('.modal-layer:not(.hidden)')].filter(n=>n!==root&&n.getClientRects().length).at(-1);
-  const c={teacher,task,owner:teacher?'':window.MatinStudent?.userId,opener:document.activeElement,under,busy:false,dirty:false,rows:[],filter:'current',search:''};current=c;if(under)under.inert=true;root.hidden=false;body.replaceChildren();foot.replaceChildren();status.textContent='';heading.textContent=task.title;closeButton.focus();return c;
+  const c={teacher,task,owner:teacher?window.MatinAccount?.userId:window.MatinStudent?.userId,opener:document.activeElement,under,busy:false,dirty:false,rows:[],filter:'current',search:''};current=c;if(under)under.inert=true;root.hidden=false;body.replaceChildren();foot.replaceChildren();status.textContent='';heading.textContent=task.title;closeButton.focus();return c;
  }
  const api=(c,op,data={})=>c.teacher?MatinAccount.api({action:'task_review',op,data:{task_id:c.task.id,...data}}):MatinStudent.api(op,{task_id:c.task.id,...data},'task_review');
  async function run(c,fn,writing=false){if(!isCurrent(c)||c.busy)return;c.busy=true;c.writing=writing;root.setAttribute('aria-busy','true');status.textContent=writing?'正在保存…':'正在读取…';lock();try{await fn();}catch(e){if(isCurrent(c))status.textContent=e.message||'请求失败，请重试。';}finally{if(isCurrent(c)){c.busy=false;c.writing=false;root.setAttribute('aria-busy','false');lock();updateReviewNotice();if(!root.contains(document.activeElement))closeButton.focus();}}}
- function lock(){root.querySelectorAll('button,input,textarea,select').forEach(e=>e.disabled=!!current?.busy||e.dataset.fixedDisabled==='true');closeButton.disabled=!!(current?.busy&&current.writing);}
+ function lock(){root.querySelectorAll('.rd-draft').forEach(e=>e.inert=!!current?.busy);root.querySelectorAll('button,input,textarea,select').forEach(e=>e.disabled=!!current?.busy||e.dataset.fixedDisabled==='true');closeButton.disabled=!!(current?.busy&&current.writing);}
  const label=r=>r.review_status==='revision_required'?'需修改重交'+(r.overdue?' · 已逾期':''):r.status==='submitted'?reviewLabel(r.review_status)+(r.late?' · 逾期补交':''):r.overdue?'逾期未交 · '+(r.status==='pending'?'未开始':'进行中'):r.status==='pending'?'未开始':'进行中';
  const filterRow=(c,r)=>{
   const match=c.filter==='all'||c.filter==='former'&&r.membership!=='approved'||r.membership==='approved'&&(
@@ -57,7 +66,7 @@
   return match&&[r.display_name,r.student_no,r.email].join(' ').toLowerCase().includes(c.search.toLowerCase().trim());
  };
  async function roster(c){const d=await api(c,'roster');if(!isCurrent(c))return;if(!Array.isArray(d.rows))throw Error('明细读取失败，请确认数据库升级。');c.rows=d.rows;c.roster=d;c.task=d.task;showRoster(c);status.textContent='已读取最新完成明细';}
- function showRoster(c){c.dirty=false;heading.textContent=c.roster.class_name+' · '+c.task.title;body.replaceChildren();foot.replaceChildren();if(c.task.class_ended_at)body.append(el('p','已结束教学 · 以下为只读完成明细，可查看报告与导出名单。','tr-note'));
+ function showRoster(c){releaseDraft(c);c.dirty=false;heading.textContent=c.roster.class_name+' · '+c.task.title;body.replaceChildren();foot.replaceChildren();if(c.task.class_ended_at)body.append(el('p','已结束教学 · 以下为只读完成明细，可查看报告与导出名单。','tr-note'));
   body.append(el('p','截至 '+time(new Date())+' · 截止时间 '+time(c.task.due_at)+(c.task.active?'':' · 任务已撤回'),'tr-muted'));
   const summary=el('div',undefined,'tr-summary'),members=c.rows.filter(r=>r.membership==='approved');
   for(const [name,count] of [['未开始',members.filter(r=>r.status==='pending'&&!r.overdue).length],['进行中',members.filter(r=>r.status==='started'&&!r.overdue).length],['待批阅',members.filter(r=>r.review_status==='pending_review'||!r.review_status&&r.status==='submitted').length],['需修改',members.filter(r=>r.review_status==='revision_required').length],['已通过',members.filter(r=>r.review_status==='passed').length],['逾期未交',members.filter(r=>r.overdue).length]]){const cell=el('div',name,'tr-stat');cell.append(el('strong',count));summary.append(cell);}body.append(summary);
@@ -111,7 +120,7 @@
   },'对话');return inputs;
  }
 
- function showReport(c,d){c.dirty=false;heading.textContent=(c.teacher?c.student.display_name+' · ':'我的报告 · ')+c.task.title;body.replaceChildren();foot.replaceChildren();const s=d.submission,editable=c.teacher&&!d.class_ended_at;
+ function showReport(c,d,keepDecision){releaseDraft(c);c.dirty=false;heading.textContent=(c.teacher?c.student.display_name+' · ':'我的报告 · ')+c.task.title;body.replaceChildren();foot.replaceChildren();const s=d.submission,editable=c.teacher&&!d.class_ended_at;
   if(d.class_ended_at)body.append(el('p','班级已结束教学 · 只读档案。保留原评分、批注、结论及报告版本。','tr-note'));
   const newest=d.versions[0],historical=s.version!==newest.version;
   const known=window.MatinTasks?.studentState().tasks.find(t=>t.id===c.task.id&&Number(t.submission_version)===Number(newest.version));
@@ -123,36 +132,37 @@
   if(c.teacher)tools.append(btn('返回完成明细',()=>{if(canLeave())run(c,()=>roster(c));}));body.append(tools);
   if(historical)body.prepend(el('p','正在查看历史版本；最新为第 '+newest.version+' 版，'+reviewLabel(newest.review_status)+'。'+(c.teacher?'这里的批注只保存到当前版本。请切换到最新版本作出批阅结论。':'请切换到最新版本查看当前批阅结果。'),'tr-note'));
   const feedbackSection=el('section',undefined,'tr-report-section');feedbackSection.append(el('h3','教师总评'));
-  let feedback,grade;
+  let feedback,grade,reason,due;
   if(d.grading_version===1){
    const grading=el('section',undefined,'tr-report-section');grading.append(el('h3','教师评分'));
-   if(editable){const gradeLabel=el('label','本版报告得分（0–100，选填）');grade=el('input');grade.type='number';grade.min='0';grade.max='100';grade.step='0.1';grade.setAttribute('aria-label','教师评分');grade.placeholder='未评分';grade.value=s.teacher_score??'';grade.oninput=()=>c.dirty=true;gradeLabel.append(grade);grading.append(gradeLabel,el('p','最多1位小数；留空表示未评分。保存后学生可见。分数与通过／退回结论分别记录，AI建议分不会自动计入。','tr-muted'));}
+   if(editable){const gradeLabel=el('label','本版报告得分（0–100，选填）');grade=el('input');grade.type='text';grade.inputMode='decimal';grade.maxLength=8;grade.setAttribute('aria-label','教师评分');grade.placeholder='未评分';grade.value=s.teacher_score??'';grade.oninput=()=>draftChanged(c);gradeLabel.append(grade);grading.append(gradeLabel,el('p','最多1位小数；留空表示未评分。保存后学生可见。分数与通过／退回结论分别记录，AI建议分不会自动计入。','tr-muted'));}
    else grading.append(el('strong',scoreLabel(s.teacher_score)),el('p','教师对本版报告的评分，与AI阶段建议分分别记录。','tr-muted'));
    body.append(grading);
   }else if(editable)body.append(el('p','评分功能需要更新教师批阅提醒与评分 SQL；原报告仍可批注。','tr-muted'));
   function gradeData(){if(!grade)return {};const value=grade.value===''?null:Number(grade.value);if(grade.validity.badInput||value!==null&&(!Number.isFinite(value)||value<0||value>100||Math.round(value*10)/10!==value))throw Error('教师评分须为0至100，最多保留1位小数。');return {teacher_score:value};}
-  if(editable){feedback=el('textarea');feedback.maxLength=5000;feedback.setAttribute('aria-label','教师总评');feedback.placeholder='填写总体反馈，或在具体对话下添加批注';feedback.value=s.feedback;feedback.oninput=()=>c.dirty=true;feedbackSection.append(feedback);}else feedbackSection.append(el('p',s.feedback||'教师尚未填写总评。','tr-feedback'));
+  if(editable){feedback=el('textarea');feedback.maxLength=5000;feedback.setAttribute('aria-label','教师总评');feedback.placeholder='填写总体反馈，或在具体对话下添加批注';feedback.value=s.feedback;feedback.oninput=()=>draftChanged(c);feedbackSection.append(feedback);}else feedbackSection.append(el('p',s.feedback||'教师尚未填写总评。','tr-feedback'));
   feedbackSection.append(el('p',s.reviewed_at?'批注更新于 '+time(s.reviewed_at):'尚未批注','tr-muted'));body.append(feedbackSection);
-  const inputs=reportBody(s.report,body,{annotations:s.annotations,editable,onChange:()=>c.dirty=true});
+  const conversation=el('div');body.append(conversation);
+  let inputs=reportBody(s.report,conversation,{annotations:s.annotations,editable,onChange:()=>draftChanged(c)});
   const annotations=()=>{const values=[...inputs].filter(([,input])=>input.value.trim()).map(([message_index,input])=>({message_index,text:input.value.trim()}));if(values.length>100)throw Error('每版报告最多批注100条对话。');return values;};
   if(editable){
    foot.append(btn(d.grading_version===1?'保存评分与批注':'保存批注',()=>run(c,async()=>{
     const data={student_id:c.student.student_id,version:s.version,feedback_revision:s.feedback_revision,feedback:feedback.value,annotations:annotations(),...gradeData()};
     const signature=JSON.stringify(data);if(c.annotationSignature!==signature){c.annotationSignature=signature;c.annotationMutation=crypto.randomUUID();}
-    const saved=await api(c,'annotate',{...data,mutation_id:c.annotationMutation});if(!isCurrent(c))return;c.dirty=false;showReport(c,saved);status.textContent='评分与批注已保存；批阅结论请使用“通过报告”或“退回修改”。';
+    const pendingDecision=reason?{reason:reason.value,due:due.value}:null;const saved=await api(c,'annotate',{...data,mutation_id:c.annotationMutation});if(!isCurrent(c))return;c.draft?.commit();c.dirty=false;showReport(c,saved,pendingDecision);status.textContent='评分与批注已保存；批阅结论请使用“通过报告”或“退回修改”。';
     window.dispatchEvent(new CustomEvent('matin-report-reviewed',{detail:{task_id:c.task.id}}));
    },true)));
    if(d.workflow_version===2&&s.version===d.versions[0].version&&c.task.active!==false){
-    const decision=el('section',undefined,'tr-report-section'),reasonLabel=el('label','修改要求（退回时必填）'),reason=el('textarea'),dueLabel=el('label','重交截止时间'),due=el('input');
-    reason.setAttribute('aria-label','修改要求');reason.maxLength=2000;reason.placeholder='明确说明需要补充或修改的内容';reason.value=s.revision_reason||'';reason.oninput=()=>c.dirty=true;reasonLabel.append(reason);
-    due.type='datetime-local';due.setAttribute('aria-label','重交截止时间');if(s.resubmit_due_at){const dt=new Date(s.resubmit_due_at);due.value=new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,16);}due.oninput=()=>c.dirty=true;dueLabel.append(due);
+    const decision=el('section',undefined,'tr-report-section'),reasonLabel=el('label','修改要求（退回时必填）'),dueLabel=el('label','重交截止时间');reason=el('textarea');due=el('input');
+    reason.setAttribute('aria-label','修改要求');reason.maxLength=2000;reason.placeholder='明确说明需要补充或修改的内容';reason.value=s.revision_reason||'';reason.oninput=()=>draftChanged(c);reasonLabel.append(reason);
+    due.type='datetime-local';due.setAttribute('aria-label','重交截止时间');if(s.resubmit_due_at){const dt=new Date(s.resubmit_due_at);due.value=new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,16);}due.oninput=()=>draftChanged(c);dueLabel.append(due);
     decision.append(el('h3','批阅结论'),el('p','通过后，学生保留查看入口；退回修改会重新进入学生待办，保留原学习进度。退回时请填写修改要求和未来的重交期限，该期限仅适用于这名学生。','tr-muted'),reasonLabel,dueLabel);feedbackSection.after(decision);
     async function decide(value){
      const data={student_id:c.student.student_id,version:s.version,feedback_revision:s.feedback_revision,feedback:feedback.value,annotations:annotations(),...gradeData(),review_status:value,revision_reason:value==='revision_required'?reason.value.trim():'',resubmit_due_at:value==='revision_required'&&due.value?new Date(due.value).toISOString():null};
      if(value==='revision_required'&&(!data.revision_reason||!data.resubmit_due_at||Date.parse(data.resubmit_due_at)<=Date.now()))throw Error('请填写修改要求，并设置未来的重交截止时间。');
      if(!confirm(value==='passed'?'确认通过这份报告？结论、评分与当前批注将一起保存。':'确认退回修改？学生将收到修改要求和重交期限，原报告与批注保留。'))return;
      const signature=JSON.stringify(data);if(c.decisionSignature!==signature){c.decisionSignature=signature;c.decisionMutation=crypto.randomUUID();}
-     const saved=await api(c,'decide',{...data,mutation_id:c.decisionMutation});if(!isCurrent(c))return;c.dirty=false;showReport(c,saved);status.textContent=value==='passed'?'报告已通过。':'已退回修改，学生待办将显示修改要求和重交期限。';
+     const saved=await api(c,'decide',{...data,mutation_id:c.decisionMutation});if(!isCurrent(c))return;c.draft?.commit();c.dirty=false;showReport(c,saved);status.textContent=value==='passed'?'报告已通过。':'已退回修改，学生待办将显示修改要求和重交期限。';
      window.dispatchEvent(new CustomEvent('matin-report-reviewed',{detail:{task_id:c.task.id}}));
     }
     foot.append(btn('通过报告',()=>run(c,()=>decide('passed'),true),true),btn('退回修改',()=>run(c,()=>decide('revision_required'),true)));
@@ -162,6 +172,18 @@
    foot.append(btn('继续修改',()=>{if(!canLeave())return;const id=c.task.id;close();window.MatinTasks.openStudent(id);},true));
   }
   if(d.history?.length){const history=el('details',undefined,'tr-report-section');history.append(el('summary','批阅记录（'+d.history.length+'）'));for(const e of d.history){const line=el('p','第 '+e.version+' 版 · '+time(e.changed_at)+' · '+(e.event_type==='annotate'?'保存评分与批注':reviewLabel(e.after.review_status))+(Object.hasOwn(e.after,'teacher_score')?' · 评分：'+scoreLabel(e.before?.teacher_score)+' → '+scoreLabel(e.after.teacher_score):'')+(e.after.revision_reason?'\n修改要求：'+e.after.revision_reason+'\n重交截止：'+time(e.after.resubmit_due_at):''));history.append(line);}body.append(history);}
+  if(c.teacher){
+   const read=()=>({grade:grade?grade.value:String(s.teacher_score??''),feedback:feedback?feedback.value:s.feedback||'',annotations:[...inputs].map(([message_index,input])=>({message_index,text:input.value})),reason:reason?reason.value:s.revision_reason||'',due:due?due.value:''});
+   const apply=value=>{
+    if(!editable)return;
+    if(grade)grade.value=String(value.grade??'').slice(0,8);if(feedback)feedback.value=String(value.feedback??'').slice(0,5000);
+    if(reason)reason.value=String(value.reason??'').slice(0,2000);if(due)due.value=String(value.due??'');
+    const notes=(Array.isArray(value.annotations)?value.annotations:[]).filter(a=>a&&Number.isInteger(a.message_index)&&a.message_index>=0&&a.message_index<s.report.messages.length).map(a=>({message_index:a.message_index,text:String(a.text??'').slice(0,1000)}));
+    conversation.replaceChildren();inputs=reportBody(s.report,conversation,{annotations:notes,editable,onChange:()=>draftChanged(c)});
+   };
+   bindDraft(c,'teacher-review',{version:s.version,feedback_revision:s.feedback_revision||0},read,apply,editable);
+   if(keepDecision&&reason&&(reason.value!==keepDecision.reason||due.value!==keepDecision.due)){reason.value=keepDecision.reason;due.value=keepDecision.due;draftChanged(c);}
+  }
   foot.append(el('span','提交版本与批注分别保存，旧版本仍可查看。','tr-muted'),btn('关闭',()=>close()));
  }
  window.MatinTaskReports={
@@ -187,14 +209,17 @@
    c.task=latest;heading.textContent='提交学习报告 · '+task.title;body.replaceChildren();foot.replaceChildren();
    body.append(el('p','确认后将把本页展示的当前节点、完整对话、阶段评价和学习总结发送给任课教师。提交后保留云端版本；之后修改本地记录不会自动改变已交报告。','tr-note'));
    if(latest.submission_version)body.append(el('p','你已提交 '+latest.submission_version+' 版，本次将新增一版，保留原报告和批注。','tr-muted'));
-   const summaryLabel=el('label','学习总结（选填）'),summary=el('textarea');summary.maxLength=4000;summary.setAttribute('aria-label','学习总结');summary.placeholder='本次学习成果、遇到的问题或需要教师解答的内容';summary.oninput=()=>c.dirty=true;summaryLabel.append(summary);body.append(summaryLabel);
+   const summaryLabel=el('label','学习总结（选填）'),summary=el('textarea');summary.maxLength=4000;summary.setAttribute('aria-label','学习总结');summary.placeholder='本次学习成果、遇到的问题或需要教师解答的内容';summary.oninput=()=>draftChanged(c);summaryLabel.append(summary);body.append(summaryLabel);
    reportBody(report,body);
+   bindDraft(c,'student-summary',{version:Number(latest.submission_version)||0,feedback_revision:Number(latest.feedback_revision)||0},()=>({summary:summary.value}),value=>summary.value=String(value.summary??'').slice(0,4000));
    foot.append(btn(latest.submission_version?'确认提交新版本':'确认提交报告',()=>run(c,async()=>{
     const payload={...report,summary:summary.value};delete payload.nodes;delete payload.project_title;
     if(new TextEncoder().encode(JSON.stringify(payload)).length>(state.workflow_version===2?2200000:150000))throw Error(state.workflow_version===2?'报告超过 2.2 MB，请先导出完整记录并联系教师。内容未丢失。':'报告较长，请先更新报告服务以支持完整提交。内容未丢失。');
     const signature=JSON.stringify(payload);if(c.submitSignature!==signature){c.submitSignature=signature;c.submitMutation=crypto.randomUUID();}
     const result=await api(c,'submit',{expected_version:Number(latest.submission_version)||0,expected_feedback_revision:Number(latest.feedback_revision)||0,mutation_id:c.submitMutation,report:payload});if(!isCurrent(c))return;
-    c.dirty=false;await MatinTasks.loadStudent();if(!isCurrent(c))return;
+    c.draft?.commit();releaseDraft(c);c.dirty=false;
+    // Submission is already confirmed. A subsequent list refresh must not invite another submission.
+    try{await MatinTasks.loadStudent();}catch{}if(!isCurrent(c))return;
     body.replaceChildren(el('h3','报告已提交'),el('p','第 '+result.version+' 版 · '+time(result.submitted_at)+(result.late?' · 逾期补交':'')),el('p','报告进入待批阅。教师可通过或退回修改，原学习记录和历次报告继续保留。'));foot.replaceChildren(btn('查看已提交报告',()=>run(c,()=>readReport(c,null))),btn('关闭',()=>close()));status.textContent='提交成功';
    },true),true),btn('取消',()=>close()));status.textContent='请检查报告内容后确认提交。';
   });}
