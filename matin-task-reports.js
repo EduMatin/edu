@@ -108,7 +108,7 @@
    nav.append(count);if(!archive||items.length>size)nav.append(prev,next);section.append(nav,content);container.append(section);render();
   }
   container.append(el('h3','阶段评价（AI 建议）'));
-  paged(report.evaluations||[],10,(e,i,target)=>{const d=e.result||{},box=el('section',undefined,'tr-report-section');box.append(el('h4',(nodes.get(e.node_id)||e.node_id)+' · '+(d.score??'—')+' 分'),el('p',d.feedback||''));for(const k of Array.isArray(d.criteria)?d.criteria:[])box.append(el('p',(k.met?'✓ ':'△ ')+(k.name||'')+'：'+(k.comment||'')));box.append(el('p',d.nextStep||''));target.append(box);},'阶段评价');
+  paged(report.evaluations||[],10,(e,i,target)=>{const d=e.result||{},box=el('section',undefined,'tr-report-section');box.append(el('h4',(nodes.get(e.node_id)||e.node_id)+' · '+(d.score??'—')+' 分'),el('p',d.feedback||''));for(const k of Array.isArray(d.criteria)?d.criteria:[])box.append(el('p',(k.met?'✓ ':'△ ')+(k.name||'')+'：'+(k.comment||'')));box.append(el('p',d.nextStep||''));window.MatinLongContext?.renderEvidence(box,d,(report.messages||[]).filter(m=>m.node_id===e.node_id&&m.role==='user').map(m=>m.text));target.append(box);},'阶段评价');
   if(!report.evaluations?.length)container.append(el('p',archive?'尚无已同步阶段评价。':'未提交阶段评价。','tr-muted'));
   container.append(el('h3','完整学习对话'));
   // Keep edited notes for every page; only create DOM for the visible messages.

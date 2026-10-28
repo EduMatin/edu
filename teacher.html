@@ -462,6 +462,7 @@ button:active:not(:disabled){transform:scale(.985)}
 <script src="./matin-teaching-plans.js"></script>
 <script src="./matin-ai-usage.js"></script>
 <script src="./matin-pedagogy.js"></script>
+<script src="./matin-long-context.js"></script>
 <script>
 (async () => {
   'use strict';
@@ -822,7 +823,7 @@ button:active:not(:disabled){transform:scale(.985)}
     const el=$('evaluation-panel'),a=activeEvaluation();
     if(!a){el.innerHTML='<div class="eval-empty">尚无当前回答的辅助评价。模型建议并非正式成绩。</div>';return;}
     const criteria=a.criteria.map(v=>`<div class="criterion"><span class="criterion-dot ${v.met?'ok':'no'}">${v.met?'✓':'·'}</span><div><strong>${esc(v.name)}</strong><p>${esc(v.comment||v.evidence||'')}</p></div></div>`).join('');
-    el.innerHTML=`<div class="score-row"><div class="score-ring" style="--score:${a.score}"><div><b>${a.score}</b><small>/100</small></div></div><div><span class="score-tag">AI 建议分</span><h3>${MatinPedagogy.mode(currentProject().nodes[runIndex])==='practice'?'可带着反馈继续练习':a.score>=MatinPedagogy.threshold(currentProject().nodes[runIndex])?'已达到设置的继续分数':'可按提示补答后再评价'}</h3><small>教师需复核评分依据</small></div></div><p class="score-feedback">${esc(a.feedback)}</p>${criteria}<div class="score-next">✦ 下一步建议：${esc(a.nextStep)}</div><p class="hint">${esc(MatinPedagogy.coverage(a))}</p>`;
+    el.innerHTML=`<div class="score-row"><div class="score-ring" style="--score:${a.score}"><div><b>${a.score}</b><small>/100</small></div></div><div><span class="score-tag">AI 建议分</span><h3>${MatinPedagogy.mode(currentProject().nodes[runIndex])==='practice'?'可带着反馈继续练习':a.score>=MatinPedagogy.threshold(currentProject().nodes[runIndex])?'已达到设置的继续分数':'可按提示补答后再评价'}</h3><small>教师需复核评分依据</small></div></div><p class="score-feedback">${esc(a.feedback)}</p>${criteria}<div class="score-next">✦ 下一步建议：${esc(a.nextStep)}</div><p class="hint">${esc(MatinPedagogy.coverage(a))}</p>`;MatinLongContext.renderEvidence(el,a,chatHistory.filter(m=>m.node===runIndex&&m.role==='user').map(m=>m.text));
   };
   const evaluateStage = async () => {
     if(evaluationBusy||sending||view!=='runtime'||runComplete)return;
@@ -831,20 +832,19 @@ button:active:not(:disabled){transform:scale(.985)}
     const answers=chatHistory.filter(m=>m.node===runIndex&&m.role==='user').map(m=>m.text);
     if(!answers.length)return notify('先让学生至少回答一次，再进行辅助评价。');
     const myVisit=runVisitSerial,count=answers.length,evalGeneration=runtimeGeneration;
-    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),45000);
+    const controller=new AbortController();
     evaluationBusy=true;abortRequest=controller;renderRuntime();
     try{
-      const prompt=MatinPedagogy.evaluatePrompt(n,p,answers);
-      const raw=await askModel(n,p,[{role:'user',text:prompt}],controller.signal,MatinPedagogy.evaluatorSystem);
-      const entry={visit:myVisit,nodeId:n.id,nodeName:n.name,studentCount:count,at:new Date().toISOString(),model:config.model||config.provider,...MatinPedagogy.parseEvaluation(raw,n,answers)};
+      const result=await MatinLongContext.evaluate({node:n,project:p,answers,signal:controller.signal,progress:message=>MatinLongContext.progress('long-context-status',message),send:(sys,h,step)=>askModelRaw(n,p,h,controller.signal,sys,'evaluation',step)});
+      const entry={visit:myVisit,nodeId:n.id,nodeName:n.name,studentCount:count,at:new Date().toISOString(),model:config.model||config.provider,...result};
       if(view!=='runtime'||myVisit!==runVisitSerial||evalGeneration!==runtimeGeneration)return;
       runEvaluations.push(entry);renderRuntime();notify('AI 辅助评价完成。请核对评分依据后确认下一阶段。');
     }catch(e){notify('评价失败：'+(e.name==='AbortError'?'模型响应超时':e.message));}
-    finally{clearTimeout(timer);if(myVisit===runVisitSerial&&evalGeneration===runtimeGeneration){evaluationBusy=false;abortRequest=null;renderRuntime();}}
+    finally{if(myVisit===runVisitSerial&&evalGeneration===runtimeGeneration){evaluationBusy=false;abortRequest=null;renderRuntime();}}
   };
   const exportReport = () => {
     const p=currentProject();if(!p)return;
-    const rows=runEvaluations.map((e,i)=>`<section><h3>${i+1}. ${esc(e.nodeName)} · AI 建议分 ${e.score}/100</h3><p>${safeMarkdown(e.feedback)}</p><p><strong>改进建议：</strong>${safeMarkdown(e.nextStep)}</p><ul>${e.criteria.map(c=>`<li>${esc(c.name)}：${c.met?'有证据':'需完善'} · ${safeMarkdown(c.comment)}</li>`).join('')}</ul></section>`).join('')||'<p>本次尚未生成 AI 辅助评分。</p>';
+    const rows=runEvaluations.map((e,i)=>`<section><h3>${i+1}. ${esc(e.nodeName)} · AI 建议分 ${e.score}/100</h3><p>${safeMarkdown(e.feedback)}</p><p><strong>改进建议：</strong>${safeMarkdown(e.nextStep)}</p><ul>${e.criteria.map(c=>`<li>${esc(c.name)}：${c.met?'有证据':'需完善'} · ${safeMarkdown(c.comment)}</li>`).join('')}</ul>${MatinLongContext.evidenceHtml(e)}</section>`).join('')||'<p>本次尚未生成 AI 辅助评分。</p>';
     const msg=chatHistory.map(m=>`<div class="line"><strong>${esc(m.sender||'学生')}：</strong><div>${safeMarkdown(m.text)}</div></div>`).join('');
     const html=`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>Matin 实训报告</title><style>body{font-family:system-ui,"Microsoft YaHei",sans-serif;max-width:850px;margin:36px auto;padding:20px;color:#263858;line-height:1.8}h1{color:#354cc2}h2{margin-top:32px;border-bottom:1px solid #ccd6e7;padding-bottom:8px}section,.line{padding:12px 16px;margin:12px 0;border:1px solid #e5eaf4;border-radius:12px}small{color:#738198}</style></head><body><h1>Matin AI Studio · 实训报告</h1><p><strong>项目：</strong>${esc(p.title)}</p><p><strong>生成时间：</strong>${esc(new Date().toLocaleString('zh-CN'))}</p><p><strong>访问路径：</strong>${runVisited.map(id=>esc(graphNode(id)?.name||'已移除节点')).join(' → ')}</p><small>报告由浏览器本地导出，AI 评分仅作为教学辅助，不能替代教师审核或正式认定。</small><h2>阶段评价</h2>${rows}<h2>实训对话记录</h2>${msg}</body></html>`;
     downloadText(nameSafe(p.title)+'-实训报告.html',html,'text/html');notify('实训报告已导出，可用浏览器打开或打印为 PDF。');
@@ -879,7 +879,7 @@ button:active:not(:disabled){transform:scale(.985)}
     $('teacher-next-button').textContent=choices.length?'请从上方分支中选择下一阶段':'教师演示：结束本次实训 ✓';
     $('teacher-next-button').disabled=runComplete||sending||evaluationBusy||choices.length>0||!MatinPedagogy.allowed(n,null,lastAnswers,activeEvaluation(),config.provider==='offline');
     $('runtime-model-name').textContent=config.provider==='offline'?'离线剧本演示 · 不自动判分':['classroom','classroom_auto'].includes(config.provider)?'班级统一 AI · 教师服务器 · 不自动判分':`模型反馈：${config.provider} / ${config.model||modelDefaults[config.provider]||'自定义模型'}`;
-    $('send-button').disabled=sending||evaluationBusy||runComplete;$('send-button').textContent=sending?'生成中…':'发送 ↗';$('evaluate-button').disabled=sending||evaluationBusy||runComplete;$('evaluate-button').textContent=evaluationBusy?'✦ 正在分析回答…':'✦ 评价本阶段回答 ↗';$('quick-hint').disabled=sending||evaluationBusy||runComplete;renderEvaluation();messagesRender();
+    $('send-button').disabled=sending||evaluationBusy||runComplete;$('send-button').textContent=sending?'生成中…':'发送 ↗';$('evaluate-button').disabled=sending||evaluationBusy||runComplete;$('evaluate-button').textContent=evaluationBusy?'✦ 正在分析回答…':'✦ 评价本阶段回答 ↗';$('quick-hint').disabled=sending||evaluationBusy||runComplete;renderEvaluation();messagesRender();MatinLongContext.status('long-context-status',$('chat-form'),{system:buildSystemPrompt(currentProject().nodes[runIndex],currentProject()),history:previewHistory(),busy:sending||evaluationBusy,readOnly:runComplete||config.provider==='offline',retry:()=>sendMessage(true)});
   };
   const startRuntime = () => {
     cancelPending();runComplete=false;runVisited=[];chatHistory=[];visitStartHistoryIndex=0;runEvaluations=[];runVisitSerial=0;
@@ -1108,10 +1108,11 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
     if(found.length) return `你提到了“${found.join('、')}”。请进一步解释你的依据，以及你准备如何验证这些判断。\n\n（演示提示：命中参考词不等于考核合格。）`;
     return node.hints || '请进一步解释你的分析过程，我想了解你作出这个判断的理由。';
   };
-  const askModel = async (node,p,history,signal,systemOverride) => {
+  const askModelRaw = async (node,p,history,signal,systemOverride,purpose,step={}) => {
+    signal=signal?AbortSignal.any([signal,AbortSignal.timeout(45000)]):AbortSignal.timeout(45000);signal.throwIfAborted();
     const sys=systemOverride||buildSystemPrompt(node,p);MatinPedagogy.assertCapacity(sys,history);
     if(config.provider==='offline') throw new Error('当前为离线模式');
-    if(config.provider==='classroom_auto')return (await window.MatinAccount.classAI({system:sys,messages:history.map(m=>({role:m.role,content:m.text})),context:{purpose:systemOverride?'evaluation':'preview'},recovery:{title:p.title,projectId:p.id,nodeId:node.id,nodeSignature:JSON.stringify(node),evidence:JSON.stringify(chatHistory.filter(m=>m.node===runIndex&&['user','assistant'].includes(m.role)).map(m=>({role:m.role,text:m.text})))}},signal)).replace(/\[PASS_NODE\]/g,'');
+    if(config.provider==='classroom_auto')return (await window.MatinAccount.classAI({system:sys,messages:history.map(m=>({role:m.role,content:m.text})),context:{purpose:purpose||(systemOverride?'evaluation':'preview')},recovery:{title:p.title,projectId:p.id,nodeId:node.id,nodeSignature:JSON.stringify(node),evidenceHash:await MatinLongContext.fingerprint(previewHistory()),...step}},signal)).replace(/\[PASS_NODE\]/g,'');
     if(config.provider==='classroom'){
       if(!config.classroomUrl || !config.classroomCode) throw new Error('请在 AI 模型设置中填写后台地址和课堂访问码。');
       const resp=await fetch(config.classroomUrl.replace(/\/+$/,'')+'/api/chat',{method:'POST',signal,headers:{'Content-Type':'application/json','X-Classroom-Code':config.classroomCode},body:JSON.stringify({system:sys,messages:history.map(m=>({role:m.role,content:m.text}))})});
@@ -1139,16 +1140,19 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
     if(typeof result!=='string'||!result.trim()) throw new Error('API 没有返回可展示的文本。');
     return result.replace(/\[PASS_NODE\]/g,'').trim();
   };
-  const sendMessage = async () => {
+  const previewHistory=()=>chatHistory.filter(m=>m.node===runIndex&&['user','assistant'].includes(m.role)).map(m=>({role:m.role,text:m.text}));
+  const askModel=(node,p,history,signal,systemOverride)=>MatinLongContext.chat({system:systemOverride||buildSystemPrompt(node,p),node,history,signal,progress:message=>MatinLongContext.progress('long-context-status',message),send:(sys,h,step)=>askModelRaw(node,p,h,signal,sys,systemOverride?'evaluation':'preview',step)});
+  const sendMessage = async (retry=false) => {retry=retry===true;
     if(sending||evaluationBusy||runComplete||view!=='runtime')return;
-    const input=$('user-input');const text=input.value.trim();if(!text)return;
+    const input=$('user-input'),previous=previewHistory();const text=retry&&previous.at(-1)?.role==='user'?previous.at(-1).text:input.value.trim();if(!text)return;
     const node=currentProject().nodes[runIndex];const p=currentProject();const generation=runtimeGeneration;const stage=runIndex;
-    if(config.provider==='classroom_auto'&&MatinClassAI.hasUnresolved({purpose:'preview',project_id:p.id,node_id:node.id},text)){MatinClassAI.open();return;}
-    input.value='';say('user',text,'学生');renderRuntime();
+    if(!retry&&previous.at(-1)?.role==='user'&&previous.at(-1).text===text&&MatinLongContext.needs(buildSystemPrompt(node,p),previous))return sendMessage(true);
+    if(!retry&&config.provider==='classroom_auto'&&MatinClassAI.hasUnresolved({purpose:'preview',project_id:p.id,node_id:node.id},text)){MatinClassAI.open();return;}
+    if(!retry||input.value.trim()===text)input.value='';if(!retry)say('user',text,'学生');renderRuntime();
     if(config.provider==='offline'){say('assistant',MatinPedagogy.respectful(offlineAnswer(text,node),node),node.roleName);return;}
     sending=true;renderRuntime();
     abortRequest=new AbortController();
-    const timeout=setTimeout(()=>abortRequest?.abort(),30000);
+
     try {const history=chatHistory.filter(m=>m.node===stage&&(m.role==='user'||m.role==='assistant')).map(m=>({role:m.role,text:m.text}));
       const reply=await askModel(node,p,history,abortRequest.signal);
       if(runtimeGeneration!==generation||runIndex!==stage||view!=='runtime')return;
@@ -1156,7 +1160,7 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
     } catch(e) {
       if(runtimeGeneration!==generation||runIndex!==stage||view!=='runtime')return;
       say('system',`模型请求未成功：${e.name==='AbortError'?'请求超时或被取消':e.message}。\n请检查网络和配置。系统没有自动模拟考核通过。`,'连接提示');
-    } finally {clearTimeout(timeout);if(runtimeGeneration===generation){sending=false;abortRequest=null;renderRuntime();}}
+    } finally {if(runtimeGeneration===generation){sending=false;abortRequest=null;renderRuntime();}}
   };
   const exportTranscript = () => {const text=chatHistory.map(m=>`${m.time} [阶段${m.node+1}] ${m.sender||'学生'}：\n${m.text}`).join('\n\n');downloadText(nameSafe(currentProject().title)+'-实训对话.txt',text,'text/plain');};
   const openSettings = () => {$('settings-modal').classList.remove('hidden');$('provider-select').value=config.provider;$('api-key-input').value=config.key;$('model-input').value=config.model||modelDefaults[config.provider]||'';$('custom-url-input').value=config.url;$('classroom-url').value=config.classroomUrl;$('classroom-code').value=config.classroomCode;syncSettings();};
@@ -1434,6 +1438,7 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
   $('provider-select').addEventListener('change',()=>{$('model-input').value=modelDefaults[$('provider-select').value]||'';syncSettings();});
   window.MatinAIRecoveryApply=async record=>{
     const meta=record.meta,kind=record.payload.context?.purpose,p=currentProject();
+    if(meta.longStep)throw Error('这是分段整理结果，请回到原阶段继续本次回答或重新点击阶段评价；已完成分段会复用，不作为独立评价。');
     if(aiGenerateBusy||sending||evaluationBusy)throw Error('请等待当前 AI 操作完成。');
     if(kind==='scenario'){
       if(!meta.count||meta.projectId!==(p?.id||''))throw Error('请先回到原项目，再恢复生成预览；也可导出结果。');
@@ -1444,13 +1449,13 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
       $('ai-gen-modal').classList.remove('hidden');aiDraft=draft;renderAiPreview(draft);aiGenStatus('已恢复原请求的剧本预览，请核对后保存为副本。未再次调用模型。','success');return '已恢复生成预览；关闭本窗口即可检查。';
     }
     const n=p?.nodes[runIndex],evidence=JSON.stringify(chatHistory.filter(m=>m.node===runIndex&&['user','assistant'].includes(m.role)).map(m=>({role:m.role,text:m.text})));
-    if(view!=='runtime'||runComplete||p?.id!==meta.projectId||n?.id!==meta.nodeId||JSON.stringify(n)!==meta.nodeSignature||evidence!==meta.evidence)throw Error('当前预览阶段或回答已变化，未插入原结果。可查看、导出回复。');
+    if(view!=='runtime'||runComplete||p?.id!==meta.projectId||n?.id!==meta.nodeId||JSON.stringify(n)!==meta.nodeSignature||(meta.evidenceHash?await MatinLongContext.fingerprint(previewHistory())!==meta.evidenceHash:evidence!==meta.evidence))throw Error('当前预览阶段或回答已变化，未插入原结果。可查看、导出回复。');
     if(kind==='evaluation'){
-      const answers=chatHistory.filter(m=>m.node===runIndex&&m.role==='user').map(m=>m.text),result=MatinPedagogy.parseEvaluation(record.result.reply,n,answers);
+      const answers=chatHistory.filter(m=>m.node===runIndex&&m.role==='user').map(m=>m.text),result=await MatinLongContext.attachEvaluation(MatinPedagogy.parseEvaluation(record.result.reply,n,answers),meta.longEvaluation,answers);
       if(runEvaluations.some(e=>e.visit===runVisitSerial&&e.nodeId===n.id&&Object.keys(result).every(k=>JSON.stringify(e[k])===JSON.stringify(result[k]))))return '这份评价已在当前预览中，无需重复添加。';
       runEvaluations.push({visit:runVisitSerial,nodeId:n.id,nodeName:n.name,studentCount:answers.length,at:new Date().toISOString(),model:record.result.model||'classroom_auto',...result});renderRuntime();
     }else if(kind==='preview'){
-      if($('user-input').value.trim()===record.payload.messages.at(-1)?.content)$('user-input').value='';
+      if($('user-input').value.trim()===(meta.originalQuestion||record.payload.messages.at(-1)?.content))$('user-input').value='';
       say('assistant',MatinPedagogy.respectful(record.result.reply,n),n.roleName);
     }else throw Error('此结果不可用于当前预览。');
     return '已恢复到当前教师预览，未再次调用模型。';
