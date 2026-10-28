@@ -19,7 +19,7 @@
   function exportData(data,at=new Date().toISOString(),savedBaseline=baseline){
    if(!allowed())return;const url=URL.createObjectURL(new Blob([JSON.stringify({format:'Matin私有报告草稿',scope,baseline:savedBaseline,saved_at:at,data},null,2)],{type:'application/json'})),a=node('a');a.href=url;a.download='Matin报告草稿-'+at.slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
-  function preview(data){return Object.entries(data).map(([k,v])=>({grade:'教师评分',feedback:'教师总评',reason:'退回修改要求',due:'重交截止时间',summary:'学习总结',annotations:'逐条批注'}[k]||k)+'：'+(Array.isArray(v)?v.filter(a=>a&&Number.isInteger(a.message_index)).map(a=>'第 '+(a.message_index+1)+' 条：'+a.text).join('\n'):String(v??''))).join('\n\n');}
+  function preview(data){return Object.entries(data).map(([k,v])=>({grade:'教师评分',feedback:'教师总评',reason:'退回修改要求',due:'重交截止时间',summary:'学习总结',annotations:'逐条批注',rubric:'评分量表',nextAction:'保存并继续操作'}[k]||k)+'：'+(k==='rubric'?(v?.enabled?'已启用':'未启用')+'\n'+(Array.isArray(v?.items)?v.items:[]).filter(i=>i&&typeof i==='object').map(i=>i.name+'：'+(i.score||'未填')+' / '+i.max+' · '+i.guide).join('\n'):k==='nextAction'?({annotate:'仅保存评分与批注',passed:'通过报告',revision_required:'退回修改'}[v]||'仅保存评分与批注'):Array.isArray(v)?v.filter(a=>a&&Number.isInteger(a.message_index)).map(a=>'第 '+(a.message_index+1)+' 条：'+a.text).join('\n'):String(v??''))).join('\n\n');}
   function paint(){
    if(!allowed())return;
    const dirty=!same(read(),initial);onDirty(dirty);

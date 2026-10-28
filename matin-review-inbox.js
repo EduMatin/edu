@@ -32,8 +32,21 @@
   for(const [text,input] of [['班级',classes],['批阅状态',states],['搜索报告',search]]){const l=el('label',text);l.append(input);filters.append(l);}filters.append(apply);
   const summary=el('p',undefined,'ri-hint'),status=el('p',undefined,'ri-hint'),list=el('div');status.setAttribute('role','status');
   body.append(filters,summary,status,list);const count=el('span'),prev=button('上一页',()=>{page--;void loadCenter();}),next=button('下一页',()=>{page++;void loadCenter();}),refresh=button('刷新报告',()=>loadCenter());foot.append(count,prev,next,refresh);panel.append(head,body,foot);root.append(panel);document.body.append(root);
-  let homeSeq=0,centerSeq=0,page=1,pages=1,opener=null,lastHome=0,todoHome=null;
-  function openReport(row){window.MatinTaskReports.teacherReport({id:row.task_id,title:row.title,class_id:row.class_id,active:true},{student_id:row.student_id,display_name:row.display_name});}
+  let homeSeq=0,centerSeq=0,page=1,pages=1,opener=null,lastHome=0,todoHome=null,displayedFilter=null;
+  function openReport(row){
+   const filter={...(displayedFilter||{status:states.value,class_id:classes.value,search:search.value.trim()})},owner=account.userId;
+   const entry=r=>({task:{id:r.task_id,title:r.title,class_id:r.class_id,class_name:r.class_name,active:true},student:{student_id:r.student_id,display_name:r.display_name,student_no:r.student_no,version:r.version}});
+   // Load metadata across every page before reviewing. The resulting order stays
+   // fixed when pass/return removes a row from the live pending list.
+   const sequence=async()=>{const rows=[];let nextPage=1,lastPage=1,total=null;
+    do{if(account.userId!==owner)throw Error('账号已改变，请重新打开批阅中心。');const r=await fetchQueue({...filter,page:nextPage});if(account.userId!==owner)throw Error('账号已改变，请重新打开批阅中心。');
+     if(total===null)total=r.total;
+     rows.push(...r.rows);lastPage=r.pages;if(r.page!==nextPage||r.total!==total)throw Error('名单正在变化，请重新读取连续队列。');nextPage++;
+    }while(nextPage<=lastPage);
+    if(rows.length!==total||new Set(rows.map(r=>r.task_id+':'+r.student_id)).size!==total)throw Error('名单正在变化，请重新读取连续队列。');return rows.map(entry);
+   };
+   const selected=entry(row);window.MatinTaskReports.teacherReport(selected.task,selected.student,{sequence,sequenceLabel:'批阅中心 · '+(filter.status==='all'?'全部已提交':label(filter.status))+' · 当前筛选'});
+  }
   function renderRows(target,rows){target.replaceChildren();for(const row of rows){const item=el('article',undefined,'ri-row');item.dataset.reviewStudent=row.student_id;item.dataset.reviewTask=row.task_id;
    const info=el('div');info.append(el('strong',row.display_name+' · '+row.title),el('small',row.class_name+(row.archived_at?'（已归档班级）':'')+' · 学号 '+row.student_no+' · '+row.project_title),el('small','第 '+row.version+' 版 · '+time(row.submitted_at)+' 提交 · '+(row.class_ended_at?'结课档案 · 原状态：':'')+label(row.review_status)+(row.teacher_score!=null?' · 教师评分 '+row.teacher_score+' / 100':'')));
    item.append(info,button(!row.class_ended_at&&row.review_status==='pending_review'?'立即批阅':'查看报告',()=>openReport(row),!row.class_ended_at&&row.review_status==='pending_review'));target.append(item);
@@ -45,8 +58,8 @@
    }catch(e){if(seq!==homeSeq)return;title.textContent='待批阅报告 · 暂未获取';nav.textContent='报告批阅 · !';homeStatus.textContent=e.message||'读取失败，请重试。';}
    finally{if(seq===homeSeq)refreshHome.disabled=false;}
   }
-  async function loadCenter(){if(root.hidden)return;const seq=++centerSeq;const selected=classes.value;status.textContent='正在同步报告列表…';list.replaceChildren();summary.textContent='';count.textContent='';prev.disabled=next.disabled=true;
-   try{const r=await fetchQueue({status:states.value,class_id:selected,search:search.value.trim(),page});if(seq!==centerSeq||root.hidden)return;
+  async function loadCenter(){if(root.hidden)return;const seq=++centerSeq;const selected=classes.value,filter={status:states.value,class_id:selected,search:search.value.trim()};status.textContent='正在同步报告列表…';list.replaceChildren();summary.textContent='';count.textContent='';prev.disabled=next.disabled=true;
+   try{const r=await fetchQueue({...filter,page});if(seq!==centerSeq||root.hidden)return;displayedFilter=filter;
     classes.replaceChildren(new Option('全部班级',''));for(const c of r.classes)classes.append(new Option(c.name+(c.archived?'（已归档）':''),c.id));classes.value=selected;
     page=r.page;pages=r.pages;renderRows(list,r.rows);if(!r.rows.length)list.append(el('p','没有符合条件的已提交报告。','ri-hint'));
     summary.textContent='当前筛选范围：待批阅 '+r.counts.pending_review+' · 待学生修改 '+r.counts.revision_required+' · 已通过 '+r.counts.passed;
