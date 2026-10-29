@@ -14,6 +14,7 @@
   const root=el('div',undefined,'cm-layer modal-layer');root.id='course-matrix-modal';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.setAttribute('aria-labelledby','cm-title');
   const panel=el('section',undefined,'cm-panel'),head=el('header',undefined,'cm-head'),heading=el('div'),title=el('h2','课程学习明细');title.id='cm-title';heading.append(el('p','学生 × 任务 · 全班学习汇总','cm-muted'),title);
   const actions=el('div',undefined,'cm-actions'),refresh=btn('刷新明细',()=>load(current)),download=btn('导出整表',()=>exportTable(current),'btn primary'),close=btn('关闭',()=>dismiss());download.title='导出所选班级和课程的全部学生与任务，包含其他页；不受姓名搜索影响';actions.append(refresh,download,close);head.append(heading,actions);
+  actions.insertBefore(btn('课程成绩册',()=>{const options={class_id:current?.classId,course_id:current?.courseId};dismiss();window.MatinGradebook?.open(options);}),close);
   const filters=el('div',undefined,'cm-filters'),classes=el('select'),courses=el('select'),search=el('input');search.type='search';search.maxLength=100;search.placeholder='姓名或学号';
   for(const [name,input] of [['班级',classes],['课程',courses],['查找学生',search]]){const l=el('label',name);input.setAttribute('aria-label',name);l.append(input);filters.append(l);}
   const status=el('p','','cm-muted');status.id='cm-status';status.setAttribute('role','status');

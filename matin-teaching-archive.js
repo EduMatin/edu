@@ -50,7 +50,7 @@
   $('warnings').textContent=result.warnings.length?'注意：'+result.warnings.join('；'):'文件校验值、成员与任务关联、报告版本和批注位置均已检查。';$('receipt-status').textContent='本地校验用于检测损坏；登录原教师账号可核对云端凭据。';$('kind').innerHTML=F.kinds.filter(k=>result.counts[k]).map(k=>`<option value="${k}">${esc(F.labels[k])}（${result.counts[k]}）</option>`).join('');$('kind').value=result.counts.task?'task':'class';$('search').value='';$('detail').hidden=true;renderList();
  }
  function student(id){const m=result.grouped.member.find(x=>x.student_id===id),s=result.grouped.student.find(x=>x.id===id);return [m?.display_name||s?.display_name||id,m?.student_no||s?.student_no||''].filter(Boolean).join(' · ');}
- function title(row){const d=row.data;return d.title||d.name||(d.student_id?student(d.student_id):d.display_name)||F.labels[row.kind];}
+ function title(row){const d=row.data;return d.title||d.name||(d.course_name?d.course_name+(d.student_id?' · '+student(d.student_id):''):null)||(d.student_id?student(d.student_id):d.display_name)||F.labels[row.kind];}
  function context(row){const d=row.data,t=result.grouped.task.find(t=>t.id===d.task_id);return [t?.title,d.version?'第 '+d.version+' 版':'',statusLabels[d.review_status||d.status],d.student_no,d.email].filter(Boolean).join(' · ');}
  function renderList(){if(!result)return;const q=$('search').value.trim().toLowerCase(),rows=result.rows.filter(r=>r.kind===$('kind').value&&(!taskFilter||r.data.task_id===taskFilter)&&[title(r),context(r),r.key].join(' ').toLowerCase().includes(q));page=Math.max(1,Math.min(page,Math.ceil(rows.length/10)||1));const slice=rows.slice((page-1)*10,page*10);$('list').innerHTML=slice.length?`<table><thead><tr><th>记录</th><th>内容 / 状态</th><th>查阅</th></tr></thead><tbody>${slice.map((r,i)=>`<tr><td>${esc(title(r))}</td><td>${esc(context(r)||F.labels[r.kind])}</td><td><button data-record="${i}">查看详情</button></td></tr>`).join('')}</tbody></table>`:'<p>没有匹配记录。</p>';for(const b of $('list').querySelectorAll('[data-record]'))b.onclick=()=>showDetail(slice[Number(b.dataset.record)]);$('page').textContent=`共 ${rows.length} 条 · 第 ${page} / ${Math.ceil(rows.length/10)||1} 页`;$('prev').disabled=page===1;$('next').disabled=page*10>=rows.length;}
  function raw(d){return '<details><summary>查看完整原始记录（JSON）</summary><pre>'+esc(JSON.stringify(d,null,2))+'</pre></details>';}
@@ -64,6 +64,10 @@
    target.innerHTML+=fields([['姓名',name],['学号',number],['邮箱',d.email||profile?.email||imported?.email],['电话',d.phone||profile?.phone||imported?.phone],['班级',result.manifest.class_name],['成员状态',statusLabels[d.status||member?.status]||(sid?'已关联账号':'待注册关联')]]);
   }else if(row.kind==='class'){
    target.innerHTML+=fields([['班级',d.name],['专业',d.major],['年级',d.grade],['备注',d.notes],['归档时间',when(d.archived_at)],['结课时间',when(result.grouped.lifecycle[0]?.ended_at)]]);
+  }else if(row.kind==='grade_release'){
+   target.innerHTML+=fields([['班级',d.class_name],['课程',d.course_name],['姓名 / 学号',d.display_name+' / '+d.student_no],['确认总评',d.final_score],['计算总评',d.calculation.calculated_score],['调整原因',d.adjustment_reason||'未调整'],['发布版本',d.release_no],['发布时间',when(d.published_at)]])+ '<h4>本次计分依据</h4>'+d.calculation.cells.map(x=>'<p>'+esc(x.title)+' · 第 '+x.version+' 版报告 · '+x.score+' 分 × '+x.weight+'%</p>').join('');
+  }else if(row.kind==='gradebook'||row.kind==='gradebook_change'){
+   const weights=d.weights||d.after_data.weights;target.innerHTML+=fields([['权重版本',d.revision],['保存时间',when(d.updated_at||d.changed_at)]])+weights.map(x=>'<p>'+esc(result.grouped.task.find(t=>t.id===x.task_id)?.title||'任务')+' · '+x.weight+'%</p>').join('');
   }else if(row.kind==='task_change'){
    target.innerHTML+=fields([['修改时间',when(d.changed_at)],['修改原因',d.reason],['原截止时间',when(d.before_data?.due_at)],['新截止时间',when(d.after_data?.due_at)],['原学习要求',d.before_data?.instructions],['新学习要求',d.after_data?.instructions]]);
   }else if(row.kind==='review_event'){
