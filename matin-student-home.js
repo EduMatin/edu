@@ -12,7 +12,7 @@
  <div id="home-todos"></div><nav class="home-pagination" aria-label="首页待办分页"><span id="home-page-info"></span><button type="button" class="btn tiny" id="home-prev">上一页</button><button type="button" class="btn tiny" id="home-next">下一页</button></nav>
  <p class="home-footnote">时间按当前设备时区显示；逾期仍可补交，提交报告后移出待办，教师退回修改后重新列入。</p></section>
  <div class="home-aside"><section class="home-panel" aria-labelledby="home-continue-title"><h3 id="home-continue-title" tabindex="-1">继续学习</h3><p class="home-footnote">最近学习或需修改重交的班级任务</p><div id="home-continue"></div></section>
- <section class="home-panel" aria-labelledby="home-review-title"><div class="home-panel-title"><h3 id="home-review-title" tabindex="-1">入班审核</h3><button type="button" class="home-link" id="home-classes">管理班级 ↗</button></div><div id="home-reviews"></div><button type="button" class="home-link" id="home-more-reviews" hidden>展开全部班级</button></section></div></div>`;
+ <section class="home-panel" aria-labelledby="home-review-title"><div class="home-panel-title"><h3 id="home-review-title" tabindex="-1">班级与入班状态</h3><button type="button" class="home-link" id="home-classes">我的班级 ↗</button></div><div id="home-reviews"></div><button type="button" class="home-link" id="home-more-reviews" hidden>展开全部班级</button></section></div></div>`;
  document.querySelector('#screen-courses .page-intro').after(root);
  const style=document.createElement('style');style.textContent=`
  #student-home[hidden]{display:none!important}#student-home{margin:0 0 26px;scroll-margin-top:92px}#student-home h2{font-size:23px;margin:0 0 5px}#student-home h3{font-size:17px;margin:0}#student-home p{line-height:1.65}#student-home button{font:inherit}#student-home button:disabled{cursor:not-allowed}
@@ -80,7 +80,7 @@
   $('home-more-reviews').textContent=moreReviews?'收起班级列表':'展开全部 '+ordered.length+' 个班级';
   if(m.error)empty(reviews,m.error+'。请点击“刷新待办”重试。');else if(m.loading||!m.data)empty(reviews,'正在读取审核状态…');
   else if(m.data.is_teacher)empty(reviews,'当前为教师账号，请使用学生账号查看入班审核。');
-  else if(!ordered.length)empty(reviews,'尚未加入班级。点击“管理班级”，输入教师提供的入班码；导入名单的学生请使用名单邮箱验证并登录。');
+  else if(!ordered.length)empty(reviews,'尚未加入班级。点击“我的班级”，输入教师提供的入班码；导入名单的学生请使用名单邮箱验证并登录。');
   else for(const c of ordered.slice(0,moreReviews?ordered.length:3)){
    const labels={approved:['已通过 · 已加入','可以查看本班课程与任务。'],pending:['待教师审核','教师通过后，任务会出现在首页。'],rejected:['申请未通过','请联系教师核对姓名、学号及班级。'],removed:['已被移出班级','当前无法学习本班任务，如有疑问请联系教师。'],left:['已退出 / 已撤回','如需重新加入，请向教师确认入班码。']},label=labels[c.status]||['状态待确认','请刷新或联系教师。'];
    if(c.class_ended_at)label.splice(0,2,'已结束教学 · 只读','可查看本班任务、学习记录与报告。');const card=document.createElement('article');card.className='home-review';card.innerHTML='<h4>'+esc(c.name)+'</h4><span class="home-badge '+esc(c.status)+'">'+label[0]+'</span><p>'+label[1]+'</p>';

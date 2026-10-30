@@ -16,7 +16,7 @@
  .tr-layer{position:fixed;inset:0;z-index:160;background:#101a3db8;display:flex;align-items:center;justify-content:center;padding:20px;color:#253555}
  .tr-layer[hidden]{display:none!important}.tr-panel{background:#fff;border-radius:24px;width:min(1150px,100%);max-height:94vh;display:flex;flex-direction:column;box-shadow:0 24px 100px #101a3d50;min-width:0}
  .tr-panel>header,.tr-panel>footer{padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;flex-shrink:0}.tr-panel h2{font-size:22px;margin:0}.tr-panel h3{margin:12px 0;font-size:18px}.tr-panel h4{margin:8px 0}.tr-panel p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;margin:8px 0}
- .tr-panel>header{border-bottom:1px solid #e4e9f4}.tr-panel>footer{border-top:1px solid #e4e9f4}.tr-body{padding:4px 24px 24px;overflow:auto;min-height:0}.tr-status{padding:0 24px;color:#80521d;flex-shrink:0}.tr-muted{color:#697a97;font-size:13px}
+ .tr-panel>header{border-bottom:1px solid #e4e9f4}.tr-panel>footer{border-top:1px solid #e4e9f4}.tr-panel>footer:empty{display:none}.tr-body{padding:4px 24px 24px;overflow:auto;min-height:0}.tr-status{padding:0 24px;color:#80521d;flex-shrink:0}.tr-muted{color:#697a97;font-size:13px}
  .tr-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}.tr-stat{padding:16px;background:#f3f5fe;border:1px solid #e1e6f5;border-radius:14px}.tr-stat strong{display:block;font-size:27px;color:#4b4ed1}
  .tr-toolbar,.tr-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.tr-toolbar{margin:18px 0}.tr-toolbar label{display:grid;gap:5px;font-size:13px}.tr-toolbar input{min-width:260px}
  .tr-layer input,.tr-layer select,.tr-layer textarea{font:inherit;color:inherit;background:#fff;padding:10px 12px;border:1px solid #ccd6e9;border-radius:10px;max-width:100%;box-sizing:border-box}.tr-layer textarea{width:100%;min-height:88px;resize:vertical}.tr-layer :focus-visible{outline:3px solid #bac6ff;outline-offset:2px}.tr-layer :disabled{opacity:.55;cursor:wait}
@@ -236,7 +236,7 @@
     if(r.draft)body.append(el('h3','已同步的未发送草稿'),el('p',r.draft,'tr-report-section'));
     foot.append(btn('导出学习档案',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify({task,record:r,updated_at:d.updated_at},null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='Matin学习档案.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}));
    }else body.append(el('p','结课前尚无已同步学习记录。已提交报告可从任务卡片单独查看。'));
-   foot.append(btn('关闭',close));status.textContent='已读取云端档案';window.dispatchEvent(new CustomEvent('matin-student-learning-archive-read',{detail:{task_id:task.id}}));
+   status.textContent='已读取云端档案';window.dispatchEvent(new CustomEvent('matin-student-learning-archive-read',{detail:{task_id:task.id}}));
   });},
   teacherReport(task,row,options={}){const c=begin(true,task);if(c){foot.append(btn('重试读取',()=>run(c,()=>startReport(c,row,options))));run(c,()=>startReport(c,row,options));}},
   teacher(task,options={}){const c=begin(true,task);if(c){if(['overdue','current','pending_review','revision_required'].includes(options.filter))c.filter=options.filter;foot.append(btn('重试读取',()=>run(c,()=>roster(c))));run(c,()=>roster(c));}},
