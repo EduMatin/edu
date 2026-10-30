@@ -24,6 +24,11 @@
  }
  function adopt(d){if(!d.access_token||!d.refresh_token||!d.user?.id)throw Error('登录响应不完整');persist({...d,expires_at:d.expires_at||Date.now()/1000+(d.expires_in||3600)});}
  async function token(){if(!session)throw Error('请先登录学生账号');if(session.expires_at*1000<Date.now()+60000){if(!refreshing)refreshing=auth('token?grant_type=refresh_token',{refresh_token:session.refresh_token}).then(adopt).finally(()=>refreshing=null);await refreshing;}return session.access_token;}
+ async function fileRequest(body){
+  const access=await token(),form=body instanceof FormData;
+  const r=await fetch(base+'/functions/v1/matin-attachments',{method:'POST',headers:{apikey:cfg.publishableKey,Authorization:'Bearer '+access,...(form?{}:{'Content-Type':'application/json'})},body:form?body:JSON.stringify(body),cache:'no-store',signal:AbortSignal.timeout(90000)});
+  if(!r.ok){const d=await r.json().catch(()=>({}));throw Object.assign(Error(d.error||'附件服务暂不可用，请保留原文件并重试。'),{status:r.status});}return r;
+ }
  async function api(op,data={},action='membership'){
   const r=await fetch(base+'/functions/v1/matin-courses',{method:'POST',headers:{'Content-Type':'application/json',apikey:cfg.publishableKey,Authorization:'Bearer '+await token()},body:JSON.stringify({action,op,data}),signal:AbortSignal.timeout(25000)});
   const out=await r.json().catch(()=>({}));if(!r.ok||!out.ok){if(r.status===401){persist(null);location.replace(location.pathname+'#my');location.reload();}const error=Error(out.error||'班级服务暂不可用');error.status=r.status;error.code=out.code;throw error;}return out;
@@ -137,5 +142,5 @@
  window.addEventListener('pagehide',()=>{if(base)document.querySelector('main').classList.add('hidden');});
  window.addEventListener('pageshow',e=>{if(base&&e.persisted)location.reload();});
  const aiClient=window.MatinClassAI.client({base,key:cfg.publishableKey,user:()=>session?.user?.id||'',token,role:'student'});
- window.MatinStudent={ready,api,classAI:(payload,signal)=>aiClient.request(payload,signal),taskApi:(op,data)=>api(op,data,'tasks'),mine,membershipState,refreshMembership:refresh,openClasses,viewClass,navigate:changeView,get navigationRevision(){return navigationRevision;},get view(){return view;},get userId(){return session?.user?.id||'guest';},get signedIn(){return !!session;},get classId(){return classId;}};
+ window.MatinStudent={fileRequest,ready,api,classAI:(payload,signal)=>aiClient.request(payload,signal),taskApi:(op,data)=>api(op,data,'tasks'),mine,membershipState,refreshMembership:refresh,openClasses,viewClass,navigate:changeView,get navigationRevision(){return navigationRevision;},get view(){return view;},get userId(){return session?.user?.id||'guest';},get signedIn(){return !!session;},get classId(){return classId;}};
 })();

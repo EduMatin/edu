@@ -55,7 +55,12 @@
       const access=session?.access_token;persist(null);try{await fetch(base+'/auth/v1/logout',{method:'POST',headers:{apikey:cfg.publishableKey,Authorization:'Bearer '+access},signal:AbortSignal.timeout(5000)});}catch{}location.reload();};
     bar.append(name,refresh,out);document.body.prepend(bar);return session.user;
   }
-  async function api(body){
+  async function fileRequest(body){
+  const access=await token(),form=body instanceof FormData;
+  const r=await fetch(base+'/functions/v1/matin-attachments',{method:'POST',headers:{apikey:cfg.publishableKey,Authorization:'Bearer '+access,...(form?{}:{'Content-Type':'application/json'})},body:form?body:JSON.stringify(body),cache:'no-store',signal:AbortSignal.timeout(90000)});
+  if(!r.ok){const d=await r.json().catch(()=>({}));throw Object.assign(Error(d.error||'附件服务暂不可用，请保留原文件并重试。'),{status:r.status});}return r;
+ }
+ async function api(body){
     const access=await token();
     const res=await fetch(base+'/functions/v1/matin-courses',{method:body?'POST':'GET',headers:{'Content-Type':'application/json',apikey:cfg.publishableKey,Authorization:'Bearer '+access},
       ...(body?{body:JSON.stringify(body)}:{}),cache:'no-store',signal:AbortSignal.timeout(body?.action==='teaching_archive'?60000:25000)});
@@ -66,5 +71,5 @@
   function fatal(error){panel();document.getElementById('account-form').innerHTML='<h1>云端课程未能加载</h1><p id="account-status"></p><button type="button" id="account-retry">重试</button><button type="button" id="account-exit">退出账号</button>';status().textContent=error.message;
     document.getElementById('account-retry').onclick=()=>location.reload();document.getElementById('account-exit').onclick=()=>{persist(null);location.reload();};}
  const aiClient=window.MatinClassAI.client({base,key:cfg.publishableKey,user:()=>session?.user?.id||'',token,role:'teacher'});
-  window.MatinAccount={enabled,ready,api,get userId(){return session?.user?.id||'guest';},classAI:(payload,signal)=>aiClient.request(payload,signal),fatal,canLeave:()=>true};
+  window.MatinAccount={fileRequest,enabled,ready,api,get userId(){return session?.user?.id||'guest';},classAI:(payload,signal)=>aiClient.request(payload,signal),fatal,canLeave:()=>true};
 })();

@@ -1,0 +1,42 @@
+/* Cloud-private experimental evidence, bound to immutable report versions on submit. */
+(()=>{'use strict';
+ const types={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',pdf:'application/pdf',csv:'text/csv',tsv:'text/tab-separated-values',txt:'text/plain',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'};
+ const MAX=10485760,urls=new Map(),el=(t,text)=>{const e=document.createElement(t);if(text!==undefined)e.textContent=text;return e;};
+ const request=(teacher,body)=>(teacher?window.MatinAccount:window.MatinStudent).fileRequest(body);
+ const size=n=>n<1048576?(n/1024).toFixed(1)+' KiB':(n/1048576).toFixed(1)+' MiB';
+ const hash=async b=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',b))].map(n=>n.toString(16).padStart(2,'0')).join('');
+ const button=(text,fn)=>{const b=el('button',text);b.type='button';b.onclick=fn;return b;};
+ const style=el('style');style.textContent='.rf-box{border:1px solid #dce4f4;border-radius:14px;padding:18px;margin:18px 0;background:#f8faff}.rf-box p{line-height:1.6;color:#61718a}.rf-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-top:1px solid #e1e7f2;padding:12px 0}.rf-row label{display:flex!important;align-items:center;gap:9px;flex:1;min-width:160px;overflow-wrap:anywhere}.rf-row input[type=checkbox]{width:auto!important}.rf-row button,.rf-box>button{width:auto;padding:8px 12px;border:1px solid #dce4f4;border-radius:9px;background:white;color:#3545ad}.rf-preview{width:100%;margin:8px 0}.rf-preview img{display:block;max-width:100%;max-height:500px;object-fit:contain}.rf-state{min-height:24px;overflow-wrap:anywhere}.rf-error{color:#a23f26!important}.rf-upload{display:block;padding:18px;border:1px dashed #9caee0;border-radius:12px;background:white;margin:10px 0}.rf-upload input{display:block;max-width:100%;margin:10px 0}.rf-box [hidden]{display:none!important}';document.head.append(style);
+ new MutationObserver(()=>{for(const [node,url] of urls)if(!node.isConnected){URL.revokeObjectURL(url);urls.delete(node);}}).observe(document.documentElement,{childList:true,subtree:true});
+ async function bytes(file,teacher,exportId){const r=await request(teacher,{op:exportId?'archive_read':'read',data:{attachment_id:file.id,...(exportId?{export_id:exportId}:{})}}),b=new Uint8Array(await r.arrayBuffer());if(b.length!==file.bytes||await hash(b)!==file.sha256)throw Error('附件完整性校验失败，请重试。');return b;}
+ function download(file,b){const u=URL.createObjectURL(new Blob([b],{type:file.mime})),a=el('a');a.href=u;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(u),30000);}
+ function controls(row,file,teacher,state){
+  const action=(label,preview)=>button(label,async()=>{const b=preview?show:save;b.disabled=true;state.textContent='正在读取 '+file.name+'…';try{const data=await bytes(file,teacher);if(!row.isConnected)return;if(preview){const old=row.querySelector('.rf-preview');old?.remove();const box=el('div');box.className='rf-preview';const image=el('img');image.alt=file.name;const url=URL.createObjectURL(new Blob([data],{type:file.mime}));image.src=url;box.append(image,button('收起预览',()=>box.remove()));row.append(box);urls.set(box,url);}else download(file,data);state.textContent='附件已读取';}catch(e){state.textContent=e.message;}finally{b.disabled=false;}});
+  const show=action('预览照片 / 图表',true),save=action('下载',false);if(file.mime.startsWith('image/'))row.append(show);row.append(save);
+ }
+ function view(container,files,teacher){container.className='rf-box';container.append(el('h3','实验资料附件 · '+files.length+' 个'),el('p','以下附件随当前报告版本保存。照片可预览，数据文件下载后用对应软件打开。'));
+  const state=el('p');state.className='rf-state';state.setAttribute('role','status');for(const file of files){const row=el('div');row.className='rf-row';row.append(el('strong',file.name+' · '+size(file.bytes)));controls(row,file,teacher,state);container.append(row);}container.append(state);
+ }
+ async function editor(container,taskId,changed){
+  container.className='rf-box';container.append(el('h3','实验资料附件（选填）'),el('p','上传手写推导照片、实验图表或数据文件。支持 JPG / PNG / WebP / PDF / CSV / TSV / TXT / XLSX；单个最多10 MiB，每版最多10个、合计40 MiB。附件由教师查阅。'));
+  const upload=el('label','选择照片或文件（可多选）');upload.className='rf-upload';const input=el('input');input.type='file';input.multiple=true;input.accept=Object.keys(types).map(x=>'.'+x).join(',');upload.append(input);container.append(upload);
+  const count=el('p'),list=el('div'),state=el('p');state.setAttribute('role','status');state.className='rf-state';container.append(count,list,state,el('p','上传完成后仍需确认提交报告。未勾选的附件不会提交；取消旧版附件只影响本次选择，旧报告保持完整。'));
+  let files=[],selected=new Set(),pending=0;
+  async function load(){const d=await (await request(false,{op:'list',data:{task_id:taskId}})).json();files=d.files||[];return d;}
+  const d=await load();selected=new Set((d.selected?.length?d.selected:files.filter(f=>f.state==='ready'&&!f.submitted).slice(0,10)).map(f=>f.id));
+  function totals(){const chosen=files.filter(f=>selected.has(f.id));count.textContent='本版已选 '+chosen.length+' / 10 个 · '+size(chosen.reduce((n,f)=>n+f.bytes,0))+' / 40 MiB';}
+  function choose(f){if(selected.has(f.id))return;const total=files.filter(x=>selected.has(x.id)).reduce((n,x)=>n+x.bytes,0);if(selected.size>=10||total+f.bytes>41943040)throw Error('本版最多10个附件、合计40 MiB，请先取消部分选择。');selected.add(f.id);}
+  function render(){list.replaceChildren();for(const f of files){const row=el('div');row.className='rf-row';const label=el('label'),check=el('input');check.type='checkbox';check.checked=selected.has(f.id);check.disabled=f.state!=='ready';check.dataset.fixedDisabled=String(check.disabled);check.setAttribute('aria-label','提交附件 '+f.name);check.onchange=()=>{try{check.checked?choose(f):selected.delete(f.id);changed();}catch(e){check.checked=false;state.textContent=e.message;}totals();};label.append(check,el('span',f.name+' · '+size(f.bytes)+(f.state!=='ready'?' · 上传未完成，请重新选择同一文件':'')+(f.submitted?' · 已在旧版提交':'')));row.append(label);if(f.state==='ready')controls(row,f,false,state);
+    if(!f.submitted)row.append(button('移除草稿文件',async()=>{if(pending)return;pending++;try{await request(false,{op:'remove',data:{attachment_id:f.id}});selected.delete(f.id);await load();changed();render();state.textContent='已移除未提交附件';}catch(e){state.textContent=e.message;}finally{pending--;}}));list.append(row);}totals();}
+  input.onchange=async()=>{const chosen=[...input.files];input.value='';if(!chosen.length||pending)return;pending++;input.disabled=true;input.dataset.fixedDisabled='true';try{for(const file of chosen){if(!container.isConnected)break;const ext=file.name.split('.').pop().toLowerCase();if(!types[ext]||!file.size||file.size>MAX){state.textContent=file.name+'：格式或大小不符合要求，尚未上传。';break;}state.textContent='正在上传 '+file.name+'…';
+     const digest=await hash(await file.arrayBuffer()),existing=files.find(f=>f.sha256===digest&&f.name===file.name&&f.bytes===file.size);let id=existing?.id||crypto.randomUUID();
+     // Persist retry identity before sending; cloud list also recovers uploads across devices.
+     const key='matin_attachment_retry:'+String(window.MatinStudent?.userId)+':'+taskId+':'+digest+':'+file.name;
+     try{id=existing?.id||localStorage.getItem(key)||id;localStorage.setItem(key,id);}catch{if(!existing)throw Error('浏览器无法保存上传编号，请允许本机存储后重试。');}
+     const form=new FormData();form.append('task_id',taskId);form.append('attachment_id',id);form.append('file',file);
+     const r=await (await request(false,form)).json();await load();const saved=files.find(f=>f.id===r.file.id);if(!saved)throw Error('附件状态未同步，请重新打开提交页面。');choose(saved);try{localStorage.removeItem(key);}catch{}changed();render();state.textContent=file.name+' 已上传并选入本版报告';
+   }}catch(e){state.textContent=e.message+' 可重新选择同一文件重试，已上传文件会复用。';try{await load();render();}catch{}}finally{pending--;input.disabled=false;input.dataset.fixedDisabled='false';}};
+  render();return {ids:()=>[...selected],select(ids){selected=new Set(ids.filter(id=>files.some(f=>f.id===id&&f.state==='ready')));if(selected.size!==ids.length)state.textContent='部分草稿附件已不可用，请重新检查本版选择。';render();},validate(){if(pending)throw Error('附件正在上传或移除，请等待完成后提交。');const chosen=files.filter(f=>selected.has(f.id));if(chosen.length!==selected.size||chosen.length>10||chosen.reduce((n,f)=>n+f.bytes,0)>41943040||chosen.some(f=>f.state!=='ready'))throw Error('请检查附件数量、大小及上传状态。');return [...selected];}};
+ }
+ window.MatinReportFiles={editor,view,bytes};
+})();

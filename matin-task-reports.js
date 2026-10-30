@@ -154,6 +154,7 @@
   const tools=el('div',undefined,'tr-toolbar'),versionLabel=el('label','提交版本'),versions=el('select');for(const v of d.versions){const option=el('option','第 '+v.version+' 版 · '+time(v.submitted_at)+(v.review_status?' · '+reviewLabel(v.review_status):''));option.value=v.version;versions.append(option);}versions.value=s.version;versionLabel.append(versions);tools.append(versionLabel);
   versions.setAttribute('aria-label','提交版本');versions.onchange=()=>{if(!canLeave()){versions.value=s.version;return;}run(c,()=>readReport(c,c.student,Number(versions.value)));};
   if(c.teacher)tools.append(btn('返回完成明细',()=>{if(canLeave())run(c,()=>roster(c));}));body.append(tools);
+  if(s.attachments?.length){const attachments=el('section');body.append(attachments);if(window.MatinReportFiles)MatinReportFiles.view(attachments,s.attachments,c.teacher);else attachments.append(el('p','本版有 '+s.attachments.length+' 个附件，但附件组件未加载，请刷新页面或联系教师补传网页文件。','tr-note'));}
   if(historical)body.prepend(el('p','正在查看历史版本；最新为第 '+newest.version+' 版，'+reviewLabel(newest.review_status)+'。'+(c.teacher?'这里的批注只保存到当前版本。请切换到最新版本作出批阅结论。':'请切换到最新版本查看当前批阅结果。'),'tr-note'));
   const feedbackSection=el('section',undefined,'tr-report-section');feedbackSection.append(el('h3','教师总评'));
   let feedback,grade,reason,due,reviewTools,nextAction,actionHint;
@@ -250,13 +251,17 @@
    body.append(el('p','确认后将把本页展示的当前节点、完整对话、阶段评价和学习总结发送给任课教师。提交后保留云端版本；之后修改本地记录不会自动改变已交报告。','tr-note'));
    if(latest.submission_version)body.append(el('p','你已提交 '+latest.submission_version+' 版，本次将新增一版，保留原报告和批注。','tr-muted'));
    const summaryLabel=el('label','学习总结（选填）'),summary=el('textarea');summary.maxLength=4000;summary.setAttribute('aria-label','学习总结');summary.placeholder='本次学习成果、遇到的问题或需要教师解答的内容';summary.oninput=()=>draftChanged(c);summaryLabel.append(summary);body.append(summaryLabel);
+   if(!window.MatinReportFiles)throw Error('附件组件未加载，请刷新页面。');
+   const attachments=el('section');body.append(attachments);
+   const files=await MatinReportFiles.editor(attachments,task.id,()=>draftChanged(c));if(!isCurrent(c))return;
    reportBody(report,body);
-   bindDraft(c,'student-summary',{version:Number(latest.submission_version)||0,feedback_revision:Number(latest.feedback_revision)||0},()=>({summary:summary.value}),value=>summary.value=String(value.summary??'').slice(0,4000));
+   bindDraft(c,'student-summary',{version:Number(latest.submission_version)||0,feedback_revision:Number(latest.feedback_revision)||0},()=>({summary:summary.value,attachment_ids:files.ids()}),value=>{summary.value=String(value.summary??'').slice(0,4000);if(Array.isArray(value.attachment_ids))files.select(value.attachment_ids);});
    foot.append(btn(latest.submission_version?'确认提交新版本':'确认提交报告',()=>run(c,async()=>{
+    const attachment_ids=files.validate();
     const payload={...report,summary:summary.value};delete payload.nodes;delete payload.project_title;
     if(new TextEncoder().encode(JSON.stringify(payload)).length>(state.workflow_version===2?2200000:150000))throw Error(state.workflow_version===2?'报告超过 2.2 MB，请先导出完整记录并联系教师。内容未丢失。':'报告较长，请先更新报告服务以支持完整提交。内容未丢失。');
-    const signature=JSON.stringify(payload);if(c.submitSignature!==signature){c.submitSignature=signature;c.submitMutation=crypto.randomUUID();}
-    const result=await api(c,'submit',{expected_version:Number(latest.submission_version)||0,expected_feedback_revision:Number(latest.feedback_revision)||0,mutation_id:c.submitMutation,report:payload});if(!isCurrent(c))return;
+    const signature=JSON.stringify({payload,attachment_ids});if(c.submitSignature!==signature){c.submitSignature=signature;c.submitMutation=crypto.randomUUID();}
+    const result=await api(c,'submit',{expected_version:Number(latest.submission_version)||0,expected_feedback_revision:Number(latest.feedback_revision)||0,mutation_id:c.submitMutation,attachment_ids,report:payload});if(!isCurrent(c))return;
     c.draft?.commit();releaseDraft(c);c.dirty=false;
     // Submission is already confirmed. A subsequent list refresh must not invite another submission.
     try{await MatinTasks.loadStudent();}catch{}if(!isCurrent(c))return;
