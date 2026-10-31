@@ -5,16 +5,17 @@
  const MAX=209715200,MAX_PACKAGE=MAX*3+33554432,MAX_ROWS=50000,enc=new TextEncoder(),dec=new TextDecoder('utf-8',{fatal:true});
  const readerPath='打开教学档案.html';
  const kinds=['class','member','roster_import','student','class_course','outline','project','lifecycle','teaching_event','task','plan_source','progress','report','review_event','task_change','gradebook','gradebook_change','grade_release','attachment'];
- const labels={'class':'班级资料',member:'成员及审核状态',roster_import:'导入名单',student:'学生身份',class_course:'项目关联',outline:'课程目录',project:'教学项目',lifecycle:'结课快照',teaching_event:'结课与重开记录',task:'全部任务',plan_source:'教学计划来源',progress:'任务进度',report:'各版报告与批阅',review_event:'批注及评分历史',task_change:'任务修改历史',gradebook:'课程成绩权重',gradebook_change:'权重修改历史',grade_release:'总评发布历史',attachment:'实验资料附件'};
+ const labels={'class':'班级资料',member:'成员及审核状态',roster_import:'导入名单',student:'学生身份',class_course:'项目关联',outline:'课程目录',project:'教学项目',lifecycle:'结课快照',teaching_event:'结课与重开记录',task:'全部任务',plan_source:'教学计划来源',progress:'任务进度',report:'最新报告与批阅',review_event:'批注及评分历史',task_change:'任务修改历史',gradebook:'课程成绩权重',gradebook_change:'权重修改历史',grade_release:'总评发布历史',attachment:'实验资料附件'};
  function assert(v,s){if(!v)throw Error(s);}
  const hash=async b=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',typeof b==='string'?enc.encode(b):b)),x=>x.toString(16).padStart(2,'0')).join('');
- const rootText=m=>'matin-teaching-archive:1\n'+[m.export_id,m.owner_id,m.class_id,m.captured_at,m.expires_at].join('\n')+'\n'+m.entries.map(e=>[e.seq,e.kind,e.bytes,e.sha256].join('|')+'\n').join('');
+ const rootText=m=>'matin-teaching-archive:1\n'+(m.report_scope?m.report_scope+'\n':'')+[m.export_id,m.owner_id,m.class_id,m.captured_at,m.expires_at].join('\n')+'\n'+m.entries.map(e=>[e.seq,e.kind,e.bytes,e.sha256].join('|')+'\n').join('');
  const attachmentPath=/^attachments\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\.(jpg|jpeg|png|webp|pdf|csv|tsv|txt|xlsx|doc|docx)$/;
  const attachmentTypes={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',pdf:'application/pdf',csv:'text/csv',tsv:'text/tab-separated-values',txt:'text/plain',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'};
  function attachmentValid(f){return f&&attachmentPath.test(f.path)&&f.path==='attachments/'+f.id+'.'+f.ext&&attachmentTypes[f.ext]===f.mime&&typeof f.name==='string'&&f.name.length>0&&f.name.length<=180&&!/[\x00-\x1f\x7f/\\]/.test(f.name)&&Number.isSafeInteger(f.bytes)&&f.bytes>0&&f.bytes<=10485760&&/^[a-f0-9]{64}$/.test(f.sha256);}
  const keyOf=(k,d)=>({class:()=>d.id,member:()=>d.student_id,roster_import:()=>d.id,student:()=>d.id,class_course:()=>d.course_id,outline:()=>d.source,project:()=>d.id,lifecycle:()=>d.class_id,teaching_event:()=>d.id,task:()=>d.id,plan_source:()=>d.id,progress:()=>d.task_id+':'+d.student_id,report:()=>d.task_id+':'+d.student_id+':'+d.version,review_event:()=>d.id,task_change:()=>d.task_id+':'+d.revision,gradebook:()=>d.course_id,gradebook_change:()=>d.id,grade_release:()=>d.id,attachment:()=>d.id}[k])();
  async function verify(manifest,files,onProgress=()=>{}){
   const m=manifest;
+  assert(m.report_scope===undefined||m.report_scope==='latest','不支持此档案报告范围。');
   assert(m?.format==='matin-teaching-archive'&&m.version===1,'不支持此档案格式或版本。');
   assert(Array.isArray(m.entries)&&m.entries.length===m.record_count&&m.record_count>0&&m.record_count<=MAX_ROWS,'档案记录数量不完整。');
   assert(Number.isSafeInteger(m.total_bytes)&&m.total_bytes>0&&m.total_bytes<=MAX,'档案大小超出支持范围。');
@@ -54,13 +55,13 @@
    if(r.teacher_score!=null)assert(Number.isFinite(r.teacher_score)&&r.teacher_score>=0&&r.teacher_score<=100,'报告评分无效。');
    const k=r.task_id+':'+r.student_id;if(!versionGroups.has(k))versionGroups.set(k,[]);versionGroups.get(k).push(r.version);
   }
-  for(const versions of versionGroups.values()){versions.sort((a,b)=>a-b);assert(versions.every((v,i)=>v===i+1),'报告版本不连续，无法确认完整恢复。');}
+  for(const versions of versionGroups.values()){versions.sort((a,b)=>a-b);assert(m.report_scope==='latest'?versions.length===1:versions.every((v,i)=>v===i+1),'报告版本范围不符合档案声明。');}
   for(const e of grouped.review_event){const r=reports.get(e.task_id+':'+e.student_id+':'+e.version);assert(r,'批阅历史关联的报告版本缺失。');for(const d of [e.before_data,e.after_data]){assert(d&&typeof d==='object','批阅历史内容缺失。');if(d.annotations)annotations(d,r.report);}}
   function weightsValid(ws){return Array.isArray(ws)&&ws.length>0&&new Set(ws.map(w=>w.task_id)).size===ws.length&&ws.every(w=>tasks.has(w.task_id)&&Number.isFinite(w.weight)&&w.weight>0&&w.weight<=100&&Math.abs(w.weight*10-Math.round(w.weight*10))<1e-8)&&Math.abs(ws.reduce((n,w)=>n+w.weight,0)-100)<1e-8;}
   for(const k of ['gradebook','gradebook_change','grade_release'])for(const d of grouped[k])assert(d.class_id===c.id,'成绩档案混入其他班级记录。');
   for(const d of grouped.gradebook){assert(weightsValid(d.weights),'课程权重或关联任务无效。');assert(grouped.gradebook_change.some(x=>x.course_id===d.course_id&&x.revision===d.revision),'缺少权重修改记录。');}
   for(const d of grouped.gradebook_change){assert(weightsValid(d.after_data?.weights)&&(!d.before_data||weightsValid(d.before_data.weights)),'历史权重无效。');}
-  for(const d of grouped.grade_release){assert(students.has(d.student_id)&&Number.isFinite(d.final_score)&&d.final_score>=0&&d.final_score<=100,'总评学生身份或分数无效。');assert(weightsValid(d.calculation?.cells),'总评计分依据缺失。');const config=grouped.gradebook_change.find(x=>x.course_id===d.course_id&&x.revision===d.config_revision);assert(config&&config.after_data.weights.every(w=>d.calculation.cells.some(x=>x.task_id===w.task_id&&x.weight===w.weight))&&config.after_data.weights.length===d.calculation.cells.length,'总评与权重历史不一致。');for(const x of d.calculation.cells)assert(reports.has(x.task_id+':'+d.student_id+':'+x.version)&&Number.isFinite(x.score)&&x.score>=0&&x.score<=100&&x.status==='passed','总评关联的报告版本或评分依据缺失。');assert(Math.abs(Math.round(d.calculation.cells.reduce((n,x)=>n+x.score*x.weight/100,0)*10)/10-d.calculation.calculated_score)<1e-8,'课程总评计算依据不一致。');}
+  for(const d of grouped.grade_release){assert(students.has(d.student_id)&&Number.isFinite(d.final_score)&&d.final_score>=0&&d.final_score<=100,'总评学生身份或分数无效。');assert(weightsValid(d.calculation?.cells),'总评计分依据缺失。');const config=grouped.gradebook_change.find(x=>x.course_id===d.course_id&&x.revision===d.config_revision);assert(config&&config.after_data.weights.every(w=>d.calculation.cells.some(x=>x.task_id===w.task_id&&x.weight===w.weight))&&config.after_data.weights.length===d.calculation.cells.length,'总评与权重历史不一致。');for(const x of d.calculation.cells)assert((reports.has(x.task_id+':'+d.student_id+':'+x.version)||(m.report_scope==='latest'&&Number.isSafeInteger(x.version)&&x.version>0&&versionGroups.get(x.task_id+':'+d.student_id)?.[0]>x.version))&&Number.isFinite(x.score)&&x.score>=0&&x.score<=100&&x.status==='passed','总评关联的报告版本或评分依据缺失。');assert(Math.abs(Math.round(d.calculation.cells.reduce((n,x)=>n+x.score*x.weight/100,0)*10)/10-d.calculation.calculated_score)<1e-8,'课程总评计算依据不一致。');}
   const attachments=new Map(grouped.attachment.map(f=>[f.id,f])),referenced=new Set();let fileBytes=0;
   for(const f of grouped.attachment){assert(attachmentValid(f)&&tasks.has(f.task_id)&&students.has(f.student_id),'附件元数据或归属无效。');const b=files.get(f.path);assert(b instanceof Uint8Array&&b.length===f.bytes&&await hash(b)===f.sha256,'附件缺失或损坏：'+f.name);fileBytes+=f.bytes;}
   assert(total+fileBytes<=MAX,'档案连同附件超过200 MiB。');
@@ -98,7 +99,7 @@
   }
   assert(at===end&&nextLocal===start&&files.has('manifest.json'),'ZIP 档案不完整。');return files;
  }
- const scopeNote='完整教学档案 v1\n包含班级、全部成员及导入名单、身份资料、项目与课程关联、全部任务及进度、各版已提交报告及实验资料附件原文件、当前批阅与历次批注评分、任务修改记录、结课冻结名单及操作历史，以及课程权重、权重修改历史和教师确认的各次总评发布依据。\n保留导出时云端已存在的正式记录；教学计划仅保留来源信息。未提交的私有对话/草稿、密码、密钥、入班码及分享访问码不包含在内。\n在教师端“教学档案”中选择“打开已有档案”可检查并只读查阅；不自动覆盖线上班级或创建学生登录账号。\nSHA-256 与 ZIP CRC 用于检测损坏；本地校验不证明来源，可登录原教师账号核对云端导出凭据。请妥善保管含学生个人资料的档案。\n';
+ const scopeNote='完整教学档案 v1\n包含班级、全部成员及导入名单、身份资料、项目与课程关联、全部任务及进度、每位学生每项任务最新已提交报告及其附件原文件、该版批阅及批注评分记录、任务修改记录、结课冻结名单及操作历史，以及课程权重、权重修改历史和教师确认的各次总评发布依据。\n保留导出时云端已存在的正式记录；教学计划仅保留来源信息。未提交的私有对话/草稿、密码、密钥、入班码及分享访问码不包含在内。\n在教师端“教学档案”中选择“打开已有档案”可检查并只读查阅；不自动覆盖线上班级或创建学生登录账号。\nSHA-256 与 ZIP CRC 用于检测损坏；本地校验不证明来源，可登录原教师账号核对云端导出凭据。请妥善保管含学生个人资料的档案。\n';
  async function pack(manifest,files){await verify(manifest,files);return zip(new Map([['manifest.json',JSON.stringify(manifest,null,2)],['README.txt',scopeNote],...files]));}
  async function read(buffer,onProgress){const files=unzip(buffer);let m;try{m=JSON.parse(dec.decode(files.get('manifest.json')));}catch{throw Error('无法读取档案目录。');}
   const p=m.presentation;
