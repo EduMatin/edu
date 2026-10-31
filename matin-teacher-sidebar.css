@@ -1,0 +1,34 @@
+/* Scoped specificity prevents feature modules from overriding sidebar layout. */
+#teacher-sidebar{width:244px;position:fixed;inset:0 auto 0 0;display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;justify-content:flex-start;gap:0;padding:24px 16px 16px;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#465170 transparent}
+#teacher-sidebar .brand-block{margin:0 0 26px;padding:0 6px;gap:10px;white-space:normal;flex-shrink:0}
+#teacher-sidebar .brand-title{font-size:23px;letter-spacing:-.04em;gap:8px}
+#teacher-sidebar .brand-chip{font-size:10px;font-weight:500;background:transparent;border:0;color:#a8b5d0;padding:0;white-space:nowrap}
+#teacher-sidebar .brand-sub{font-size:11px;letter-spacing:0;white-space:normal;color:#94a4c4;margin-top:7px}
+#teacher-sidebar .nav{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;order:initial;width:100%;margin:0 0 18px;gap:18px;flex-shrink:0}
+#teacher-sidebar .nav::before{display:none}
+#teacher-sidebar .side-heading{margin:0 0 6px;padding:0 12px;font-size:11px;line-height:18px;font-weight:500;letter-spacing:.07em;color:#8294b8}
+#teacher-sidebar .side-items{display:flex;flex-direction:column;gap:3px}
+#teacher-sidebar .side-control,#teacher-sidebar .nav button{display:flex;align-items:center;justify-content:flex-start;gap:12px;min-height:44px;width:100%;margin:0;padding:10px 12px;text-align:left;white-space:normal;font-size:13px;line-height:22px;font-weight:500;border:1px solid transparent;border-radius:9px;background:transparent;color:#b3bfd8;box-shadow:none;text-decoration:none;cursor:pointer}
+#teacher-sidebar .side-control.active:not(.side-current){background:transparent;border-color:transparent;box-shadow:none;color:#b3bfd8;font-weight:500}
+#teacher-sidebar .side-control:hover{background:#ffffff0c;color:white}
+#teacher-sidebar .side-control.side-current{background:#7166ed24;border-color:#9087f045;color:#fff;box-shadow:inset 3px 0 #9287ff;font-weight:650}
+#teacher-sidebar .side-control:focus-visible,#teacher-sidebar .side-toggle:focus-visible{outline:2px solid #bcb4ff;outline-offset:-2px}
+#teacher-sidebar .side-label{flex:1;min-width:0}
+#teacher-sidebar .side-icon{width:20px;height:20px;display:inline-flex;flex:0 0 20px;color:#9da9ce}
+#teacher-sidebar .side-icon svg{width:20px;height:20px}
+#teacher-sidebar .side-count{min-width:22px;padding:0 6px;border-radius:7px;background:#8475ed30;color:#d4cfff;font-size:11px;text-align:center;font-variant-numeric:tabular-nums}
+#teacher-sidebar .side-warning{color:#ffd29d}
+#teacher-sidebar .topright{display:flex;flex-direction:column;align-items:stretch;margin:auto 0 0;padding:18px 0 0;border-top:1px solid #ffffff14;gap:2px;flex-shrink:0}
+#teacher-sidebar .topnote{display:block;padding:5px 12px 0;font-size:11px;line-height:18px;color:#91a2c0;white-space:normal}
+#teacher-sidebar .side-toggle{display:none}
+@media(min-width:901px){body>.container{margin-left:244px;width:calc(100% - 244px)}body>#teacher-account-bar{margin-left:244px}}
+@media(max-width:900px){
+ #teacher-sidebar{position:sticky;inset:auto;top:0;width:100%;max-height:85vh;max-height:85dvh;padding:12px 14px;z-index:40}
+ #teacher-sidebar .brand-block{margin:0;padding:0;width:100%}
+ #teacher-sidebar .brand-icon{width:36px;height:36px;flex-basis:36px;font-size:22px}
+ #teacher-sidebar .brand-title{font-size:20px}#teacher-sidebar .brand-sub{font-size:10px;margin-top:4px}
+ #teacher-sidebar .side-toggle{display:block;margin-left:auto;padding:8px 12px;border:1px solid #ffffff30;border-radius:8px;background:#ffffff0b;color:#e3e9ff;font:inherit;flex-shrink:0;min-height:40px}
+ #teacher-sidebar:not(.side-expanded) .nav,#teacher-sidebar:not(.side-expanded) .topright{display:none}
+ #teacher-sidebar.side-expanded .nav{margin-top:20px;gap:16px}
+ body>.container{margin-left:0;width:100%}body>#teacher-account-bar{margin-left:0}
+}

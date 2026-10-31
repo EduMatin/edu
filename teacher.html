@@ -314,12 +314,13 @@ button:active:not(:disabled){transform:scale(.985)}
 
 #teacher-home-modal p{margin:12px 0;line-height:1.8;color:#596a8b}#teacher-home-modal .actions{gap:8px;margin-top:12px;flex-wrap:wrap}#teacher-home-modal .modal{max-width:600px}
 </style>
+<link rel="stylesheet" href="./matin-teacher-sidebar.css?v=20261031b" />
 </head>
 <body>
-<header class="topbar">
+<header class="topbar" id="teacher-sidebar">
   <div class="brand-block">
     <div class="brand-icon" aria-hidden="true">M<span class="brand-icon-dot"></span></div>
-    <div><div class="brand-title">Matin <span class="brand-chip">TEACHER V8</span></div><div class="brand-sub">教师创作空间 · TEACHER WORKSPACE</div></div>
+    <div><div class="brand-title">Matin <span class="brand-chip">教师端</span></div><div class="brand-sub">教学创作与管理</div></div>
   </div>
   <nav class="nav" aria-label="主要导航">
     <button type="button" data-nav="dashboard" class="active"><span class="nav-icon">▦</span> 教师工作台</button>
@@ -1504,5 +1505,6 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
   store();showView('dashboard');
 })().catch(error=>window.MatinAccount.fatal(error));
 </script>
+<script src="./matin-teacher-sidebar.js?v=20261031b"></script>
 </body>
 </html>
