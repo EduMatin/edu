@@ -42,7 +42,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 </section>
 <section id="screen-runtime" class="hidden">
  <div class="runtime-header"><div><span class="eyebrow">INTERACTIVE TRAINING</span><h2 id="run-project-title">实训课程</h2><small id="run-subject"></small></div><button type="button" class="btn" id="back-courses">← 返回选课</button></div>
- <div class="runtime-layout"><aside class="runtime-left" id="stage-details"><button type="button" class="btn tiny stage-return-link" id="back-to-stage-actions">返回对话与下一步 ↓</button><div class="slot"><div class="section-label">当前学习阶段</div><h3 id="run-node-name" tabindex="-1"></h3><p id="run-student-task"></p><div id="run-stage-goals" class="pedagogy-goals"></div><p id="run-review-notice" class="help" hidden></p><button type="button" id="run-review-report" class="btn tiny" hidden>查看教师批阅</button></div><div class="slot"><div class="section-label">AI 角色导师</div><div class="role-card"><h3 id="run-role-name"></h3><p id="run-role-persona"></p></div></div><div class="slot"><div class="section-label">学习路径</div><div class="progress-nodes" id="run-progress"></div></div><div class="slot"><div class="section-label">✦ 本阶段学习评价</div><div class="score-panel" id="score-panel"><p>完成回答后可请求 AI 评价，评分仅作为学习建议。</p></div><button type="button" class="btn soft" style="width:100%;margin-top:10px" id="evaluate-button">✦ 获取 AI 学习反馈</button><button type="button" class="btn tiny" style="width:100%;margin-top:8px" id="learning-hint">获取补学提示</button></div><div class="slot"><button type="button" class="btn" id="export-report" style="width:100%">⇩ 导出我的学习报告</button><button type="button" class="btn primary" id="submit-task-report" style="width:100%;margin-top:10px" hidden>提交学习报告</button><p class="help" style="margin-top:9px">班级任务可主动提交报告供教师查看、批注。登录后，当前节点、完整对话、阶段评价和完成状态会自动同步到本人云端账号；换设备进入同一任务即可恢复。请在离开前确认“已同步云端”。未登录时仅保存在此浏览器。AI 评分不构成正式考试成绩；在线实验不替代教师或现场安全规程。</p></div></aside><section class="chat-shell"><div class="chat-top"><div class="chat-title"><div class="chat-avatar">✦</div><div><strong>AI 情境学习舱</strong><small id="run-model-tag">离线剧情体验</small></div></div><button type="button" class="btn tiny" id="restart-run">↻ 重新开始</button></div><p id="learning-save-status" class="help" role="status" style="padding:8px 20px;margin:0"></p><div class="chat-feed" id="chat-feed" aria-live="polite"></div><form class="chat-form" id="chat-form"><div class="input-row"><textarea rows="2" id="chat-input" placeholder="输入你的回答，或向导师提问……" maxlength="5000" aria-label="学生回答"></textarea><button class="btn primary" id="send-button" type="submit">发送 ↗</button></div><p class="input-note">Enter 发送 · Shift+Enter 换行。AI 会根据教师剧本引导学习，必要时请核对专业知识与安全要求。</p></form><nav class="stage-actions" aria-label="阶段学习导航"><div class="stage-actions-heading"><strong id="run-stage-position" tabindex="-1" aria-live="polite"></strong><button type="button" id="next-details" class="stage-details-link">阶段目标与反馈 ↗</button></div><div id="run-branches"></div></nav></section></div>
+ <div class="runtime-layout"><aside class="runtime-left" id="stage-details"><button type="button" class="btn tiny stage-return-link" id="back-to-stage-actions">返回对话与下一步 ↓</button><div class="slot"><div class="section-label">当前学习阶段</div><h3 id="run-node-name" tabindex="-1"></h3><p id="run-student-task"></p><div id="run-stage-goals" class="pedagogy-goals"></div><p id="run-review-notice" class="help" hidden></p><button type="button" id="run-review-report" class="btn tiny" hidden>查看教师批阅</button></div><div class="slot"><div class="section-label">AI 角色导师</div><div class="role-card"><h3 id="run-role-name"></h3><p id="run-role-persona"></p></div></div><div class="slot"><div class="section-label">学习路径</div><div class="progress-nodes" id="run-progress"></div></div><div class="slot"><div class="section-label">✦ 本阶段学习评价</div><div class="score-panel" id="score-panel"><p>切换阶段或结束学习时自动获取反馈，也可点击下方按钮提前获取。评分仅作为学习建议。</p></div><button type="button" class="btn soft" style="width:100%;margin-top:10px" id="evaluate-button">✦ 获取 AI 学习反馈</button><button type="button" class="btn tiny" style="width:100%;margin-top:8px" id="learning-hint">获取补学提示</button></div><div class="slot"><button type="button" class="btn" id="export-report" style="width:100%">⇩ 导出我的学习报告</button><button type="button" class="btn primary" id="submit-task-report" style="width:100%;margin-top:10px" hidden>提交学习报告</button><p class="help" style="margin-top:9px">班级任务可主动提交报告供教师查看、批注。登录后，当前节点、完整对话、阶段评价和完成状态会自动同步到本人云端账号；换设备进入同一任务即可恢复。请在离开前确认“已同步云端”。未登录时仅保存在此浏览器。AI 评分不构成正式考试成绩；在线实验不替代教师或现场安全规程。</p></div></aside><section class="chat-shell"><div class="chat-top"><div class="chat-title"><div class="chat-avatar">✦</div><div><strong>AI 情境学习舱</strong><small id="run-model-tag">离线剧情体验</small></div></div><button type="button" class="btn tiny" id="restart-run">↻ 重新开始</button></div><p id="learning-save-status" class="help" role="status" style="padding:8px 20px;margin:0"></p><div class="chat-feed" id="chat-feed" aria-live="polite"></div><form class="chat-form" id="chat-form"><div class="input-row"><textarea rows="2" id="chat-input" placeholder="输入你的回答，或向导师提问……" maxlength="5000" aria-label="学生回答"></textarea><button class="btn primary" id="send-button" type="submit">发送 ↗</button></div><p class="input-note">Enter 发送 · Shift+Enter 换行。AI 会根据教师剧本引导学习，必要时请核对专业知识与安全要求。</p></form><nav class="stage-actions" aria-label="阶段学习导航"><div class="stage-actions-heading"><strong id="run-stage-position" tabindex="-1" aria-live="polite"></strong><button type="button" id="next-details" class="stage-details-link">阶段目标与反馈 ↗</button></div><div id="run-branches"></div></nav></section></div>
 </section>
 </main>
 <footer class="student-foot">MATIN AI STUDIO · 学生学习中心。课程由教师发布，个人 API Key 不会保存在浏览器本地存储。</footer>
@@ -52,6 +52,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 <script src="./matin-math.js"></script>
 <script src="./matin-pedagogy.js"></script>
 <script src="./matin-long-context.js"></script>
+<script src="./matin-stage-feedback.js"></script>
 <script src="./matin-formula-input.js"></script>
 <script src="./matin-class-ai.js"></script>
 <script src="./matin-student.js"></script>
@@ -211,7 +212,7 @@ function rememberProgress(){if(!active||!runNode)return;
  catch{if(!saveFailed)notify('学习记录保存失败，请及时导出学习报告');saveFailed=true;$('learning-save-status').textContent='保存失败：浏览器存储不可用或空间不足。请导出学习报告，关闭页面可能丢失本次进度。';}
  window.MatinLearningSync.queue(record);
 }
-function stopRequests(){window.MatinFormulaInput?.close();visitId++;controller?.abort();evaluationController?.abort();controller=null;evaluationController=null;busy=false;evalBusy=false;pendingRequest='';}
+function stopRequests(){window.MatinStageFeedback.cancel();window.MatinFormulaInput?.close();visitId++;controller?.abort();evaluationController?.abort();controller=null;evaluationController=null;busy=false;evalBusy=false;pendingRequest='';}
 function showCourses(){stopRequests();if(active)rememberProgress();active=null;activeTask=null;$('screen-courses').classList.remove('hidden');$('screen-runtime').classList.add('hidden');renderLibrary();window.scrollTo(0,0)}
 window.MatinTaskOpen=(p,task)=>{const c=normalize(p);if(!c||!task?.id)throw Error('任务项目内容无效');if(active)rememberProgress();return startLearning(c,false,task);};
 function startCourse(id,restart=false){const c=courses.find(x=>x.id===id);if(c)return startLearning(c,restart,null);}
@@ -259,10 +260,11 @@ renderReviewState();MatinPedagogy.renderGoals($('run-stage-goals'),runNode);$('l
 if(activeTask){$('run-project-title').textContent=activeTask.title;$('run-subject').textContent='项目：'+active.title+' · '+activeTask.class_name+' · 班级任务';}
 $('run-progress').innerHTML=active.nodes.map(n=>`<div class="progress-node ${n.id===runNode.id?'current':visited.includes(n.id)?'done':''}">${n.id===runNode.id?'▶':visited.includes(n.id)?'✓':'○'} ${esc(n.name)}</div>`).join('');renderScore();renderBranches();renderMessages();}
 function evaluationHistory(){return evaluations.length?'<details style="margin-top:10px"><summary>已保存的阶段评价（'+evaluations.length+'）</summary>'+evaluations.map(e=>'<p><strong>'+esc(active.nodes.find(n=>n.id===e.nodeId)?.name||'阶段')+' · '+e.result.score+' 分</strong><br>'+esc(e.result.feedback)+'<br>'+esc(e.result.nextStep)+'</p>').join('')+'</details>':''}
-function renderScore(){const out=$('score-panel');if(!evalResult){out.innerHTML='<p>完成回答后可请求 AI 评价，查看当前阶段的建议分数和改进建议。</p>'+evaluationHistory();return;}out.innerHTML=`<div class="score-large">${evalResult.score}<span style="font-size:13px;font-weight:500;color:#8fa0b6"> / 100 · AI 建议</span></div><p>${esc(evalResult.feedback)}</p><div class="criteria">${evalResult.criteria.map(c=>`<div>${c.met?'✓':'△'} ${esc(c.name)}：${esc(c.comment)}</div>`).join('')}</div><p style="margin-top:8px"><strong>下一步：</strong>${esc(evalResult.nextStep)}</p><p class="help">${esc(MatinPedagogy.coverage(evalResult))}</p>`+evaluationHistory();MatinLongContext.renderEvidence(out,evalResult,stageAnswerList());}
+function renderScore(){const out=$('score-panel');if(!evalResult){out.innerHTML='<p>切换阶段或结束学习时自动获取反馈；也可手动获取建议分数和改进建议。</p>'+evaluationHistory();return;}out.innerHTML=`<div class="score-large">${evalResult.score}<span style="font-size:13px;font-weight:500;color:#8fa0b6"> / 100 · AI 建议</span></div><p>${esc(evalResult.feedback)}</p><div class="criteria">${evalResult.criteria.map(c=>`<div>${c.met?'✓':'△'} ${esc(c.name)}：${esc(c.comment)}</div>`).join('')}</div><p style="margin-top:8px"><strong>下一步：</strong>${esc(evalResult.nextStep)}</p><p class="help">${esc(MatinPedagogy.coverage(evalResult))}</p>`+evaluationHistory();MatinLongContext.renderEvidence(out,evalResult,stageAnswerList());}
 function stageAnswerList(){return messages.filter(m=>m.nodeId===runNode.id&&m.role==='user').map(m=>m.text);}
 function stageAnswers(){return stageAnswerList().join('\n');}
 function branchChoices(){return active.edges.filter(e=>e.from===runNode.id);}
+function canRequestTransition(e){if(branchAllowed(e))return true;if(taskReadOnly()||!stageAnswers().trim()||config.provider==='offline'||evalResult)return false;return e?.condition!=='keyword'||!!e.keyword.trim()&&stageAnswers().includes(e.keyword.trim());}
 function branchAllowed(e){if(taskReadOnly())return false;return MatinPedagogy.allowed(runNode,e,stageAnswers(),evalResult,config.provider==='offline');}
 let stageNavigationHtml='',stageNavigationNode='';
 function routeStatus(edge){
@@ -270,22 +272,22 @@ function routeStatus(edge){
  if(busy)return '导师正在回复，请稍候…';
  if(!stageAnswers().trim())return '请先尝试回答本阶段的问题，再继续。';
  if(edge?.condition==='keyword'&&(!edge.keyword.trim()||!stageAnswers().includes(edge.keyword.trim())))return MatinPedagogy.routeNote(runNode,edge,config.provider==='offline');
- if(branchAllowed(edge))return MatinPedagogy.mode(runNode)==='practice'?'可以继续学习，也可以留在本阶段补答。':'已满足这条路线的继续条件。';
+ if(branchAllowed(edge))return MatinPedagogy.mode(runNode)==='practice'?'继续时自动获取本阶段反馈，也可以留在本阶段补答。':'已满足这条路线的继续条件。';
  if(config.provider==='offline')return '考核模式需连接 AI，再获取阶段反馈。';
- if(!evalResult?.evidenceComplete)return '请先获取本阶段反馈，再按教师设置的条件继续。';
+ if(!evalResult?.evidenceComplete)return '点击继续时会自动获取反馈，再检查教师设置的条件。';
  return '当前 AI 建议分 '+evalResult.score+'。'+MatinPedagogy.routeNote(runNode,edge,false);
 }
 function renderBranches(){
  if(!active||!runNode)return;
  if(taskReadOnly()){$('run-branches').innerHTML='<p class="help">已结束教学，学习路线保留为只读记录。</p>';$('run-stage-position').textContent='已结束教学 · '+runNode.name;stageNavigationHtml='';return;}
- const nav=$('run-branches'),list=branchChoices(),waiting=busy||evalBusy,available=list.filter(branchAllowed),position=active.nodes.findIndex(n=>n.id===runNode.id)+1;
+ const nav=$('run-branches'),list=branchChoices(),waiting=busy||evalBusy,available=list.filter(canRequestTransition),position=active.nodes.findIndex(n=>n.id===runNode.id)+1;
  $('run-stage-position').textContent='当前阶段 '+position+' / '+active.nodes.length+' · '+runNode.name;
- const feedback=MatinPedagogy.mode(runNode)==='assessment'&&!waiting&&stageAnswers().trim()&&config.provider!=='offline'&&(list.length?!available.length:!branchAllowed(null))?'<button type="button" class="stage-feedback-button" id="next-evaluate">'+(evalResult?'重新获取阶段反馈':'获取阶段反馈')+'</button>':'';
+ const feedback=MatinPedagogy.mode(runNode)==='assessment'&&!waiting&&stageAnswers().trim()&&config.provider!=='offline'&&(list.length?!list.some(branchAllowed):!branchAllowed(null))?'<button type="button" class="stage-feedback-button" id="next-evaluate">'+(evalResult?'重新获取阶段反馈':'获取阶段反馈')+'</button>':'';
  let html;
  if(completion){const submit=$('submit-task-report');html='<div class="stage-next-row"><div class="stage-next-copy"><strong>已结束本次学习</strong><p class="stage-next-note">'+(!submit.hidden&&!submit.disabled?'报告需单独提交给教师批阅。':'可以导出记录，保留本次学习成果。')+'</p></div><div class="stage-next-buttons">'+(!submit.hidden&&!submit.disabled?'<button type="button" class="btn primary stage-next-button" id="next-submit-report">'+esc(submit.textContent)+'</button>':'')+'<button type="button" class="btn stage-next-button" id="next-export-report">导出学习报告</button></div></div>';}
- else if(!list.length){html='<div class="stage-next-row"><div class="stage-next-copy"><strong>当前路线的最后一个阶段</strong><p class="stage-next-note" role="status">'+esc(routeStatus(null))+'</p>'+feedback+'</div><button type="button" class="btn primary stage-next-button" id="finish-button" '+(!waiting&&branchAllowed(null)?'':'disabled')+'>完成本次学习 ✓</button></div>';}
- else if(list.length===1){const edge=list[0],target=active.nodes.find(n=>n.id===edge.to);html='<div class="stage-next-row"><div class="stage-next-copy"><strong>下一步：'+esc(target?.name||'下一阶段')+'</strong><p class="stage-next-note" role="status">'+esc(routeStatus(edge))+'</p>'+feedback+'</div><button type="button" class="btn primary stage-next-button" data-branch="'+esc(edge.id)+'" aria-label="进入下一阶段：'+esc(target?.name||'下一阶段')+'" '+(!waiting&&branchAllowed(edge)?'':'disabled')+'>进入下一阶段 →</button></div>';}
- else{const status=waiting?(evalBusy?'正在获取阶段反馈，请稍候…':'导师正在回复，请稍候…'):available.length?'有 '+available.length+' 条路线可选，请选择下一阶段。':'暂无可进入的路线，展开可查看各路线条件。';html='<div class="stage-next-row"><div class="stage-next-copy"><strong>选择接下来学习的阶段</strong><p class="stage-next-note" role="status">'+esc(status)+'</p>'+feedback+'</div><details class="stage-route-chooser" id="stage-route-chooser"><summary class="btn primary stage-next-button" aria-label="选择下一阶段，共 '+list.length+' 条路线">选择下一阶段 ▴</summary><div class="stage-route-list">'+list.map(edge=>{const target=active.nodes.find(n=>n.id===edge.to);return '<button type="button" class="branch" data-branch="'+esc(edge.id)+'" '+(!waiting&&branchAllowed(edge)?'':'disabled')+'><strong>'+esc(target?.name||'下一阶段')+'</strong>'+(edge.label?'<span>'+esc(edge.label)+'</span>':'')+'<small>'+esc(routeStatus(edge))+'</small></button>';}).join('')+'</div></details></div>';}
+ else if(!list.length){html='<div class="stage-next-row"><div class="stage-next-copy"><strong>当前路线的最后一个阶段</strong><p class="stage-next-note" role="status">'+esc(routeStatus(null))+'</p>'+feedback+'</div><button type="button" class="btn primary stage-next-button" id="finish-button" '+(!waiting&&canRequestTransition(null)?'':'disabled')+'>完成本次学习 ✓</button></div>';}
+ else if(list.length===1){const edge=list[0],target=active.nodes.find(n=>n.id===edge.to);html='<div class="stage-next-row"><div class="stage-next-copy"><strong>下一步：'+esc(target?.name||'下一阶段')+'</strong><p class="stage-next-note" role="status">'+esc(routeStatus(edge))+'</p>'+feedback+'</div><button type="button" class="btn primary stage-next-button" data-branch="'+esc(edge.id)+'" aria-label="进入下一阶段：'+esc(target?.name||'下一阶段')+'" '+(!waiting&&canRequestTransition(edge)?'':'disabled')+'>进入下一阶段 →</button></div>';}
+ else{const status=waiting?(evalBusy?'正在获取阶段反馈，请稍候…':'导师正在回复，请稍候…'):available.length?'有 '+available.length+' 条路线可选，请选择下一阶段。':'暂无可进入的路线，展开可查看各路线条件。';html='<div class="stage-next-row"><div class="stage-next-copy"><strong>选择接下来学习的阶段</strong><p class="stage-next-note" role="status">'+esc(status)+'</p>'+feedback+'</div><details class="stage-route-chooser" id="stage-route-chooser"><summary class="btn primary stage-next-button" aria-label="选择下一阶段，共 '+list.length+' 条路线">选择下一阶段 ▴</summary><div class="stage-route-list">'+list.map(edge=>{const target=active.nodes.find(n=>n.id===edge.to);return '<button type="button" class="branch" data-branch="'+esc(edge.id)+'" '+(!waiting&&canRequestTransition(edge)?'':'disabled')+'><strong>'+esc(target?.name||'下一阶段')+'</strong>'+(edge.label?'<span>'+esc(edge.label)+'</span>':'')+'<small>'+esc(routeStatus(edge))+'</small></button>';}).join('')+'</div></details></div>';}
  // Background review refreshes must not close the chooser or steal keyboard focus.
  const nodeKey=active.id+':'+runNode.id+':'+visitId;
  if(stageNavigationHtml===html&&stageNavigationNode===nodeKey)return;
@@ -295,7 +297,27 @@ function renderBranches(){
  if(wasOpen&&$('stage-route-chooser'))$('stage-route-chooser').open=true;
  if(focused){const target=focused.id?$(focused.id):focused.summary?nav.querySelector('summary'):[...nav.querySelectorAll('[data-branch]')].find(b=>b.dataset.branch===focused.branch);if(target&&!target.disabled)target.focus({preventScroll:true});}
 }
-function finishLearning(){if(busy||evalBusy||completion||!branchAllowed(null)||branchChoices().length)return;completion=true;rememberProgress();post('system','已结束本次学习，可以导出个人学习报告。这不是正式成绩证明。','学习路线');renderRuntime();$('run-stage-position').focus({preventScroll:true});}
+async function finishLearning(){if(branchChoices().length||!await prepareTransition(null))return;completion=true;rememberProgress();post('system','已结束本次学习，可以导出个人学习报告。这不是正式成绩证明。','学习路线');renderRuntime();$('run-stage-position').focus({preventScroll:true});}
+let transitionPending=false;
+async function prepareTransition(edge){
+ if(transitionPending||busy||evalBusy||completion||!active||!canRequestTransition(edge))return false;
+ transitionPending=true;const generation=visitId,node=runNode,owner=window.MatinStudent?.userId;
+ const valid=()=>generation===visitId&&runNode===node&&owner===window.MatinStudent?.userId&&!taskReadOnly()&&!completion;
+ try{
+  if(config.provider==='offline'){notify('离线模式未生成 AI 反馈；已保留学习记录。');return valid()&&branchAllowed(edge);}
+  const fingerprint=await MatinLongContext.fingerprint(stageAnswerList());if(!valid()||busy||evalBusy)return false;
+  if(evalResult?.evidenceComplete&&evalResult.answerFingerprint===fingerprint)return branchAllowed(edge);
+  evalResult=null;rememberProgress();
+  let outcome=await evaluate();if(!valid())return false;
+  while(valid()){
+   const allowed=branchAllowed(edge),choice=await MatinStageFeedback.show({node:node.name,result:outcome?.result,error:outcome?.error||(!outcome?.result?'反馈未完成，请重试。':''),allowed,finish:!edge,note:allowed?'反馈仅作学习建议，不替代教师评分。':MatinPedagogy.routeNote(node,edge,false)});
+   if(!valid()||choice==='stay')return false;
+   if(choice==='continue')return branchAllowed(edge);
+   outcome=await evaluate();if(!valid())return false;
+  }
+  return false;
+ }finally{transitionPending=false;}
+}
 function focusStageActions(){document.querySelector('.stage-actions').scrollIntoView({block:'center',behavior:'instant'});$('run-stage-position').focus({preventScroll:true});}
 
 function offlineReply(text){const rules=(runNode.scriptRules||'').split(/\r?\n/);for(const r of rules){const i=r.indexOf('=>');if(i>0){const trigger=r.slice(0,i).trim();if(trigger&&text.includes(trigger))return r.slice(i+2).trim()||runNode.hints;}}const kw=(runNode.keywords||'').split(/[,，、]/).filter(x=>x.trim()&&text.includes(x.trim()));return kw.length?`你已经提到了「${kw.join('、')}」，请继续解释原因并给出验证方法。`:(runNode.hints||'请结合任务背景，进一步分析你的思路。');}
@@ -315,8 +337,8 @@ async function evaluate(){if(taskReadOnly())return;
  const node=runNode,course=active,g=visitId,ctrl=new AbortController();evaluationController=ctrl;
  try{
   const result=await MatinLongContext.evaluate({node,project:course,answers,signal:ctrl.signal,progress:message=>MatinLongContext.progress('long-context-status',message),send:(sys,h,step)=>callAIRaw(node,course,h,ctrl.signal,sys,'evaluation',step)});if(g!==visitId)return;
-  evalResult=result;evaluations.push({nodeId:node.id,result});pendingRequest='';rememberProgress();renderRuntime();notify('已结合本阶段全部回答生成反馈，可按提示补答。');
- }catch(e){if(g===visitId)notify('评价未完成：'+(e.name==='AbortError'?'连接超时，请重试':e.message));}
+  result.answerFingerprint=await MatinLongContext.fingerprint(answers);if(g!==visitId)return;evalResult=result;evaluations.push({nodeId:node.id,result});pendingRequest='';rememberProgress();renderRuntime();notify('已结合本阶段全部回答生成反馈，可按提示补答。');return {result};
+ }catch(e){const error=e.name==='AbortError'?'连接超时，请重试':e.message;if(g===visitId)notify('评价未完成：'+error);return {error};}
  finally{if(g===visitId){evalBusy=false;evaluationController=null;pendingRequest='';rememberProgress();renderRuntime();}}
 }
 async function requestLearningHint(){
@@ -329,7 +351,7 @@ async function requestLearningHint(){
  catch(e){if(g===visitId)notify('提示获取未完成：'+(e.name==='AbortError'?'连接超时':e.message));}
  finally{if(g===visitId){busy=false;controller=null;pendingRequest='';rememberProgress();renderRuntime();}}
 }
-function takeBranch(id){if(busy||evalBusy||completion)return;const e=branchChoices().find(e=>e.id===id);if(!e||!branchAllowed(e))return notify('当前分支条件尚未满足');const next=active.nodes.find(n=>n.id===e.to);if(!next)return;controller?.abort();runNode=next;visited.push(next.id);visitId++;evalResult=null;post('system','【下一阶段】'+next.name+'\n'+next.greeting,'学习路线');rememberProgress();renderRuntime();$('run-stage-position').focus({preventScroll:true});}
+async function takeBranch(id){const e=branchChoices().find(e=>e.id===id);if(!e||!await prepareTransition(e))return;const next=active.nodes.find(n=>n.id===e.to);if(!next)return;controller?.abort();runNode=next;visited.push(next.id);visitId++;evalResult=null;post('system','【下一阶段】'+next.name+'\n'+next.greeting,'学习路线');rememberProgress();renderRuntime();$('run-stage-position').focus({preventScroll:true});}
 function download(name,content,type='text/html'){const blob=new Blob([content],{type:type+';charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 function exportReport(){if(!active)return;const transcript=messages.map(m=>`<section><b>${esc(m.sender)}：</b><p>${rich(m.text)}</p></section>`).join('');download('Matin-学习报告-'+active.title.replace(/[\\/:*?"<>|]/g,'_').slice(0,40)+'.html',`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>学习报告</title><style>body{font:15px/1.8 system-ui,"Microsoft YaHei";max-width:820px;margin:40px auto;padding:20px;color:#27395c}section{border:1px solid #dde5f3;padding:13px;margin:12px 0;border-radius:12px}p{margin:4px 0}</style><h1>Matin AI Studio · 个人实训记录</h1><h2>${esc(active.title)}</h2><p>学科：${esc(active.category)}</p><p>学习路径：${visited.map(id=>esc(active.nodes.find(n=>n.id===id)?.name||'')).join(' → ')}</p><p>导出时间：${new Date().toLocaleString('zh-CN')}</p><p>本文件为学生本地学习记录，不是教师核准的考试成绩。</p><p>状态：${completion?'已完成':'学习中'} · 当前阶段：${esc(runNode.name)}</p><h2>阶段评价（AI 建议）</h2>${evaluations.map(e=>`<section><b>${esc(active.nodes.find(n=>n.id===e.nodeId)?.name||'阶段')} · ${e.result.score} 分</b><p>${esc(e.result.feedback)}</p>${e.result.criteria.map(c=>`<p>${c.met?'✓':'△'} ${esc(c.name)}：${esc(c.comment)}</p>`).join('')}<p>${esc(e.result.nextStep)}</p>${MatinLongContext.evidenceHtml(e.result)}</section>`).join('')}<h2>学习对话</h2>${transcript}`);notify('报告已导出');}
 function setSettingsVisibility(){const p=$('provider').value;$('api-fields').classList.toggle('hidden',['offline','classroom','classroom_auto'].includes(p));$('class-fields').classList.toggle('hidden',p!=='classroom');$('class-auto-note').classList.toggle('hidden',p!=='classroom_auto');$('settings-test').textContent=p==='classroom_auto'?'检查接入权限':'测试连接';$('custom-wrap').classList.toggle('hidden',p!=='custom');}
@@ -366,7 +388,7 @@ window.MatinAIRecoveryApply=async record=>{
  if(ctx.purpose==='evaluation'){
   const result=await MatinLongContext.attachEvaluation(MatinPedagogy.parseEvaluation(record.result.reply,runNode,stageAnswerList()),meta.longEvaluation,stageAnswerList());
   if(evaluations.some(e=>e.nodeId===runNode.id&&JSON.stringify(e.result)===JSON.stringify(result)))return '这份评价已在学习记录中，无需重复添加。';
-  evalResult=result;evaluations.push({nodeId:runNode.id,result});
+  result.answerFingerprint=await MatinLongContext.fingerprint(stageAnswerList());evalResult=result;evaluations.push({nodeId:runNode.id,result});
  }else if(['chat','hint'].includes(ctx.purpose)){
   if(ctx.purpose==='chat'&&$('chat-input').value.trim()===(meta.originalQuestion||record.payload.messages.at(-1)?.content))$('chat-input').value='';
   post('assistant',MatinPedagogy.respectful(record.result.reply,runNode),ctx.purpose==='hint'?'补学提示':runNode.roleName);
