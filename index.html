@@ -30,6 +30,33 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 @media(max-width:950px){.runtime-layout>.chat-shell{order:0}.runtime-layout>.runtime-left{order:1}.stage-return-link{display:inline-flex;align-self:flex-start}}
 @media(max-width:650px){.chat-shell{min-height:620px;height:78dvh}.stage-actions{padding:10px 12px max(12px,env(safe-area-inset-bottom))}.stage-next-row{gap:8px;flex-wrap:wrap}.stage-next-copy{flex-basis:100%}.stage-next-button,.stage-route-chooser{width:100%}.stage-route-chooser>summary{width:100%}.stage-route-list{width:calc(100vw - 52px);max-height:35dvh}.stage-next-buttons{width:100%}.stage-next-buttons>.btn{flex:1}.stage-next-copy strong{font-size:13px}.stage-actions-heading{gap:5px}.input-row textarea{min-width:0}}
 </style>
+<style id="matin-roomy-chat">
+/* Give reading a stable viewport; sync details and controls cannot squeeze it. */
+.runtime-layout>.chat-shell{height:auto;min-height:max(760px,calc(100dvh - 140px))}
+.chat-shell>.chat-feed{flex:1 0 auto;height:clamp(360px,52dvh,720px);min-height:360px}
+.chat-shell>.chat-top{padding:10px 18px}
+.chat-shell>#learning-save-status{padding:4px 18px!important;margin:0;font-size:11px;line-height:1.5}
+.chat-shell>#learning-cloud{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px 12px;padding:8px 18px;max-height:160px}
+.chat-shell>#learning-cloud[hidden]{display:none}
+.chat-shell>#learning-cloud p{margin:0;line-height:1.5}
+.chat-shell>#learning-cloud>div{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.chat-shell>#learning-cloud button{margin:0}
+.chat-shell>#learning-cloud>details{grid-column:1 / -1}
+.chat-shell>#learning-cloud>#learning-cloud-compare{grid-column:1 / -1}
+.chat-shell>#learning-cloud>details{font-size:11px}
+.chat-shell>.chat-form{padding:12px 18px}
+/* Status-only toast must not intercept the navigation below it. */
+.toast{pointer-events:none}
+@media(max-width:650px){
+ .runtime-layout>.chat-shell{min-height:0;height:auto}
+ .chat-shell>.chat-feed{height:clamp(320px,48dvh,520px);min-height:320px;padding:14px}
+ .chat-shell>.chat-top{padding:10px 12px}
+ .chat-shell>#learning-save-status{padding:4px 12px!important}
+ .chat-shell>#learning-cloud{grid-template-columns:1fr;padding:8px 12px}
+ .chat-shell>#learning-cloud>div{justify-content:flex-start}
+ .chat-shell>.chat-form{padding:12px}
+}
+</style>
 </head>
 <body>
 <header class="header"><a href="./index.html" class="brand"><div class="brand-icon">M</div><div><strong>Matin <small>AI Studio</small></strong><div class="brand-sub">学生学习中心 · STUDENT CAMPUS</div></div></a><div class="header-right"><span class="header-note">发现学科 · 探索实训 · AI 引导</span><button class="btn" type="button" id="settings-open">✦ AI 模型设置</button></div></header>
