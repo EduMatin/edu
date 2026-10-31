@@ -88,7 +88,7 @@
    }table.append(tbody);wrap.append(table);
   }
   search.oninput=()=>{c.search=search.value;draw();};select.onchange=()=>{c.filter=select.value;draw();};draw();
-  foot.append(el('span','浏览器中的未提交对话不会自动发送给教师。','tr-muted'),btn('关闭明细',()=>close()));
+  foot.append(el('span','浏览器中的未提交对话不会自动发送给教师。','tr-muted'));
  }
  function csvValue(value){let s=String(value??'');if(/^[\s]*[=+\-@]|^[\t\r\n]|^0\d/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}
  function exportRoster(c){const rows=c.rows.filter(r=>filterRow(c,r)),headers=['班级','任务','姓名','学号','邮箱','成员状态','学习状态','旧版自报完成未交报告','截止时间','最近打开或提交','提交时间','报告版本','批注时间','批阅结果','修改要求','重交截止','教师评分（百分制）'];
@@ -225,7 +225,7 @@
    for(const [button,disabled] of [[previous,c.sequenceIndex<=0],[next,c.sequenceIndex>=c.sequence.length-1]]){button.dataset.fixedDisabled=String(disabled);button.disabled=disabled;}
    nav.append(previous,el('span',(c.sequenceIndex+1)+' / '+c.sequence.length+' · 直接切换会保留本机草稿，不会正式保存。','tr-muted'),next);foot.prepend(nav);
   }
-  foot.append(el('span','提交版本与批注分别保存，旧版本仍可查看。','tr-muted'),btn('关闭',()=>close()));
+  foot.append(el('span','提交版本与批注分别保存，旧版本仍可查看。','tr-muted'));
  }
  window.MatinTaskReports={
   learningArchive(task){const c=begin(false,task);if(!c)return;run(c,async()=>{
@@ -265,7 +265,7 @@
     c.draft?.commit();releaseDraft(c);c.dirty=false;
     // Submission is already confirmed. A subsequent list refresh must not invite another submission.
     try{await MatinTasks.loadStudent();}catch{}if(!isCurrent(c))return;
-    body.replaceChildren(el('h3','报告已提交'),el('p','第 '+result.version+' 版 · '+time(result.submitted_at)+(result.late?' · 逾期补交':'')),el('p','报告进入待批阅。教师可通过或退回修改，原学习记录和历次报告继续保留。'));foot.replaceChildren(btn('查看已提交报告',()=>run(c,()=>readReport(c,null))),btn('关闭',()=>close()));status.textContent='提交成功';
+    body.replaceChildren(el('h3','报告已提交'),el('p','第 '+result.version+' 版 · '+time(result.submitted_at)+(result.late?' · 逾期补交':'')),el('p','报告进入待批阅。教师可通过或退回修改，原学习记录和历次报告继续保留。'));foot.replaceChildren(btn('查看已提交报告',()=>run(c,()=>readReport(c,null))));status.textContent='提交成功';
    },true),true),btn('取消',()=>close()));status.textContent='请检查报告内容后确认提交。';
   });}
  };
