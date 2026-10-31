@@ -1,6 +1,6 @@
 /* Cloud-private experimental evidence, bound to immutable report versions on submit. */
 (()=>{'use strict';
- const types={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',pdf:'application/pdf',csv:'text/csv',tsv:'text/tab-separated-values',txt:'text/plain',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'};
+ const types={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',pdf:'application/pdf',csv:'text/csv',tsv:'text/tab-separated-values',txt:'text/plain',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'};
  const MAX=10485760,urls=new Map(),el=(t,text)=>{const e=document.createElement(t);if(text!==undefined)e.textContent=text;return e;};
  const request=(teacher,body)=>(teacher?window.MatinAccount:window.MatinStudent).fileRequest(body);
  const size=n=>n<1048576?(n/1024).toFixed(1)+' KiB':(n/1048576).toFixed(1)+' MiB';
@@ -14,11 +14,11 @@
   const action=(label,preview)=>button(label,async()=>{const b=preview?show:save;b.disabled=true;state.textContent='正在读取 '+file.name+'…';try{const data=await bytes(file,teacher);if(!row.isConnected)return;if(preview){const old=row.querySelector('.rf-preview');old?.remove();const box=el('div');box.className='rf-preview';const image=el('img');image.alt=file.name;const url=URL.createObjectURL(new Blob([data],{type:file.mime}));image.src=url;box.append(image,button('收起预览',()=>box.remove()));row.append(box);urls.set(box,url);}else download(file,data);state.textContent='附件已读取';}catch(e){state.textContent=e.message;}finally{b.disabled=false;}});
   const show=action('预览照片 / 图表',true),save=action('下载',false);if(file.mime.startsWith('image/'))row.append(show);row.append(save);
  }
- function view(container,files,teacher){container.className='rf-box';container.append(el('h3','实验资料附件 · '+files.length+' 个'),el('p','以下附件随当前报告版本保存。照片可预览，数据文件下载后用对应软件打开。'));
+ function view(container,files,teacher){container.className='rf-box';container.append(el('h3','实验资料附件 · '+files.length+' 个'),el('p','以下附件随当前报告版本保存。照片可预览，Word、PDF及数据文件下载后用对应软件打开。'));
   const state=el('p');state.className='rf-state';state.setAttribute('role','status');for(const file of files){const row=el('div');row.className='rf-row';row.append(el('strong',file.name+' · '+size(file.bytes)));controls(row,file,teacher,state);container.append(row);}container.append(state);
  }
  async function editor(container,taskId,changed){
-  container.className='rf-box';container.append(el('h3','实验资料附件（选填）'),el('p','上传手写推导照片、实验图表或数据文件。支持 JPG / PNG / WebP / PDF / CSV / TSV / TXT / XLSX；单个最多10 MiB，每版最多10个、合计40 MiB。附件由教师查阅。'));
+  container.className='rf-box';container.append(el('h3','实验资料附件（选填）'),el('p','上传 Word 报告、手写推导照片、实验图表或数据文件。支持 DOC / DOCX / JPG / PNG / WebP / PDF / CSV / TSV / TXT / XLSX；单个最多10 MiB，每版最多10个、合计40 MiB。Word文件下载查看，附件由教师查阅。'));
   const upload=el('label','选择照片或文件（可多选）');upload.className='rf-upload';const input=el('input');input.type='file';input.multiple=true;input.accept=Object.keys(types).map(x=>'.'+x).join(',');upload.append(input);container.append(upload);
   const count=el('p'),list=el('div'),state=el('p');state.setAttribute('role','status');state.className='rf-state';container.append(count,list,state,el('p','上传完成后仍需确认提交报告。未勾选的附件不会提交；取消旧版附件只影响本次选择，旧报告保持完整。'));
   let files=[],selected=new Set(),pending=0;
