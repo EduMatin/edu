@@ -314,8 +314,8 @@ button:active:not(:disabled){transform:scale(.985)}
 
 #teacher-home-modal p{margin:12px 0;line-height:1.8;color:#596a8b}#teacher-home-modal .actions{gap:8px;margin-top:12px;flex-wrap:wrap}#teacher-home-modal .modal{max-width:600px}
 </style>
-<link rel="stylesheet" href="./matin-teacher-sidebar.css?v=2026.11.01.2" />
-<meta name="matin-release" content="2026.11.01.2">
+<link rel="stylesheet" href="./matin-teacher-sidebar.css?v=2026.11.01.3" />
+<meta name="matin-release" content="2026.11.01.3">
 </head>
 <body>
 <header class="topbar" id="teacher-sidebar">
@@ -401,7 +401,7 @@ button:active:not(:disabled){transform:scale(.985)}
 <input id="import-file" type="file" accept="application/json,.json" hidden />
 <div id="toast" class="hidden" role="status"></div>
 <script src="./matin-config.js"></script>
-<script src="./matin-math.js?v=2026.11.01.2"></script>
+<script src="./matin-math.js?v=2026.11.01.3"></script>
 
 <div id="teacher-home-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="teacher-home-title">
  <div class="modal">
@@ -446,31 +446,31 @@ button:active:not(:disabled){transform:scale(.985)}
  </div>
 </div>
 
-<script src="./matin-class-ai.js?v=2026.11.01.2"></script>
-<script src="./matin-account.js?v=2026.11.01.2"></script>
-<script src="./matin-class-teaching.js?v=2026.11.01.2"></script>
-<script src="./matin-classes.js?v=2026.11.01.2"></script>
-<script src="./matin-roster-import.js?v=2026.11.01.2"></script>
-<script src="./matin-enrollment.js?v=2026.11.01.2"></script>
-<script src="./matin-report-drafts.js?v=2026.11.01.2"></script>
-<script src="./matin-review-tools.js?v=2026.11.01.2"></script>
+<script src="./matin-class-ai.js?v=2026.11.01.3"></script>
+<script src="./matin-account.js?v=2026.11.01.3"></script>
+<script src="./matin-class-teaching.js?v=2026.11.01.3"></script>
+<script src="./matin-classes.js?v=2026.11.01.3"></script>
+<script src="./matin-roster-import.js?v=2026.11.01.3"></script>
+<script src="./matin-enrollment.js?v=2026.11.01.3"></script>
+<script src="./matin-report-drafts.js?v=2026.11.01.3"></script>
+<script src="./matin-review-tools.js?v=2026.11.01.3"></script>
 <script src="matin-report-files.js?v=20261029"></script>
-<script src="./matin-task-reports.js?v=2026.11.01.2"></script>
-<script src="./matin-tasks.js?v=2026.11.01.2"></script>
-<script src="./matin-task-edit.js?v=2026.11.01.2"></script>
-<script src="./matin-course-outline.js?v=2026.11.01.2"></script>
-<script src="./matin-project-tasks.js?v=2026.11.01.2"></script>
-<script src="./matin-teacher-home.js?v=2026.11.01.2"></script>
-<script src="./matin-review-inbox.js?v=2026.11.01.2"></script>
-<script src="./matin-course-matrix.js?v=2026.11.01.2"></script>
-<script src="./matin-gradebook.js?v=2026.11.01.2"></script>
-<script src="./matin-teaching-plans.js?v=2026.11.01.2"></script>
-<script src="./matin-ai-usage.js?v=2026.11.01.2"></script>
-<script src="./matin-archive-format.js?v=2026.11.01.2"></script>
-<script src="./matin-archive-reader.js?v=2026.11.01.2"></script>
-<script src="./matin-teaching-archive.js?v=2026.11.01.2"></script>
-<script src="./matin-pedagogy.js?v=2026.11.01.2"></script>
-<script src="./matin-long-context.js?v=2026.11.01.2"></script>
+<script src="./matin-task-reports.js?v=2026.11.01.3"></script>
+<script src="./matin-tasks.js?v=2026.11.01.3"></script>
+<script src="./matin-task-edit.js?v=2026.11.01.3"></script>
+<script src="./matin-course-outline.js?v=2026.11.01.3"></script>
+<script src="./matin-project-tasks.js?v=2026.11.01.3"></script>
+<script src="./matin-teacher-home.js?v=2026.11.01.3"></script>
+<script src="./matin-review-inbox.js?v=2026.11.01.3"></script>
+<script src="./matin-course-matrix.js?v=2026.11.01.3"></script>
+<script src="./matin-gradebook.js?v=2026.11.01.3"></script>
+<script src="./matin-teaching-plans.js?v=2026.11.01.3"></script>
+<script src="./matin-ai-usage.js?v=2026.11.01.3"></script>
+<script src="./matin-archive-format.js?v=2026.11.01.3"></script>
+<script src="./matin-archive-reader.js?v=2026.11.01.3"></script>
+<script src="./matin-teaching-archive.js?v=2026.11.01.3"></script>
+<script src="./matin-pedagogy.js?v=2026.11.01.3"></script>
+<script src="./matin-long-context.js?v=2026.11.01.3"></script>
 <script>
 (async () => {
   'use strict';
@@ -480,7 +480,7 @@ button:active:not(:disabled){transform:scale(.985)}
   const STORE_KEY = 'matin_studio_projects_v3';
   const LEGACY_KEY = 'matin_studio_projects_v2';
   const PREF_KEY = 'matin_studio_model_pref_v2'+(account?':'+account.id:'');
-  const fields = ['name','roleName','persona','context','studentTask','greeting','rubric','keywords','hints','scriptRules','passScore','learningMode','requiredPoints','extensionPoints'];
+  const fields = ['name','roleName','persona','context','studentTask','greeting','rubric','keywords','hints','scriptRules','passScore','learningMode','requiredPoints','extensionPoints','preparation','guideSteps','workedExample'];
   const POS_W=236, POS_H=145;
   const makeEdge=(from,to,condition='always',keyword='',label='')=>({id:uid('edge'),from,to,condition,keyword,label});
   const projectFields = ['title','desc','category','objective'];
@@ -490,7 +490,7 @@ button:active:not(:disabled){transform:scale(.985)}
   const stamp = () => new Date().toISOString().slice(0,10);
   let toastTimer;
   const notify = message => { $('toast').textContent = message; $('toast').classList.remove('hidden'); clearTimeout(toastTimer); toastTimer=setTimeout(()=> $('toast').classList.add('hidden'),3500); };
-  const makeNode = (overrides={}) => ({ id:uid('node'), name:'新阶段：任务说明', roleName:'实训指导教师', persona:'专业、耐心，优先追问学生的分析依据；不要直接公布答案。', context:'请在此介绍实训发生的场景、设备状态和限制条件。', studentTask:'描述学生本阶段必须完成的具体任务。', greeting:'你好，请先说明你打算如何完成当前任务。', rubric:'知识掌握、分析依据、风险识别', keywords:'', hints:'请结合任务目标补充你的判断依据。', scriptRules:'', passScore:'75', learningMode:'practice', requiredPoints:'', extensionPoints:'', ...overrides });
+  const makeNode = (overrides={}) => ({ id:uid('node'), name:'新阶段：任务说明', roleName:'实训指导教师', persona:'专业、耐心，优先追问学生的分析依据；不要直接公布答案。', context:'请在此介绍实训发生的场景、设备状态和限制条件。', studentTask:'描述学生本阶段必须完成的具体任务。', greeting:'你好，请先说明你打算如何完成当前任务。', rubric:'知识掌握、分析依据、风险识别', keywords:'', hints:'请结合任务目标补充你的判断依据。', scriptRules:'', passScore:'75', learningMode:'practice', requiredPoints:'', extensionPoints:'', preparation:'', guideSteps:'', workedExample:'', ...overrides });
   const demoProjects = () => [
     { id:uid('proj'), title:'熔窑冷修模拟实训导师', desc:'工程教学情境演示：按流程编排安全、检修和验收等环节。示例资料不能代替现场操作规程。', category:'材料/工程', objective:'熟悉检修方案编制与工程沟通的基本流程。', updatedAt:stamp(), nodes:[
       makeNode({name:'阶段一：安全技术交底',roleName:'安全督导员·赵科长',persona:'严谨负责，要求解释作业前的风险识别与审批流程。',context:'冷修作业开始前，需要核查现场安全条件。',studentTask:'说明你如何组织现场风险排查、安全交底和开工确认。',greeting:'请向我汇报你的开工前安全准备思路。',rubric:'风险识别、审批确认、现场复核与应急准备',keywords:'风险,审批,复核',hints:'可以先从危险源、审批和人员分工说起。',scriptRules:'风险=>你提到了风险识别，请接着说明如何留下核查记录。\n审批=>有审批意识很好，谁来确认现场条件？'}),
@@ -759,11 +759,14 @@ button:active:not(:disabled){transform:scale(.985)}
       <div class="group"><div class="group-title"><span class="dot">02</span> 自己编写教学剧本</div>
       ${inputField('任务背景 / 世界观','context',n.context,{rows:4,placeholder:'例如：车间发生某类故障，已知条件和现场约束……'})}
       ${inputField('本阶段学生任务','studentTask',n.studentTask,{rows:3,placeholder:'请写清学生要做什么；这一段会展示在模拟舱左侧。'})}
+      ${inputField('知识准备（选填）','preparation',n.preparation,{rows:3,hint:'解释必需术语、公式符号和已知条件，帮助学生开始。'})}
+      ${inputField('阶段内小步骤（每行一项，选填）','guideSteps',n.guideSteps,{rows:4,hint:'建议2–4步，每步一个具体输出；留空时按现有必备目标逐项引导，不自动删减目标。'})}
+      ${inputField('类似例题（选填）','workedExample',n.workedExample,{rows:4,hint:'使用不同数据或情境，展示思路；练习中按需查看，考核中不展示。'})}
       ${inputField('本阶段角色开场白','greeting',n.greeting,{rows:3,placeholder:'学生进入该任务节点时，智能体说的第一句话。'})}</div>
       <div class="group"><div class="group-title"><span class="dot">03</span> 考核与提示规则</div>
       ${inputField('考核标准（Rubric）','rubric',n.rubric,{rows:3,placeholder:'例如：明确问题原因、解释依据、给出合理改进措施。'})}
       <div class="field"><label for="field-learningMode">本阶段学习方式</label><select id="field-learningMode" data-field="learningMode"><option value="practice" ${n.learningMode!=='assessment'?'selected':''}>练习模式：反馈仅作建议，允许继续学习</option><option value="assessment" ${n.learningMode==='assessment'?'selected':''}>考核模式：按教师设置的分数条件继续</option></select><p class="hint">练习模式的分数连线作为建议路线，关键词连线仍按学生回答选择。考核模式使用分数门槛；低分补学分支可按连线条件进入，最终报告结论仍由教师批阅。</p></div>
-      ${inputField('本阶段必备知识点（建议2–4项，每行一项）','requiredPoints',n.requiredPoints,{rows:4,hint:'明确做到什么就足够。留空沿用上方量规；AI不能自行增加过关条件。'})}
+      ${inputField('基础目标（建议2–3项，每行一项）','requiredPoints',n.requiredPoints,{rows:4,hint:'由教师明确核心要求，复杂推导可移到拓展区。已有标准不会自动删减；留空沿用上方量规。'})}
       ${inputField('拓展问题（可选，每行一项）','extensionPoints',n.extensionPoints,{rows:2,hint:'学生可跳过，拓展不计入本阶段建议分和达标条件。'})}
       ${inputField('考核模式默认路线达标分（0–100）','passScore',n.passScore??'75',{hint:'仅考核模式生效；练习模式不会因建议分低而锁住下一阶段。'})}
       ${inputField('离线参考关键词（可选，逗号分隔）','keywords',n.keywords,{placeholder:'例如：死区,电压误差,补偿'})}
@@ -1019,7 +1022,7 @@ button:active:not(:disabled){transform:scale(.985)}
     const ids=[];
     const nodes=data.nodes.map((item,i)=>{
       if(!item||typeof item!=='object')throw Error('模型的第 '+(i+1)+' 个节点格式有误');
-      const n=makeNode({id:uid('node'),name:clip(item.name,120)||`阶段${i+1}：教学任务`,roleName:clip(item.roleName,100)||'教学指导教师',persona:clip(item.persona),context:clip(item.context,2400),studentTask:clip(item.studentTask,1200),greeting:clip(item.greeting,1200),rubric:clip(item.rubric,1600),requiredPoints:clip(item.requiredPoints,1600),extensionPoints:clip(item.extensionPoints,1600),learningMode:'practice',keywords:clip(item.keywords,350),hints:clip(item.hints,700),scriptRules:clip(item.scriptRules,1800),passScore:String(MatinPedagogy.threshold(item)),x:70+(i%3)*315,y:120+Math.floor(i/3)*235});
+      const n=makeNode({id:uid('node'),name:clip(item.name,120)||`阶段${i+1}：教学任务`,roleName:clip(item.roleName,100)||'教学指导教师',persona:clip(item.persona),context:clip(item.context,2400),studentTask:clip(item.studentTask,1200),greeting:clip(item.greeting,1200),rubric:clip(item.rubric,1600),requiredPoints:clip(item.requiredPoints,1600),extensionPoints:clip(item.extensionPoints,1600),preparation:clip(item.preparation,2500),guideSteps:clip(item.guideSteps,2500),workedExample:clip(item.workedExample,4000),learningMode:'practice',keywords:clip(item.keywords,350),hints:clip(item.hints,700),scriptRules:clip(item.scriptRules,1800),passScore:String(MatinPedagogy.threshold(item)),x:70+(i%3)*315,y:120+Math.floor(i/3)*235});
       ids.push(n.id);return n;
     });
     // Honor explicit role assignment instead of relying only on the model's adherence.
@@ -1075,7 +1078,7 @@ button:active:not(:disabled){transform:scale(.985)}
 ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教学知识；不要杜撰具体教材页码、实验数值或安全标准。'}
 【课程参考资料结束】
 【输出格式】只返回一个合法 JSON 对象，不要前后说明，不要代码块：
-{"title":"课程名","category":"学科","desc":"80-160字课程简介","objective":"分层的总体教学目标","nodes":[{"name":"阶段一：具体任务名称","roleName":"具体角色","persona":"角色专业职责、说话风格、追问策略","context":"真实且合理的教学或工程场景、已知条件和约束","studentTask":"学生必须执行的分析任务，明确可操作输出","greeting":"角色开场语，宜以一个有启发性的问题结尾","rubric":"可观察的反馈依据，不增加必备知识点以外的过关要求","requiredPoints":"2至4项必备知识点，每行一项","extensionPoints":"可选拓展问题，不计分","learningMode":"practice","keywords":"关键词1,关键词2,关键词3","hints":"对回答不足的引导提示，勿直接公布答案","scriptRules":"可选的两条离线规则，格式为 触发词=>回复，每行一条","passScore":"75"}],"edges":${branches?'[{"from":1,"to":3,"condition":"keyword","keyword":"分支触发词","label":"条件分支说明"}]':'[]'}}
+{"title":"课程名","category":"学科","desc":"80-160字课程简介","objective":"分层的总体教学目标","nodes":[{"name":"阶段一：具体任务名称","roleName":"具体角色","persona":"角色专业职责、说话风格、追问策略","context":"真实且合理的教学或工程场景、已知条件和约束","studentTask":"学生必须执行的分析任务，明确可操作输出","greeting":"简短解释任务，只邀请学生先完成第一小步，不能一口气要求完整推导和综合优化","rubric":"可观察的反馈依据，不增加必备知识点以外的过关要求","preparation":"初学者必需的术语、已知条件与公式符号解释，不编造数据","guideSteps":"2至4个由易到难的小问题，每行一个具体输出，先认识再跟做最后尝试解释","workedExample":"不同数据或情境的简短类似例题，包含思路和步骤，不是原题答案","requiredPoints":"2至3项可观察的基础目标，每行一项","extensionPoints":"可选拓展问题，不计分","learningMode":"practice","keywords":"关键词1,关键词2,关键词3","hints":"对回答不足的引导提示，勿直接公布答案","scriptRules":"可选的两条离线规则，格式为 触发词=>回复，每行一条","passScore":"75"}],"edges":${branches?'[{"from":1,"to":3,"condition":"keyword","keyword":"分支触发词","label":"条件分支说明"}]':'[]'}}
 要求：
 0. 默认练习模式；每阶段2至4个明确、有限的必备知识点。拓展可跳过。角色必须尊重学生，指出具体不足、给提示并允许补答，不得贬低、宣判不合格或命令下课。
 1. nodes 数组恰好 ${count} 项，按所选数量安排递进任务；2个节点时合并为“基础认知与分析”和“应用解决与总结”，3个节点时适当合并环节，不要为了凑齐教学环节增加节点。每个节点均有不同且具体的任务；严禁复制粘贴重复任务。
@@ -1506,8 +1509,8 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
   store();showView('dashboard');
 })().catch(error=>window.MatinAccount.fatal(error));
 </script>
-<script src="./matin-teacher-sidebar.js?v=2026.11.01.2"></script>
-<script src="./matin-release-info.js?v=2026.11.01.2"></script>
-<script src="./matin-release.js?v=2026.11.01.2"></script>
+<script src="./matin-teacher-sidebar.js?v=2026.11.01.3"></script>
+<script src="./matin-release-info.js?v=2026.11.01.3"></script>
+<script src="./matin-release.js?v=2026.11.01.3"></script>
 </body>
 </html>

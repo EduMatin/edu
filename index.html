@@ -57,7 +57,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
  .chat-shell>.chat-form{padding:12px}
 }
 </style>
-<meta name="matin-release" content="2026.11.01.2">
+<meta name="matin-release" content="2026.11.01.3">
 </head>
 <body>
 <header class="header"><a href="./index.html" class="brand"><div class="brand-icon">M</div><div><strong>Matin <small>AI Studio</small></strong><div class="brand-sub">学生学习中心 · STUDENT CAMPUS</div></div></a><div class="header-right"><span class="header-note">发现学科 · 探索实训 · AI 引导</span><button class="btn" type="button" id="settings-open">✦ AI 模型设置</button></div></header>
@@ -70,32 +70,32 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 </section>
 <section id="screen-runtime" class="hidden">
  <div class="runtime-header"><div><span class="eyebrow">INTERACTIVE TRAINING</span><h2 id="run-project-title">实训课程</h2><small id="run-subject"></small></div><button type="button" class="btn" id="back-courses">← 返回选课</button></div>
- <div class="runtime-layout"><aside class="runtime-left" id="stage-details"><button type="button" class="btn tiny stage-return-link" id="back-to-stage-actions">返回对话与下一步 ↓</button><div class="slot"><div class="section-label">当前学习阶段</div><h3 id="run-node-name" tabindex="-1"></h3><p id="run-student-task"></p><div id="run-stage-goals" class="pedagogy-goals"></div><p id="run-review-notice" class="help" hidden></p><button type="button" id="run-review-report" class="btn tiny" hidden>查看教师批阅</button></div><div class="slot"><div class="section-label">AI 角色导师</div><div class="role-card"><h3 id="run-role-name"></h3><p id="run-role-persona"></p></div></div><div class="slot"><div class="section-label">学习路径</div><div class="progress-nodes" id="run-progress"></div></div><div class="slot"><div class="section-label">✦ 本阶段学习评价</div><div class="score-panel" id="score-panel"><p>切换阶段或结束学习时自动获取反馈，也可点击下方按钮提前获取。评分仅作为学习建议。</p></div><button type="button" class="btn soft" style="width:100%;margin-top:10px" id="evaluate-button">✦ 获取 AI 学习反馈</button><button type="button" class="btn tiny" style="width:100%;margin-top:8px" id="learning-hint">获取补学提示</button></div><div class="slot"><button type="button" class="btn" id="export-report" style="width:100%">⇩ 导出我的学习报告</button><button type="button" class="btn primary" id="submit-task-report" style="width:100%;margin-top:10px" hidden>提交学习报告</button><p class="help" style="margin-top:9px">班级任务可主动提交报告供教师查看、批注。登录后，当前节点、完整对话、阶段评价和完成状态会自动同步到本人云端账号；换设备进入同一任务即可恢复。请在离开前确认“已同步云端”。未登录时仅保存在此浏览器。AI 评分不构成正式考试成绩；在线实验不替代教师或现场安全规程。</p></div></aside><section class="chat-shell"><div class="chat-top"><div class="chat-title"><div class="chat-avatar">✦</div><div><strong>AI 情境学习舱</strong><small id="run-model-tag">离线剧情体验</small></div></div><button type="button" class="btn tiny" id="restart-run">↻ 重新开始</button></div><p id="learning-save-status" class="help" role="status" style="padding:8px 20px;margin:0"></p><div class="chat-feed" id="chat-feed" aria-live="polite"></div><form class="chat-form" id="chat-form"><div class="input-row"><textarea rows="2" id="chat-input" placeholder="输入你的回答，或向导师提问……" maxlength="5000" aria-label="学生回答"></textarea><button class="btn primary" id="send-button" type="submit">发送 ↗</button></div><p class="input-note">Enter 发送 · Shift+Enter 换行。AI 会根据教师剧本引导学习，必要时请核对专业知识与安全要求。</p></form><nav class="stage-actions" aria-label="阶段学习导航"><div class="stage-actions-heading"><strong id="run-stage-position" tabindex="-1" aria-live="polite"></strong><button type="button" id="next-details" class="stage-details-link">阶段目标与反馈 ↗</button></div><div id="run-branches"></div></nav></section></div>
+ <div class="runtime-layout"><aside class="runtime-left" id="stage-details"><button type="button" class="btn tiny stage-return-link" id="back-to-stage-actions">返回对话与下一步 ↓</button><div class="slot"><div class="section-label">当前学习阶段</div><h3 id="run-node-name" tabindex="-1"></h3><p id="run-student-task"></p><div id="run-stage-goals" class="pedagogy-goals"></div><p id="run-review-notice" class="help" hidden></p><button type="button" id="run-review-report" class="btn tiny" hidden>查看教师批阅</button></div><div class="slot"><div class="section-label">AI 角色导师</div><div class="role-card"><h3 id="run-role-name"></h3><p id="run-role-persona"></p></div></div><div class="slot"><div class="section-label">学习路径</div><div class="progress-nodes" id="run-progress"></div></div><div class="slot"><div class="section-label">✦ 本阶段学习评价</div><div class="score-panel" id="score-panel"><p>切换阶段或结束学习时自动获取反馈，也可点击下方按钮提前获取。评分仅作为学习建议。</p></div><button type="button" class="btn soft" style="width:100%;margin-top:10px" id="evaluate-button">✦ 获取 AI 学习反馈</button><button type="button" class="btn tiny" style="width:100%;margin-top:8px" id="learning-hint">获取补学提示</button></div><div class="slot"><button type="button" class="btn" id="export-report" style="width:100%">⇩ 导出我的学习报告</button><button type="button" class="btn primary" id="submit-task-report" style="width:100%;margin-top:10px" hidden>提交学习报告</button><p class="help" style="margin-top:9px">班级任务可主动提交报告供教师查看、批注。登录后，当前节点、完整对话、阶段评价和完成状态会自动同步到本人云端账号；换设备进入同一任务即可恢复。请在离开前确认“已同步云端”。未登录时仅保存在此浏览器。AI 评分不构成正式考试成绩；在线实验不替代教师或现场安全规程。</p></div></aside><section class="chat-shell"><div class="chat-top"><div class="chat-title"><div class="chat-avatar">✦</div><div><strong>AI 情境学习舱</strong><small id="run-model-tag">离线剧情体验</small></div></div><button type="button" class="btn tiny" id="restart-run">↻ 重新开始</button></div><p id="learning-save-status" class="help" role="status" style="padding:8px 20px;margin:0"></p><div class="chat-feed" id="chat-feed" aria-live="polite"></div><div id="learning-guide" class="learning-guide"></div><form class="chat-form" id="chat-form"><div class="input-row"><textarea rows="2" id="chat-input" placeholder="输入你的回答，或向导师提问……" maxlength="5000" aria-label="学生回答"></textarea><button class="btn primary" id="send-button" type="submit">发送 ↗</button></div><p class="input-note">Enter 发送 · Shift+Enter 换行。AI 会根据教师剧本引导学习，必要时请核对专业知识与安全要求。</p></form><nav class="stage-actions" aria-label="阶段学习导航"><div class="stage-actions-heading"><strong id="run-stage-position" tabindex="-1" aria-live="polite"></strong><button type="button" id="next-details" class="stage-details-link">阶段目标与反馈 ↗</button></div><div id="run-branches"></div></nav></section></div>
 </section>
 </main>
 <footer class="student-foot">MATIN AI STUDIO · 学生学习中心。课程由教师发布，个人 API Key 不会保存在浏览器本地存储。</footer>
 <div id="settings-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title"><div class="modal"><h2 id="settings-title">✦ 连接 AI 导师</h2><p>登录并通过入班审核后，可自动使用班级 AI。也可选择个人模型，或使用离线剧本。</p><div class="field"><label for="provider">选择 AI 服务</label><select id="provider"><option value="offline">离线剧本（免费，不调用 AI）</option><option value="gemini">Google Gemini · 自带 API Key</option><option value="deepseek">DeepSeek · 自带 API Key</option><option value="qwen">通义千问 · 自带 API Key</option><option value="classroom_auto">班级 AI · 按账号自动接入（推荐）</option><option value="classroom">独立旧版后台 · 访问码（高级）</option><option value="custom">自定义 OpenAI 兼容接口</option></select></div><div id="api-fields"><div class="field"><label for="api-model">模型名称</label><input id="api-model" type="text" placeholder="gemini-3.5-flash-lite" /></div><div class="field"><label for="api-key">临时 API Key（不会持久存储）</label><input id="api-key" type="password" autocomplete="off" placeholder="粘贴你自己的密钥" /></div><div class="field hidden" id="custom-wrap"><label for="custom-url">API Base URL</label><input id="custom-url" type="url" placeholder="https://provider.example/v1" /></div></div><p id="class-auto-note" class="hidden">在班级任务中自动确认使用权限，无需填写地址、访问码或个人密钥。请先完成邮箱验证及入班审核；结课后停止接入。公开项目须属于已加入的教学中班级；多个班级时按班级名称优先归入首个符合条件的班级。</p><div id="class-fields" class="hidden"><div class="field"><label for="class-url">教师后台地址</label><input id="class-url" type="url" placeholder="https://your-matin-api.onrender.com" /></div><div class="field"><label for="class-code">课堂访问码</label><input id="class-code" type="password" autocomplete="off" placeholder="向教师索取" /></div></div><div class="modal-footer"><button type="button" class="btn" id="settings-cancel">取消</button><button type="button" class="btn" id="settings-test">测试连接</button><button type="button" class="btn primary" id="settings-save">保存设置</button></div></div></div>
 <div id="toast" class="toast hidden" role="status"></div>
 <script src="./matin-config.js"></script>
-<script src="./matin-math.js?v=2026.11.01.2"></script>
-<script src="./matin-pedagogy.js?v=2026.11.01.2"></script>
-<script src="./matin-long-context.js?v=2026.11.01.2"></script>
-<script src="./matin-stage-feedback.js?v=2026.11.01.2"></script>
-<script src="./matin-formula-input.js?v=2026.11.01.2"></script>
-<script src="./matin-class-ai.js?v=2026.11.01.2"></script>
-<script src="./matin-student.js?v=2026.11.01.2"></script>
-<script src="./matin-student-account.js?v=2026.11.01.2"></script>
-<script src="./matin-report-drafts.js?v=2026.11.01.2"></script>
+<script src="./matin-math.js?v=2026.11.01.3"></script>
+<script src="./matin-pedagogy.js?v=2026.11.01.3"></script>
+<script src="./matin-long-context.js?v=2026.11.01.3"></script>
+<script src="./matin-stage-feedback.js?v=2026.11.01.3"></script>
+<script src="./matin-formula-input.js?v=2026.11.01.3"></script>
+<script src="./matin-class-ai.js?v=2026.11.01.3"></script>
+<script src="./matin-student.js?v=2026.11.01.3"></script>
+<script src="./matin-student-account.js?v=2026.11.01.3"></script>
+<script src="./matin-report-drafts.js?v=2026.11.01.3"></script>
 <script src="matin-report-files.js?v=20261029"></script>
-<script src="./matin-task-reports.js?v=2026.11.01.2"></script>
-<script src="./matin-tasks.js?v=2026.11.01.2"></script>
-<script src="./matin-student-review-notice.js?v=2026.11.01.2"></script>
-<script src="./matin-task-edit.js?v=2026.11.01.2"></script>
-<script src="./matin-learning-sync.js?v=2026.11.01.2"></script>
-<script src="./matin-student-home.js?v=2026.11.01.2"></script>
-<script src="./matin-student-pages.js?v=2026.11.01.2"></script>
-<script src="./matin-student-notifications.js?v=2026.11.01.2"></script>
-<script src="./matin-gradebook.js?v=2026.11.01.2"></script>
+<script src="./matin-task-reports.js?v=2026.11.01.3"></script>
+<script src="./matin-tasks.js?v=2026.11.01.3"></script>
+<script src="./matin-student-review-notice.js?v=2026.11.01.3"></script>
+<script src="./matin-task-edit.js?v=2026.11.01.3"></script>
+<script src="./matin-learning-sync.js?v=2026.11.01.3"></script>
+<script src="./matin-student-home.js?v=2026.11.01.3"></script>
+<script src="./matin-student-pages.js?v=2026.11.01.3"></script>
+<script src="./matin-student-notifications.js?v=2026.11.01.3"></script>
+<script src="./matin-gradebook.js?v=2026.11.01.3"></script>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -112,7 +112,7 @@ let courseGroups=[],publishedGroups=[],selectedGroup=null,homeMode=false,catalog
 let courses=[],category='全部',search='',active=null,runNode=null,visited=[],messages=[],evalResult=null,completion=false,busy=false,evalBusy=false,controller=null,visitId=0,evaluationController=null,evaluations=[],pendingRequest='',saveFailed=false,activeLearningKey=null;
 const safeText=(v,limit=12000)=>typeof v==='string'?v.slice(0,limit):'';
 function normalize(raw){if(!raw||typeof raw!=='object'||!Array.isArray(raw.nodes)||!raw.nodes.length||raw.nodes.length>50)return null;
-const nodes=raw.nodes.filter(n=>n&&typeof n==='object').slice(0,50).map((n,i)=>({id:safeText(n.id,100)||'node-'+i,name:safeText(n.name,150)||'任务阶段',roleName:safeText(n.roleName,150)||'AI 导师',persona:safeText(n.persona,1200),context:safeText(n.context,2500),studentTask:safeText(n.studentTask,1800),greeting:safeText(n.greeting,1800),rubric:safeText(n.rubric,2500),hints:safeText(n.hints,1800),keywords:safeText(n.keywords,500),scriptRules:safeText(n.scriptRules,4000),passScore:Math.max(0,Math.min(100,Number(n.passScore)||75)),...(typeof n.learningMode==='string'?{learningMode:MatinPedagogy.mode(n),passScore:MatinPedagogy.threshold(n)}:{}),...(typeof n.requiredPoints==='string'?{requiredPoints:safeText(n.requiredPoints,15000)}:{}),...(typeof n.extensionPoints==='string'?{extensionPoints:safeText(n.extensionPoints,15000)}:{})}));
+const nodes=raw.nodes.filter(n=>n&&typeof n==='object').slice(0,50).map((n,i)=>({id:safeText(n.id,100)||'node-'+i,name:safeText(n.name,150)||'任务阶段',roleName:safeText(n.roleName,150)||'AI 导师',persona:safeText(n.persona,1200),context:safeText(n.context,2500),studentTask:safeText(n.studentTask,1800),greeting:safeText(n.greeting,1800),rubric:safeText(n.rubric,2500),hints:safeText(n.hints,1800),...(typeof n.preparation==='string'?{preparation:safeText(n.preparation,2500)}:{}),...(typeof n.guideSteps==='string'?{guideSteps:safeText(n.guideSteps,2500)}:{}),...(typeof n.workedExample==='string'?{workedExample:safeText(n.workedExample,4000)}:{}),keywords:safeText(n.keywords,500),scriptRules:safeText(n.scriptRules,4000),passScore:Math.max(0,Math.min(100,Number(n.passScore)||75)),...(typeof n.learningMode==='string'?{learningMode:MatinPedagogy.mode(n),passScore:MatinPedagogy.threshold(n)}:{}),...(typeof n.requiredPoints==='string'?{requiredPoints:safeText(n.requiredPoints,15000)}:{}),...(typeof n.extensionPoints==='string'?{extensionPoints:safeText(n.extensionPoints,15000)}:{})}));
 const ids=new Set(nodes.map(n=>n.id));const edges=(Array.isArray(raw.edges)?raw.edges:[]).slice(0,150).filter(e=>e&&ids.has(e.from)&&ids.has(e.to)).map((e,i)=>({id:safeText(e.id,100)||'edge-'+i,from:e.from,to:e.to,condition:['always','keyword','score_gte','score_lt'].includes(e.condition)?e.condition:'always',keyword:safeText(e.keyword,100),label:safeText(e.label,120)}));
 return {id:safeText(raw.id,120)||'course-'+Math.random().toString(36).slice(2),title:safeText(raw.title,150)||'未命名课程',category:safeText(raw.category,90)||'未分类',desc:safeText(raw.desc,1500),objective:safeText(raw.objective,1800),nodes,edges,startNodeId:ids.has(raw.startNodeId)?raw.startNodeId:nodes[0].id};}
 async function loadCatalog({refreshMembership=false}={}){
@@ -285,11 +285,11 @@ if(taskReadOnly()){$('run-review-notice').hidden=false;$('run-review-notice').te
 }
 function renderRuntime(){
 MatinLongContext.status('long-context-status',$('chat-form'),{system:promptFor(runNode,active),history:aiHistory(),busy:busy||evalBusy,readOnly:taskReadOnly()||completion||config.provider==='offline',retry:()=>sendMessage(true)});
-renderReviewState();MatinPedagogy.renderGoals($('run-stage-goals'),runNode);$('learning-hint').disabled=taskReadOnly()||busy||evalBusy||completion;$('run-project-title').textContent=active.title;$('run-subject').textContent=active.category+' · '+active.objective;$('run-node-name').textContent=runNode.name;$('run-student-task').textContent=runNode.studentTask;$('run-role-name').textContent=runNode.roleName;$('run-role-persona').textContent=runNode.persona;$('run-model-tag').textContent=config.provider==='offline'?'离线剧本体验':['classroom','classroom_auto'].includes(config.provider)?'教师班级 AI':'AI 模型 · '+(config.model||defaults[config.provider]||config.provider);
+renderReviewState();$('learning-guide').hidden=taskReadOnly()||completion;MatinPedagogy.renderGuide($('learning-guide'),runNode,{key:active.id+':'+runNode.id+':'+visitId,disabled:taskReadOnly()||busy||evalBusy||completion,onHelp:requestLearningHint});MatinPedagogy.renderGoals($('run-stage-goals'),runNode);$('learning-hint').disabled=taskReadOnly()||busy||evalBusy||completion;$('run-project-title').textContent=active.title;$('run-subject').textContent=active.category+' · '+active.objective;$('run-node-name').textContent=runNode.name;$('run-student-task').textContent=runNode.studentTask;$('run-role-name').textContent=runNode.roleName;$('run-role-persona').textContent=runNode.persona;$('run-model-tag').textContent=config.provider==='offline'?'离线剧本体验':['classroom','classroom_auto'].includes(config.provider)?'教师班级 AI':'AI 模型 · '+(config.model||defaults[config.provider]||config.provider);
 if(activeTask){$('run-project-title').textContent=activeTask.title;$('run-subject').textContent='项目：'+active.title+' · '+activeTask.class_name+' · 班级任务';}
 $('run-progress').innerHTML=active.nodes.map(n=>`<div class="progress-node ${n.id===runNode.id?'current':visited.includes(n.id)?'done':''}">${n.id===runNode.id?'▶':visited.includes(n.id)?'✓':'○'} ${esc(n.name)}</div>`).join('');renderScore();renderBranches();renderMessages();}
 function evaluationHistory(){return evaluations.length?'<details style="margin-top:10px"><summary>已保存的阶段评价（'+evaluations.length+'）</summary>'+evaluations.map(e=>'<p><strong>'+esc(active.nodes.find(n=>n.id===e.nodeId)?.name||'阶段')+' · '+e.result.score+' 分</strong><br>'+esc(e.result.feedback)+'<br>'+esc(e.result.nextStep)+'</p>').join('')+'</details>':''}
-function renderScore(){const out=$('score-panel');if(!evalResult){out.innerHTML='<p>切换阶段或结束学习时自动获取反馈；也可手动获取建议分数和改进建议。</p>'+evaluationHistory();return;}out.innerHTML=`<div class="score-large">${evalResult.score}<span style="font-size:13px;font-weight:500;color:#8fa0b6"> / 100 · AI 建议</span></div><p>${esc(evalResult.feedback)}</p><div class="criteria">${evalResult.criteria.map(c=>`<div>${c.met?'✓':'△'} ${esc(c.name)}：${esc(c.comment)}</div>`).join('')}</div><p style="margin-top:8px"><strong>下一步：</strong>${esc(evalResult.nextStep)}</p><p class="help">${esc(MatinPedagogy.coverage(evalResult))}</p>`+evaluationHistory();MatinLongContext.renderEvidence(out,evalResult,stageAnswerList());}
+function renderScore(){const out=$('score-panel');if(!evalResult){out.innerHTML='<p>切换阶段或结束学习时自动获取反馈；也可手动获取建议分数和改进建议。</p>'+evaluationHistory();return;}out.innerHTML=`${MatinPedagogy.mode(runNode)==='practice'?'<p><strong>先看学习反馈</strong></p><p>已覆盖 '+evalResult.criteria.filter(c=>c.met).length+' / '+evalResult.criteria.length+' 项基础目标；可按下方建议补答。</p>':''}<div class="score-large">${evalResult.score}<span style="font-size:13px;font-weight:500;color:#8fa0b6"> / 100 · AI 建议</span></div><p>${esc(evalResult.feedback)}</p><div class="criteria">${evalResult.criteria.map(c=>`<div>${c.met?'✓':'△'} ${esc(c.name)}：${esc(c.comment)}</div>`).join('')}</div><p style="margin-top:8px"><strong>下一步：</strong>${esc(evalResult.nextStep)}</p><p class="help">${esc(MatinPedagogy.coverage(evalResult))}</p>`+evaluationHistory();MatinLongContext.renderEvidence(out,evalResult,stageAnswerList());}
 function stageAnswerList(){return messages.filter(m=>m.nodeId===runNode.id&&m.role==='user').map(m=>m.text);}
 function stageAnswers(){return stageAnswerList().join('\n');}
 function branchChoices(){return active.edges.filter(e=>e.from===runNode.id);}
@@ -356,7 +356,7 @@ async function prepareTransition(edge){
 function focusStageActions(){document.querySelector('.stage-actions').scrollIntoView({block:'center',behavior:'instant'});$('run-stage-position').focus({preventScroll:true});}
 
 function offlineReply(text){const rules=(runNode.scriptRules||'').split(/\r?\n/);for(const r of rules){const i=r.indexOf('=>');if(i>0){const trigger=r.slice(0,i).trim();if(trigger&&text.includes(trigger))return r.slice(i+2).trim()||runNode.hints;}}const kw=(runNode.keywords||'').split(/[,，、]/).filter(x=>x.trim()&&text.includes(x.trim()));return kw.length?`你已经提到了「${kw.join('、')}」，请继续解释原因并给出验证方法。`:(runNode.hints||'请结合任务背景，进一步分析你的思路。');}
-const promptFor=(node,course)=>MatinPedagogy.tutorPrompt(node,course);
+const promptFor=(node,course)=>MatinPedagogy.tutorPrompt(node,course)+(node===runNode?'\n学生当前选择的引导小任务：'+($('learning-guide')?.querySelector('.guide-target')?.textContent||'先解释任务条件，再邀请完成第一步'):'');
 const aiHistory=()=>messages.filter(m=>m.nodeId===runNode?.id&&['assistant','user'].includes(m.role)).map(m=>({role:m.role,text:m.text}));
 const aiEvidence=()=>JSON.stringify(aiHistory());
 const callAIRaw=async(node,course,history,signal,systemOverride,purpose,step={})=>{signal=signal?AbortSignal.any([signal,AbortSignal.timeout(45000)]):AbortSignal.timeout(45000);signal.throwIfAborted();const system=systemOverride||promptFor(node,course);MatinPedagogy.assertCapacity(system,history);let res;if(config.provider==='classroom_auto')return window.MatinStudent.classAI({system,messages:history.map(m=>({role:m.role,content:m.text})),context:{task_id:activeTask?.id,class_id:activeTask?undefined:window.MatinStudent?.classId||undefined,project_id:course.id,node_id:node.id,purpose:purpose||(systemOverride?'evaluation':'chat')},recovery:{title:activeTask?.title||course.title,nodeName:node.name,nodeSignature:JSON.stringify(node),evidenceHash:await MatinLongContext.fingerprint(aiHistory()),...step}},signal);if(config.provider==='classroom'){if(!config.classUrl||!config.classCode)throw Error('请设置教师后台地址和课堂访问码');res=await fetch(config.classUrl.replace(/\/+$/,'')+'/api/chat',{method:'POST',signal,headers:{'Content-Type':'application/json','X-Classroom-Code':config.classCode},body:JSON.stringify({system,messages:history.map(m=>({role:m.role,content:m.text}))})});const data=await res.json().catch(()=>({}));if(!res.ok)throw Error(String(data.error||'HTTP '+res.status));if(!data.reply)throw Error('班级 AI 回复为空');return data.reply;}
@@ -376,13 +376,13 @@ async function evaluate(){if(taskReadOnly())return;
  }catch(e){const error=e.name==='AbortError'?'连接超时，请重试':e.message;if(g===visitId)notify('评价未完成：'+error);return {error};}
  finally{if(g===visitId){evalBusy=false;evaluationController=null;pendingRequest='';rememberProgress();renderRuntime();}}
 }
-async function requestLearningHint(){
+async function requestLearningHint(level=1,focus=''){level=Number.isInteger(level)&&level>=1&&level<=3?level:1;
  if(taskReadOnly())return;
  if(busy||evalBusy||!active||completion)return;
  const node=runNode,course=active,g=visitId,answers=stageAnswerList();
- if(config.provider==='offline'){post('assistant',MatinPedagogy.respectful(node.hints||'先选择一个必备知识点，说明现象、原因和依据；可以先尝试一小步。',node),'补学提示');return;}
+ if(config.provider==='offline'){post('assistant',MatinPedagogy.respectful(MatinPedagogy.offlineHelp(node,level,focus),node),'补学提示');return;}
  busy=true;pendingRequest='reply';rememberProgress();renderRuntime();const ctrl=new AbortController();controller=ctrl;
- try{const reply=await MatinLongContext.chat({system:promptFor(node,course),node,history:aiHistory(),signal:ctrl.signal,instruction:'请围绕一个必备知识点给出提示或简短示例，并邀请补答。不要增加新要求或代写整份作业。',progress:message=>MatinLongContext.progress('long-context-status',message),send:(sys,h,step)=>callAIRaw(node,course,h,ctrl.signal,sys,'hint',step)});if(g===visitId)post('assistant',MatinPedagogy.respectful(reply,node),'补学提示');}
+ try{const reply=await MatinLongContext.chat({system:promptFor(node,course),node,history:aiHistory(),signal:ctrl.signal,instruction:MatinPedagogy.helpInstruction(node,level,focus),progress:message=>MatinLongContext.progress('long-context-status',message),send:(sys,h,step)=>callAIRaw(node,course,h,ctrl.signal,sys,'hint',step)});if(g===visitId)post('assistant',MatinPedagogy.respectful(reply,node),'补学提示');}
  catch(e){if(g===visitId)notify('提示获取未完成：'+(e.name==='AbortError'?'连接超时':e.message));}
  finally{if(g===visitId){busy=false;controller=null;pendingRequest='';rememberProgress();renderRuntime();}}
 }
@@ -442,7 +442,7 @@ window.MatinStudentHome?.configure({refresh:()=>loadCatalog({refreshMembership:t
 Promise.resolve(window.MatinStudent?.ready(studentRefresh)).then(loadCatalog).catch(e=>notify('学生账号初始化失败：'+e.message));
 })();
 </script>
-<script src="./matin-release-info.js?v=2026.11.01.2"></script>
-<script src="./matin-release.js?v=2026.11.01.2"></script>
+<script src="./matin-release-info.js?v=2026.11.01.3"></script>
+<script src="./matin-release.js?v=2026.11.01.3"></script>
 </body>
 </html>
