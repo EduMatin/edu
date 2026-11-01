@@ -1,12 +1,13 @@
 {
-  "version": "2026.11.01.1",
+  "version": "2026.11.01.2",
+  "backendVersion": "2026.11.01.1",
   "protocol": 1,
   "configuration": "matin-config.js is environment-specific and intentionally excluded",
   "files": [
     {
       "path": "index.html",
-      "sha256": "5570818a3dfce1a5dd53f93eaef953dc0e305fe42ee62f3c4b6f4602f98d0591",
-      "bytes": 91636
+      "sha256": "50da442769b94a9e672cbb5c316e7405cb71c6a5588a219ebe99d107670ed5f3",
+      "bytes": 92749
     },
     {
       "path": "matin-account.js",
@@ -95,13 +96,13 @@
     },
     {
       "path": "matin-release-info.js",
-      "sha256": "fd3ef64ada7a3b0501a434e8f06f68ab4e6aab021a656bad7bb00a44cbcb3824",
-      "bytes": 4797
+      "sha256": "e3c599fa339ca3959fab50b8009cf4ba991eff4b20add7886ef504e9f6efb680",
+      "bytes": 4857
     },
     {
       "path": "matin-release.js",
-      "sha256": "464e5796d0fb7efe896d57e1738e05e3c728695b7c40965544c499eb639b1343",
-      "bytes": 9720
+      "sha256": "98466cc1db6517cc93ec33eeb71ff99b3d52b24859e4f96e343c670dbcf693ea",
+      "bytes": 9896
     },
     {
       "path": "matin-report-drafts.js",
@@ -110,8 +111,8 @@
     },
     {
       "path": "matin-report-files.js",
-      "sha256": "c024300b74dbba75883aab08440d39113997fcaf4371a25067c40e9e755d9d46",
-      "bytes": 10721
+      "sha256": "de59e18f727940bf6d3e4174d105e7e4b382d44a160aa58865dd28306566ccae",
+      "bytes": 10813
     },
     {
       "path": "matin-review-inbox.js",
@@ -170,8 +171,8 @@
     },
     {
       "path": "matin-task-reports.js",
-      "sha256": "779530aca15b036664446ba2cfa8f02ee80141d81bef99d43b7f7f98e200a418",
-      "bytes": 45004
+      "sha256": "26bab0718ea40d6a60e3ddf4696c6d60603776e01e830b47ffed494f4f4c5d1c",
+      "bytes": 48313
     },
     {
       "path": "matin-tasks.js",
@@ -205,12 +206,12 @@
     },
     {
       "path": "teacher.html",
-      "sha256": "8d71c189e020d806f14f989e5b0734a8a71fd74f3aba527a5d19ef78efc2c077",
+      "sha256": "8efc66efdbd11e0e2509dd84da44287ac9656ba05a2ee0ab4d0caecbcd4e1bfa",
       "bytes": 176543
     },
     {
       "path": "teaching-archive.html",
-      "sha256": "aa88fb8d13bebdacce099b802fb7e38238f94feb97e67559a7ff0d0e9b7be5c1",
+      "sha256": "baaaad909b08ed7cfe546bd352ca2df961576329585e24d506def7a08be676d6",
       "bytes": 1290
     }
   ],

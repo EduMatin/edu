@@ -37,7 +37,7 @@
      const form=new FormData();form.append('task_id',taskId);form.append('attachment_id',id);form.append('file',file);
      const r=await (await request(false,form)).json();await load();const saved=files.find(f=>f.id===r.file.id);if(!saved)throw Error('附件状态未同步，请重新打开提交页面。');choose(saved);try{localStorage.removeItem(key);}catch{}changed();render();state.textContent=file.name+' 已上传并选入本版报告';
    }}catch(e){state.textContent=e.message+' 可重新选择同一文件重试，已上传文件会复用。';try{await load();render();}catch{}}finally{pending--;input.disabled=false;input.dataset.fixedDisabled='false';}};
-  render();return {ids:()=>[...selected],select(ids){selected=new Set(ids.filter(id=>files.some(f=>f.id===id&&f.state==='ready')));if(selected.size!==ids.length)state.textContent='部分草稿附件已不可用，请重新检查本版选择。';render();},validate(){if(pending)throw Error('附件正在上传或移除，请等待完成后提交。');const chosen=files.filter(f=>selected.has(f.id));if(chosen.length!==selected.size||chosen.length>10||chosen.reduce((n,f)=>n+f.bytes,0)>41943040||chosen.some(f=>f.state!=='ready'))throw Error('请检查附件数量、大小及上传状态。');return [...selected];}};
+  render();return {ids:()=>[...selected],selectedFiles:()=>files.filter(f=>selected.has(f.id)).map(f=>({name:f.name,bytes:f.bytes})),select(ids){selected=new Set(ids.filter(id=>files.some(f=>f.id===id&&f.state==='ready')));if(selected.size!==ids.length)state.textContent='部分草稿附件已不可用，请重新检查本版选择。';render();},validate(){if(pending)throw Error('附件正在上传或移除，请等待完成后提交。');const chosen=files.filter(f=>selected.has(f.id));if(chosen.length!==selected.size||chosen.length>10||chosen.reduce((n,f)=>n+f.bytes,0)>41943040||chosen.some(f=>f.state!=='ready'))throw Error('请检查附件数量、大小及上传状态。');return [...selected];}};
  }
  window.MatinReportFiles={editor,view,bytes};
 })();

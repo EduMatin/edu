@@ -26,6 +26,7 @@
  `;document.head.append(css);
  css.textContent+='#student-report-update{margin:0 24px 8px;border-left:4px solid #c77a29;max-height:24vh;overflow:auto;flex-shrink:0;background:#fff6e8}#student-report-update[hidden]{display:none!important}';
  css.textContent+='.tr-sequence{border-left:4px solid #6461dd;margin:12px 0}.tr-sequence strong{display:block}.tr-panel>footer .tr-sequence-actions{display:flex;gap:8px;flex-wrap:wrap;width:100%;align-items:center}.tr-sequence-actions .tr-muted{flex:1;min-width:150px}.tr-panel>footer{max-height:34vh;overflow:auto}';
+ css.textContent+='.tr-submit-overview{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}.tr-submit-overview span{background:#f3f5ff;border-radius:8px;padding:8px 12px}.tr-submit-confirm{background:#f7f9ff}.tr-submit-records>summary{cursor:pointer;font-weight:600;padding:6px 0}.tr-receipt{background:#effaf6;border:1px solid #bde4d6;border-radius:16px;padding:20px}.tr-receipt strong{display:block;font-size:21px;color:#24765e}.tr-confirm-copy{flex:1;min-width:180px}.tr-receipt ul{padding-left:22px;overflow-wrap:anywhere}';
  let current=null;
  function reviewSignature(t){return [Number(t?.submission_version)||0,Number(t?.feedback_revision)||0,t?.review_status||''];}
  function updateReviewNotice(){
@@ -254,16 +255,24 @@
    if(latest.review_status==='passed')throw Error('报告已通过，可查看批阅结果；如需重交，请联系教师退回修改。');
    if(!report.messages?.some(m=>m.role==='user'&&m.text.trim()))throw Error('请先完成至少一次学生回答，再提交报告。');
    c.task=latest;heading.textContent='提交学习报告 · '+task.title;body.replaceChildren();foot.replaceChildren();
-   body.append(el('p','确认后将把本页展示的当前节点、完整对话、阶段评价和学习总结发送给任课教师。提交后保留云端版本；之后修改本地记录不会自动改变已交报告。','tr-note'));
-   if(latest.submission_version)body.append(el('p','你已提交 '+latest.submission_version+' 版，本次将新增一版，保留原报告和批注。','tr-muted'));
-   const summaryLabel=el('label','学习总结（选填）'),summary=el('textarea');summary.maxLength=4000;summary.setAttribute('aria-label','学习总结');summary.placeholder='本次学习成果、遇到的问题或需要教师解答的内容';summary.oninput=()=>draftChanged(c);summaryLabel.append(summary);body.append(summaryLabel);
+   body.append(el('p',report.completion?'学习已完成。请整理总结、选择附件，最后确认提交给教师。':'当前学习尚未结束，也可先提交已有成果。请核对总结与附件后确认。','tr-note'));
+   const overview=el('div',undefined,'tr-submit-overview');
+   for(const text of [report.completion?'学习状态：已完成':'学习状态：进行中','已学习 '+new Set(report.visited||[]).size+' 个阶段','学生回答 '+report.messages.filter(m=>m.role==='user').length+' 条','阶段评价 '+(report.evaluations||[]).length+' 条'])overview.append(el('span',text));body.append(overview);
+   if(latest.submission_version)body.append(el('p','当前报告：第 '+latest.submission_version+' 版 · '+reviewLabel(latest.review_status)+'。本次将提交第 '+(Number(latest.submission_version)+1)+' 版；教师查看最新版，你仍可查看自己的历史报告。','tr-muted'));
+   if(latest.review_status==='revision_required')body.append(el('p','教师修改要求：'+latest.revision_reason+'\n重交截止：'+time(latest.resubmit_due_at),'tr-feedback'));
+   const summarySection=el('section',undefined,'tr-report-section'),summaryLabel=el('label','学习总结（选填）'),summary=el('textarea');summary.maxLength=4000;summary.rows=4;summary.setAttribute('aria-label','学习总结');summary.placeholder='可以写下：主要成果、关键结论、仍有疑问的地方。详细报告也可放在下方附件中。';summary.oninput=()=>draftChanged(c);summaryLabel.append(summary);summarySection.append(el('h3','1. 整理学习总结'),summaryLabel);body.append(summarySection);
    if(!window.MatinReportFiles)throw Error('附件组件未加载，请刷新页面。');
-   const attachments=el('section');body.append(attachments);
-   const files=await MatinReportFiles.editor(attachments,task.id,()=>draftChanged(c));if(!isCurrent(c))return;
-   reportBody(report,body);
-   bindDraft(c,'student-summary',{version:Number(latest.submission_version)||0,feedback_revision:Number(latest.feedback_revision)||0},()=>({summary:summary.value,attachment_ids:files.ids()}),value=>{summary.value=String(value.summary??'').slice(0,4000);if(Array.isArray(value.attachment_ids))files.select(value.attachment_ids);});
-   foot.append(btn(latest.submission_version?'确认提交新版本':'确认提交报告',()=>run(c,async()=>{
+   const attachmentSection=el('section'),attachments=el('div');attachmentSection.append(el('h3','2. 上传或选择报告附件'),attachments);body.append(attachmentSection);
+   const confirmation=el('section',undefined,'tr-report-section tr-submit-confirm'),selection=el('p'),confirmCopy=el('span',undefined,'tr-muted tr-confirm-copy');let files;
+   const updateSelection=()=>{if(!files)return;const chosen=files.selectedFiles();selection.textContent=chosen.length?'本次提交 '+chosen.length+' 个附件：'+chosen.map(f=>f.name).join('、'):'本次未选择附件，将提交学习记录与填写的总结。';confirmCopy.textContent='待提交第 '+(Number(latest.submission_version||0)+1)+' 版 · '+chosen.length+' 个附件';};
+   files=await MatinReportFiles.editor(attachments,task.id,()=>{if(isCurrent(c)){draftChanged(c);updateSelection();}});if(!isCurrent(c))return;
+   const records=el('details',undefined,'tr-report-section tr-submit-records'),recordBody=el('div');records.append(el('summary','查看将提交的学习记录与阶段评价'),recordBody);reportBody(report,recordBody);body.append(records);
+   confirmation.append(el('h3','3. 确认本次提交'),selection,el('p','点击下方确认按钮后，学习记录、阶段评价、总结及已选附件才会提交给教师。上传附件或关闭窗口不会提交报告。','tr-muted'));body.append(confirmation);
+   bindDraft(c,'student-summary',{version:Number(latest.submission_version)||0,feedback_revision:Number(latest.feedback_revision)||0},()=>({summary:summary.value,attachment_ids:files.ids()}),value=>{summary.value=String(value.summary??'').slice(0,4000);if(Array.isArray(value.attachment_ids))files.select(value.attachment_ids);updateSelection();});updateSelection();
+   const draftPanel=body.querySelector(':scope > .rd-draft');if(draftPanel)body.append(draftPanel);
+   foot.append(confirmCopy,btn(latest.submission_version?'确认提交新版本':'确认提交报告',()=>run(c,async()=>{
     const attachment_ids=files.validate();
+    const submittedFiles=files.selectedFiles();
     const payload={...report,summary:summary.value};delete payload.nodes;delete payload.project_title;
     if(new TextEncoder().encode(JSON.stringify(payload)).length>(state.workflow_version===2?2200000:150000))throw Error(state.workflow_version===2?'报告超过 2.2 MB，请先导出完整记录并联系教师。内容未丢失。':'报告较长，请先更新报告服务以支持完整提交。内容未丢失。');
     const signature=JSON.stringify({payload,attachment_ids});if(c.submitSignature!==signature){c.submitSignature=signature;c.submitMutation=crypto.randomUUID();}
@@ -271,7 +280,10 @@
     c.draft?.commit();releaseDraft(c);c.dirty=false;
     // Submission is already confirmed. A subsequent list refresh must not invite another submission.
     try{await MatinTasks.loadStudent();}catch{}if(!isCurrent(c))return;
-    body.replaceChildren(el('h3','报告已提交'),el('p','第 '+result.version+' 版 · '+time(result.submitted_at)+(result.late?' · 逾期补交':'')),el('p','报告进入待批阅。教师可通过或退回修改，原学习记录和历次报告继续保留。'));foot.replaceChildren(btn('查看已提交报告',()=>run(c,()=>readReport(c,null))));status.textContent='提交成功';
+    heading.textContent='提交结果 · '+task.title;
+    const receipt=el('section',undefined,'tr-receipt');receipt.append(el('h3','报告已提交'),el('strong','第 '+result.version+' 版 · 待教师批阅'),el('p','提交时间：'+time(result.submitted_at)+(result.late?' · 逾期补交':'')),el('p','本版附件：'+submittedFiles.length+' 个'));
+    if(submittedFiles.length){const list=el('ul');for(const file of submittedFiles)list.append(el('li',file.name));receipt.append(list);}
+    body.replaceChildren(receipt,el('p','教师将批阅这次提交的版本。你可在“我的报告”查看批阅结果；如被退回修改，按要求更新后再次提交。','tr-note'));body.scrollTop=0;foot.replaceChildren(btn('查看已提交报告',()=>run(c,()=>readReport(c,null)),true));status.textContent='提交成功，关闭此窗口后可随时查看报告。';
    },true),true),btn('取消',()=>close()));status.textContent='请检查报告内容后确认提交。';
   });}
  };

@@ -57,7 +57,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
  .chat-shell>.chat-form{padding:12px}
 }
 </style>
-<meta name="matin-release" content="2026.11.01.1">
+<meta name="matin-release" content="2026.11.01.2">
 </head>
 <body>
 <header class="header"><a href="./index.html" class="brand"><div class="brand-icon">M</div><div><strong>Matin <small>AI Studio</small></strong><div class="brand-sub">学生学习中心 · STUDENT CAMPUS</div></div></a><div class="header-right"><span class="header-note">发现学科 · 探索实训 · AI 引导</span><button class="btn" type="button" id="settings-open">✦ AI 模型设置</button></div></header>
@@ -77,25 +77,25 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 <div id="settings-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title"><div class="modal"><h2 id="settings-title">✦ 连接 AI 导师</h2><p>登录并通过入班审核后，可自动使用班级 AI。也可选择个人模型，或使用离线剧本。</p><div class="field"><label for="provider">选择 AI 服务</label><select id="provider"><option value="offline">离线剧本（免费，不调用 AI）</option><option value="gemini">Google Gemini · 自带 API Key</option><option value="deepseek">DeepSeek · 自带 API Key</option><option value="qwen">通义千问 · 自带 API Key</option><option value="classroom_auto">班级 AI · 按账号自动接入（推荐）</option><option value="classroom">独立旧版后台 · 访问码（高级）</option><option value="custom">自定义 OpenAI 兼容接口</option></select></div><div id="api-fields"><div class="field"><label for="api-model">模型名称</label><input id="api-model" type="text" placeholder="gemini-3.5-flash-lite" /></div><div class="field"><label for="api-key">临时 API Key（不会持久存储）</label><input id="api-key" type="password" autocomplete="off" placeholder="粘贴你自己的密钥" /></div><div class="field hidden" id="custom-wrap"><label for="custom-url">API Base URL</label><input id="custom-url" type="url" placeholder="https://provider.example/v1" /></div></div><p id="class-auto-note" class="hidden">在班级任务中自动确认使用权限，无需填写地址、访问码或个人密钥。请先完成邮箱验证及入班审核；结课后停止接入。公开项目须属于已加入的教学中班级；多个班级时按班级名称优先归入首个符合条件的班级。</p><div id="class-fields" class="hidden"><div class="field"><label for="class-url">教师后台地址</label><input id="class-url" type="url" placeholder="https://your-matin-api.onrender.com" /></div><div class="field"><label for="class-code">课堂访问码</label><input id="class-code" type="password" autocomplete="off" placeholder="向教师索取" /></div></div><div class="modal-footer"><button type="button" class="btn" id="settings-cancel">取消</button><button type="button" class="btn" id="settings-test">测试连接</button><button type="button" class="btn primary" id="settings-save">保存设置</button></div></div></div>
 <div id="toast" class="toast hidden" role="status"></div>
 <script src="./matin-config.js"></script>
-<script src="./matin-math.js?v=2026.11.01.1"></script>
-<script src="./matin-pedagogy.js?v=2026.11.01.1"></script>
-<script src="./matin-long-context.js?v=2026.11.01.1"></script>
-<script src="./matin-stage-feedback.js?v=2026.11.01.1"></script>
-<script src="./matin-formula-input.js?v=2026.11.01.1"></script>
-<script src="./matin-class-ai.js?v=2026.11.01.1"></script>
-<script src="./matin-student.js?v=2026.11.01.1"></script>
-<script src="./matin-student-account.js?v=2026.11.01.1"></script>
-<script src="./matin-report-drafts.js?v=2026.11.01.1"></script>
+<script src="./matin-math.js?v=2026.11.01.2"></script>
+<script src="./matin-pedagogy.js?v=2026.11.01.2"></script>
+<script src="./matin-long-context.js?v=2026.11.01.2"></script>
+<script src="./matin-stage-feedback.js?v=2026.11.01.2"></script>
+<script src="./matin-formula-input.js?v=2026.11.01.2"></script>
+<script src="./matin-class-ai.js?v=2026.11.01.2"></script>
+<script src="./matin-student.js?v=2026.11.01.2"></script>
+<script src="./matin-student-account.js?v=2026.11.01.2"></script>
+<script src="./matin-report-drafts.js?v=2026.11.01.2"></script>
 <script src="matin-report-files.js?v=20261029"></script>
-<script src="./matin-task-reports.js?v=2026.11.01.1"></script>
-<script src="./matin-tasks.js?v=2026.11.01.1"></script>
-<script src="./matin-student-review-notice.js?v=2026.11.01.1"></script>
-<script src="./matin-task-edit.js?v=2026.11.01.1"></script>
-<script src="./matin-learning-sync.js?v=2026.11.01.1"></script>
-<script src="./matin-student-home.js?v=2026.11.01.1"></script>
-<script src="./matin-student-pages.js?v=2026.11.01.1"></script>
-<script src="./matin-student-notifications.js?v=2026.11.01.1"></script>
-<script src="./matin-gradebook.js?v=2026.11.01.1"></script>
+<script src="./matin-task-reports.js?v=2026.11.01.2"></script>
+<script src="./matin-tasks.js?v=2026.11.01.2"></script>
+<script src="./matin-student-review-notice.js?v=2026.11.01.2"></script>
+<script src="./matin-task-edit.js?v=2026.11.01.2"></script>
+<script src="./matin-learning-sync.js?v=2026.11.01.2"></script>
+<script src="./matin-student-home.js?v=2026.11.01.2"></script>
+<script src="./matin-student-pages.js?v=2026.11.01.2"></script>
+<script src="./matin-student-notifications.js?v=2026.11.01.2"></script>
+<script src="./matin-gradebook.js?v=2026.11.01.2"></script>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -277,7 +277,8 @@ if(!taskReadOnly()&&latestTask?.review_status==='revision_required'){const key=S
 $('run-review-notice').hidden=!latestTask?.review_status;$('run-review-report').hidden=!latestTask?.submission_version;
 $('run-review-report').onclick=()=>window.MatinTaskReports.student(latestTask);
 $('run-review-notice').textContent=latestTask?.review_status==='revision_required'?'教师要求修改：'+latestTask.revision_reason+'；重交截止：'+new Date(latestTask.resubmit_due_at).toLocaleString('zh-CN'):latestTask?.review_status==='passed'?'本次报告已通过，可查看学习记录和批阅结果。':latestTask?.review_status==='pending_review'?'报告已提交，等待教师批阅。':'';
-$('submit-task-report').textContent=latestTask?.review_status==='revision_required'?'提交修改后的报告':'提交学习报告';
+if(latestTask?.submission_version)$('run-review-notice').textContent='第 '+latestTask.submission_version+' 版 · '+$('run-review-notice').textContent;
+$('submit-task-report').textContent=latestTask?.review_status==='revision_required'?'提交修改后的报告':latestTask?.submission_version?'更新提交报告':'提交学习报告';
 $('submit-task-report').hidden=!activeTask||window.MatinTasks?.studentState().reports_version!==1;$('submit-task-report').disabled=busy||evalBusy||latestTask?.review_status==='passed';$('send-button').disabled=busy||evalBusy||completion;$('send-button').textContent=busy?'思考中…':'发送 ↗';$('evaluate-button').disabled=busy||evalBusy||completion;$('evaluate-button').textContent=evalBusy?'AI 评价中…':'✦ 获取 AI 学习反馈';$('chat-input').disabled=completion;
 $('restart-run').disabled=taskReadOnly();
 if(taskReadOnly()){$('run-review-notice').hidden=false;$('run-review-notice').textContent='已结束教学 · 只读。可查看与导出记录，如需补交请联系教师重新开放教学。本机未同步内容仍保留。';$('submit-task-report').hidden=true;for(const id of ['send-button','evaluate-button','chat-input','restart-run','learning-hint'])$(id).disabled=true;}
@@ -312,7 +313,7 @@ function renderBranches(){
  $('run-stage-position').textContent='当前阶段 '+position+' / '+active.nodes.length+' · '+runNode.name;
  const feedback=MatinPedagogy.mode(runNode)==='assessment'&&!waiting&&stageAnswers().trim()&&config.provider!=='offline'&&(list.length?!list.some(branchAllowed):!branchAllowed(null))?'<button type="button" class="stage-feedback-button" id="next-evaluate">'+(evalResult?'重新获取阶段反馈':'获取阶段反馈')+'</button>':'';
  let html;
- if(completion){const submit=$('submit-task-report');html='<div class="stage-next-row"><div class="stage-next-copy"><strong>已结束本次学习</strong><p class="stage-next-note">'+(!submit.hidden&&!submit.disabled?'报告需单独提交给教师批阅。':'可以导出记录，保留本次学习成果。')+'</p></div><div class="stage-next-buttons">'+(!submit.hidden&&!submit.disabled?'<button type="button" class="btn primary stage-next-button" id="next-submit-report">'+esc(submit.textContent)+'</button>':'')+'<button type="button" class="btn stage-next-button" id="next-export-report">导出学习报告</button></div></div>';}
+ if(completion){const submit=$('submit-task-report'),hasReport=!$('run-review-report').hidden;html='<div class="stage-next-row"><div class="stage-next-copy"><strong>已结束本次学习</strong><p class="stage-next-note" role="status">'+esc(hasReport?$('run-review-notice').textContent:!submit.hidden&&!submit.disabled?'尚未提交报告。请填写总结、选择附件后确认提交。':'可以导出记录，保留本次学习成果。')+'</p></div><div class="stage-next-buttons">'+(hasReport?'<button type="button" class="btn primary stage-next-button" id="next-view-report">查看已提交报告</button>':'')+(!submit.hidden&&!submit.disabled?'<button type="button" class="btn '+(hasReport?'':'primary ')+'stage-next-button" id="next-submit-report">'+esc(submit.textContent)+'</button>':'')+'<button type="button" class="btn stage-next-button" id="next-export-report">导出学习报告</button></div></div>';}
  else if(!list.length){html='<div class="stage-next-row"><div class="stage-next-copy"><strong>当前路线的最后一个阶段</strong><p class="stage-next-note" role="status">'+esc(routeStatus(null))+'</p>'+feedback+'</div><button type="button" class="btn primary stage-next-button" id="finish-button" '+(!waiting&&canRequestTransition(null)?'':'disabled')+'>完成本次学习 ✓</button></div>';}
  else if(list.length===1){const edge=list[0],target=active.nodes.find(n=>n.id===edge.to);html='<div class="stage-next-row"><div class="stage-next-copy"><strong>下一步：'+esc(target?.name||'下一阶段')+'</strong><p class="stage-next-note" role="status">'+esc(routeStatus(edge))+'</p>'+feedback+'</div><button type="button" class="btn primary stage-next-button" data-branch="'+esc(edge.id)+'" aria-label="进入下一阶段：'+esc(target?.name||'下一阶段')+'" '+(!waiting&&canRequestTransition(edge)?'':'disabled')+'>进入下一阶段 →</button></div>';}
  else{const status=waiting?(evalBusy?'正在获取阶段反馈，请稍候…':'导师正在回复，请稍候…'):available.length?'有 '+available.length+' 条路线可选，请选择下一阶段。':'暂无可进入的路线，展开可查看各路线条件。';html='<div class="stage-next-row"><div class="stage-next-copy"><strong>选择接下来学习的阶段</strong><p class="stage-next-note" role="status">'+esc(status)+'</p>'+feedback+'</div><details class="stage-route-chooser" id="stage-route-chooser"><summary class="btn primary stage-next-button" aria-label="选择下一阶段，共 '+list.length+' 条路线">选择下一阶段 ▴</summary><div class="stage-route-list">'+list.map(edge=>{const target=active.nodes.find(n=>n.id===edge.to);return '<button type="button" class="branch" data-branch="'+esc(edge.id)+'" '+(!waiting&&canRequestTransition(edge)?'':'disabled')+'><strong>'+esc(target?.name||'下一阶段')+'</strong>'+(edge.label?'<span>'+esc(edge.label)+'</span>':'')+'<small>'+esc(routeStatus(edge))+'</small></button>';}).join('')+'</div></details></div>';}
@@ -325,7 +326,13 @@ function renderBranches(){
  if(wasOpen&&$('stage-route-chooser'))$('stage-route-chooser').open=true;
  if(focused){const target=focused.id?$(focused.id):focused.summary?nav.querySelector('summary'):[...nav.querySelectorAll('[data-branch]')].find(b=>b.dataset.branch===focused.branch);if(target&&!target.disabled)target.focus({preventScroll:true});}
 }
-async function finishLearning(){if(branchChoices().length||!await prepareTransition(null))return;completion=true;rememberProgress();post('system','已结束本次学习，可以导出个人学习报告。这不是正式成绩证明。','学习路线');renderRuntime();$('run-stage-position').focus({preventScroll:true});}
+async function finishLearning(){
+ if(activeTask&&$('chat-input').value.trim())return notify('输入框内还有未发送的回答，请先发送或清空，再完成学习。');
+ if(activeTask&&window.MatinLearningSync.hasConflict?.())return notify('请先处理多设备学习记录冲突，再完成学习并提交报告。');
+ if(branchChoices().length||!await prepareTransition(null))return;
+ completion=true;rememberProgress();post('system',activeTask?'已完成本次学习。请在报告窗口整理总结与附件，再确认提交给教师。':'已结束本次学习，可以导出个人学习报告。这不是正式成绩证明。','学习路线');renderRuntime();$('run-stage-position').focus({preventScroll:true});
+ const submit=$('submit-task-report');if(!submit.hidden&&!submit.disabled)submit.click();
+}
 let transitionPending=false;
 async function prepareTransition(edge){
  if(transitionPending||busy||evalBusy||completion||!active||!canRequestTransition(edge))return false;
@@ -392,6 +399,7 @@ $('run-branches').addEventListener('click',e=>{if(e.target.closest('.stage-route
 document.addEventListener('click',e=>{const chooser=$('stage-route-chooser');if(chooser?.open&&!chooser.contains(e.target))chooser.open=false;});
 $('run-branches').addEventListener('keydown',e=>{const chooser=$('stage-route-chooser');if(e.key==='Escape'&&chooser?.open){e.preventDefault();chooser.open=false;chooser.querySelector('summary').focus();}});
 $('export-report').addEventListener('click',exportReport);
+$('run-branches').addEventListener('click',e=>{if(e.target.id==='next-view-report')$('run-review-report').click();});
 window.addEventListener('matin-student-tasks-changed',()=>{if(active){if(taskReadOnly())freezeTeaching();else {renderReviewState();renderBranches();}}});
 window.addEventListener('matin-class-ended',e=>{if(activeTask?.id===e.detail.taskId){activeTask={...activeTask,class_ended_at:true};freezeTeaching();}});
 $('submit-task-report').addEventListener('click',()=>{
@@ -434,7 +442,7 @@ window.MatinStudentHome?.configure({refresh:()=>loadCatalog({refreshMembership:t
 Promise.resolve(window.MatinStudent?.ready(studentRefresh)).then(loadCatalog).catch(e=>notify('学生账号初始化失败：'+e.message));
 })();
 </script>
-<script src="./matin-release-info.js?v=2026.11.01.1"></script>
-<script src="./matin-release.js?v=2026.11.01.1"></script>
+<script src="./matin-release-info.js?v=2026.11.01.2"></script>
+<script src="./matin-release.js?v=2026.11.01.2"></script>
 </body>
 </html>

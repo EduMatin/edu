@@ -36,13 +36,14 @@
   try{d=await json(base+'/functions/v1/'+name+'?action=deployment_check',{headers:window.MATIN_CLOUD.publishableKey?{apikey:window.MATIN_CLOUD.publishableKey}:{}});}
   catch(e){if(id===run)add(name,false,'无法取得检查接口（'+e.message+'）。请检查网络、来源设置或是否已部署本版云函数。');return;}
   if(id!==run)return;
-  const match=d.service===name&&d.version===release.version&&d.protocol===release.protocol;
-  add(name,match,match?'版本 '+d.version+' 匹配':'版本不匹配或接口尚未升级；请部署当前包中的 '+name+'。');
+  const backendVersion=release.backendVersion||release.version;
+  const match=d.service===name&&d.version===backendVersion&&d.protocol===release.protocol;
+  add(name,match,match?'版本 '+d.version+' 匹配':'版本不匹配；本页需要后端 '+backendVersion+'，请按当前版本说明核对 '+name+'。');
   const expected=name==='matin-chat'?['SUPABASE_URL','SUPABASE_ANON_KEY','SUPABASE_SERVICE_ROLE_KEY','GEMINI_API_KEY']:['SUPABASE_URL','SUPABASE_ANON_KEY','SUPABASE_SERVICE_ROLE_KEY'];
   const missing=expected.filter(n=>d.configuration?.[n]!==true);
   add(name+' 配置',!missing.length,missing.length?'未确认配置：'+missing.join('、'):'必要配置已存在（不验证密钥有效性）。');
   if(name!=='matin-courses')return;
-  const db=d.database,versionOk=db?.version===release.version&&db?.protocol===release.protocol;
+  const db=d.database,versionOk=db?.version===backendVersion&&db?.protocol===release.protocol;
   add('数据库检查接口',versionOk,versionOk?'检查协议匹配；以下逐项核对实际对象。':db?.error==='probe_missing'?'尚未安装 deployment-check.sql，或数据库接口缓存未更新。':'未取得匹配的检查接口；核对 SQL、云函数配置及数据库连接。');
   if(!versionOk)return;
   const count=release.capabilities.filter(c=>db.checks?.[c.id]===true).length+(db.checks?.private_word_bucket===true?1:0),total=release.capabilities.length+1;
@@ -58,7 +59,7 @@
    jobs.push((async()=>{
     try{
      const manifest=await json(new URL('./release-manifest.json',location.href));if(id!==run)return;
-     if(manifest.version!==release.version||manifest.protocol!==release.protocol||!Array.isArray(manifest.files)||!manifest.files.length||manifest.files.length>100)throw Error('发布清单与当前页面版本不一致');
+     if(manifest.version!==release.version||(manifest.backendVersion||manifest.version)!==(release.backendVersion||release.version)||manifest.protocol!==release.protocol||!Array.isArray(manifest.files)||!manifest.files.length||manifest.files.length>100)throw Error('发布清单与当前页面版本不一致');
      const required=['teacher.html','index.html','teaching-archive.html','matin-release-info.js','matin-release.js'];
      if(required.some(p=>!manifest.files.some(f=>f.path===p)))throw Error('发布清单缺少必要入口');
      if(JSON.stringify(manifest.files.map(f=>f.path).sort())!==JSON.stringify(release.assets))throw Error('发布清单文件列表不完整或不匹配');
