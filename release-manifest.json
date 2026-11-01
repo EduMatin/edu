@@ -1,0 +1,244 @@
+{
+  "version": "2026.11.01.1",
+  "protocol": 1,
+  "configuration": "matin-config.js is environment-specific and intentionally excluded",
+  "files": [
+    {
+      "path": "index.html",
+      "sha256": "5570818a3dfce1a5dd53f93eaef953dc0e305fe42ee62f3c4b6f4602f98d0591",
+      "bytes": 91636
+    },
+    {
+      "path": "matin-account.js",
+      "sha256": "87935c943abab1766915497f596a779a936484a08d7e541ce10ec816971e318d",
+      "bytes": 8215
+    },
+    {
+      "path": "matin-ai-usage.js",
+      "sha256": "93fe7812fcd4581911638033a12f71f7eb79cd10419153fb601af1505e0dd22c",
+      "bytes": 7257
+    },
+    {
+      "path": "matin-archive-format.js",
+      "sha256": "d60966cf5bf186644e30a172a609d56dea7d0e58d50e3137b30499c719de4f66",
+      "bytes": 19193
+    },
+    {
+      "path": "matin-archive-reader.js",
+      "sha256": "a122d4aeae5d990c15a0c22e1bf630b6159a9ba719fd9a3e95cddfd620c8a1b2",
+      "bytes": 4702
+    },
+    {
+      "path": "matin-class-ai.js",
+      "sha256": "36c86d0bcc01ae77acd3a89706904d064629920e306ad0bb72aaaa38e2d52655",
+      "bytes": 16335
+    },
+    {
+      "path": "matin-class-teaching.js",
+      "sha256": "1427f9d997010c3b886a91a54bc4a6216fcd5e36d53c9a806493d0fc1023b8d3",
+      "bytes": 7420
+    },
+    {
+      "path": "matin-classes.js",
+      "sha256": "62e844caa36d637eb7cc92a19c4a252da5edf5ecf968f11e77ebdc7fa79d8009",
+      "bytes": 21677
+    },
+    {
+      "path": "matin-course-matrix.js",
+      "sha256": "da0bf0fad7d5babc095da71013912ee10ab1f21ccc17f276a1cf5a2f30e08733",
+      "bytes": 19703
+    },
+    {
+      "path": "matin-course-outline.js",
+      "sha256": "e39ea028ee8bcce5b01e8082b0c858ef79a346adb576fe96e7fc5e8a655c22e7",
+      "bytes": 11627
+    },
+    {
+      "path": "matin-enrollment.js",
+      "sha256": "c920771c30abc656de016d81b9b611904e01edfd86174181e80b4617d5a16985",
+      "bytes": 15832
+    },
+    {
+      "path": "matin-formula-input.js",
+      "sha256": "e17528968fa81f8359194ed4f71e1778ed7fbff4e24400ee7e2288434a2087cb",
+      "bytes": 18796
+    },
+    {
+      "path": "matin-gradebook.js",
+      "sha256": "153923ffae4042b5862735e46981d0b3131e81c5a7dc9b4819b80ed1ed6af418",
+      "bytes": 29581
+    },
+    {
+      "path": "matin-learning-sync.js",
+      "sha256": "a0c975c6d21aa79d2a33793771fdcd42ec48b21a6ca96b012fea693cce528ab1",
+      "bytes": 10236
+    },
+    {
+      "path": "matin-long-context.js",
+      "sha256": "96f94fd7640690c39314b20ac8694bef977757bd60516cc044f5e7f8e73c9ac1",
+      "bytes": 15787
+    },
+    {
+      "path": "matin-math.js",
+      "sha256": "c35f810c5a4d2a7690da88d197eb3c497d1b37d485bbb069716b6c711cace5f5",
+      "bytes": 277074
+    },
+    {
+      "path": "matin-pedagogy.js",
+      "sha256": "e18d028a411eb82246b3271a92b32ecbeddbd865d9bf16a05e9af8991e06c5cc",
+      "bytes": 10838
+    },
+    {
+      "path": "matin-project-tasks.js",
+      "sha256": "8e2f12834f9009ff3157814347f97da960e7ab42a5060eed385afcdd1a21020b",
+      "bytes": 7804
+    },
+    {
+      "path": "matin-release-info.js",
+      "sha256": "fd3ef64ada7a3b0501a434e8f06f68ab4e6aab021a656bad7bb00a44cbcb3824",
+      "bytes": 4797
+    },
+    {
+      "path": "matin-release.js",
+      "sha256": "464e5796d0fb7efe896d57e1738e05e3c728695b7c40965544c499eb639b1343",
+      "bytes": 9720
+    },
+    {
+      "path": "matin-report-drafts.js",
+      "sha256": "3d760ab13663449b0ea758f2bfbce6e2ba2e612dc6cee877891e752f29a09174",
+      "bytes": 8796
+    },
+    {
+      "path": "matin-report-files.js",
+      "sha256": "c024300b74dbba75883aab08440d39113997fcaf4371a25067c40e9e755d9d46",
+      "bytes": 10721
+    },
+    {
+      "path": "matin-review-inbox.js",
+      "sha256": "b9a795b74b6ccae253c8ab8638a9c09ed8d88199666d45c8ebd861e61c0efeac",
+      "bytes": 13036
+    },
+    {
+      "path": "matin-review-tools.js",
+      "sha256": "33a14215a4034044971c2917a97f2f2763a8ba34938b47b31b1dfa8ec5c55abc",
+      "bytes": 10764
+    },
+    {
+      "path": "matin-roster-import.js",
+      "sha256": "17728a294fc61627c9f0b74d2190d3de18605d2f3202ca437e62eeb54a85ab62",
+      "bytes": 23296
+    },
+    {
+      "path": "matin-stage-feedback.js",
+      "sha256": "e772fe9f83db03b7f3c33dfa62c4ee94058db419584f0a46b0143b3cfab27d31",
+      "bytes": 2821
+    },
+    {
+      "path": "matin-student-account.js",
+      "sha256": "0e7c8920d4338c0ca1e0fe0b27e9c0089789d1c9aa4a38f68e24ac7a29520be2",
+      "bytes": 14078
+    },
+    {
+      "path": "matin-student-home.js",
+      "sha256": "1f1324760f5242853b57f4bfe8201a7de345e78ea58766e3ea9da0ff5b0abae7",
+      "bytes": 22437
+    },
+    {
+      "path": "matin-student-notifications.js",
+      "sha256": "cf2b1df8eaada193496f280c72d6bcb2e1a9a2bf82bbb394374a876e46041877",
+      "bytes": 19826
+    },
+    {
+      "path": "matin-student-pages.js",
+      "sha256": "8db2994bd1549e4e6a709dcc4c05b44966673f59e42dfe2bca642413222d3672",
+      "bytes": 16951
+    },
+    {
+      "path": "matin-student-review-notice.js",
+      "sha256": "524e275b22a5e07a88578b83b93e12bf3ba07c5b55966d51d0b2bf420e1ccf32",
+      "bytes": 7080
+    },
+    {
+      "path": "matin-student.js",
+      "sha256": "71b2214ff59a3ec9ae2a82bb7c0fa5db4256dae5930e03f36adfd2b6db2d5a65",
+      "bytes": 22749
+    },
+    {
+      "path": "matin-task-edit.js",
+      "sha256": "e432e8f67bf1ddd45e0bc3d4570ee8cd23876009f759f8fe6b29b37856d2ba6e",
+      "bytes": 11063
+    },
+    {
+      "path": "matin-task-reports.js",
+      "sha256": "779530aca15b036664446ba2cfa8f02ee80141d81bef99d43b7f7f98e200a418",
+      "bytes": 45004
+    },
+    {
+      "path": "matin-tasks.js",
+      "sha256": "d304b68b9939776116602cfedc58041af5f618536f831b2205cd397e9cf68616",
+      "bytes": 42287
+    },
+    {
+      "path": "matin-teacher-home.js",
+      "sha256": "3168d50f94521205b3c5eeb01a07f82ac9054bd6e8eab22a0b586861b6547776",
+      "bytes": 17027
+    },
+    {
+      "path": "matin-teacher-sidebar.css",
+      "sha256": "4a98a30c8c40e0e536ae61e463a98d025103616a91d52bdf32d648135ef5709d",
+      "bytes": 3914
+    },
+    {
+      "path": "matin-teacher-sidebar.js",
+      "sha256": "a2bb4ee857017020c4e68b241d206d93cc2e3cf07561f078492ef381de510d55",
+      "bytes": 6647
+    },
+    {
+      "path": "matin-teaching-archive.js",
+      "sha256": "52d211ed3f7fbcca2fa0e2fbe997af4bb1ca8eedc6a0e2c915b4cd878691330c",
+      "bytes": 32540
+    },
+    {
+      "path": "matin-teaching-plans.js",
+      "sha256": "3ec1cf937106a61c7198ffbdbb4fc6e1d23c530823ffbcee7e6ba173acedf8a3",
+      "bytes": 31431
+    },
+    {
+      "path": "teacher.html",
+      "sha256": "8d71c189e020d806f14f989e5b0734a8a71fd74f3aba527a5d19ef78efc2c077",
+      "bytes": 176543
+    },
+    {
+      "path": "teaching-archive.html",
+      "sha256": "aa88fb8d13bebdacce099b802fb7e38238f94feb97e67559a7ff0d0e9b7be5c1",
+      "bytes": 1290
+    }
+  ],
+  "functions": [
+    {
+      "name": "matin-courses",
+      "path": "supabase/functions/matin-courses/index.ts",
+      "sha256": "3648ac656c4262678569c76baf184003b93b7f33800b589f10db709f9408258f"
+    },
+    {
+      "name": "matin-chat",
+      "path": "supabase/functions/matin-chat/index.ts",
+      "sha256": "9dff987694f3e6ebce2a75b2344ac5454d2e15a6b3fd577259712bc702b6f9a8"
+    },
+    {
+      "name": "matin-attachments",
+      "path": "supabase/functions/matin-attachments/index.ts",
+      "sha256": "12e357f1b22c93fb634250fe32d6bdebbc3712df91702454b10e519c82081841"
+    }
+  ],
+  "sql": [
+    {
+      "path": "supabase/teacher-latest-report.sql",
+      "sha256": "6e0e728a1d2f6828ad03bb2b6ab96e720faee982d22facaf70677e0d9d65d03e"
+    },
+    {
+      "path": "supabase/deployment-check.sql",
+      "sha256": "ef93890b905c84060447f935c2328301b86cf40669d7d7d55226bc807efd28dd"
+    }
+  ]
+}
