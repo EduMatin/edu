@@ -295,7 +295,7 @@ button:active:not(:disabled){transform:scale(.985)}
 .ai-modal .field input:focus,.ai-modal .field textarea:focus,.ai-modal .field select:focus{border-color:#7f83f3;box-shadow:0 0 0 3px #777ef020}
 .ai-span-2{grid-column:1 / -1}.ai-detail{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .ai-material-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:9px 0}
-.ai-material-bar .hint{margin:0}.ai-checkbox{display:inline-flex;gap:8px;align-items:center;color:#47577a;font-size:12px;font-weight:650;cursor:pointer}
+.ai-material-bar .hint{margin:0}#ai-gen-file{max-width:100%;min-width:0;width:100%;padding:10px;border:1px solid #ccd6e9;border-radius:10px;background:#fff}#ai-gen-file:focus-visible{outline:2px solid #5855df;outline-offset:2px}#ai-gen-file-label{overflow-wrap:anywhere}.ai-checkbox{display:inline-flex;gap:8px;align-items:center;color:#47577a;font-size:12px;font-weight:650;cursor:pointer}
 .ai-modal .field input[type="checkbox"]{width:16px;height:16px;min-width:16px;flex:0 0 16px;padding:0}.ai-modal .field label.ai-checkbox{display:flex;align-items:center;gap:8px;margin:0}.ai-checkbox input{accent-color:#6358df;width:16px;height:16px}
 .ai-model-info{display:flex;gap:9px;align-items:center;margin-top:16px;background:#f1f3ff;border:1px solid #e1e5ff;color:#5262a2;padding:13px 15px;border-radius:12px;font-size:12px;line-height:1.65}
 .ai-modal-actions{position:sticky;bottom:-26px;z-index:3;background:#fff;border-top:1px solid #e5ebf7;padding:12px 0 5px;display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap;align-items:center;margin-top:16px}
@@ -314,8 +314,8 @@ button:active:not(:disabled){transform:scale(.985)}
 
 #teacher-home-modal p{margin:12px 0;line-height:1.8;color:#596a8b}#teacher-home-modal .actions{gap:8px;margin-top:12px;flex-wrap:wrap}#teacher-home-modal .modal{max-width:600px}
 </style>
-<link rel="stylesheet" href="./matin-teacher-sidebar.css?v=2026.11.01.3" />
-<meta name="matin-release" content="2026.11.01.3">
+<link rel="stylesheet" href="./matin-teacher-sidebar.css?v=2026.11.05.1" />
+<meta name="matin-release" content="2026.11.05.1">
 </head>
 <body>
 <header class="topbar" id="teacher-sidebar">
@@ -401,7 +401,7 @@ button:active:not(:disabled){transform:scale(.985)}
 <input id="import-file" type="file" accept="application/json,.json" hidden />
 <div id="toast" class="hidden" role="status"></div>
 <script src="./matin-config.js"></script>
-<script src="./matin-math.js?v=2026.11.01.3"></script>
+<script src="./matin-math.js?v=2026.11.05.1"></script>
 
 <div id="teacher-home-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="teacher-home-title">
  <div class="modal">
@@ -432,7 +432,7 @@ button:active:not(:disabled){transform:scale(.985)}
    <div class="field"><label for="ai-gen-title-input">课程 / 项目名称 *</label><input id="ai-gen-title-input" maxlength="140" placeholder="如：高阶控制算法实训助教" /></div>
    <div class="field"><label for="ai-gen-category">学科分类</label><input id="ai-gen-category" maxlength="80" placeholder="如：自动化/控制" /></div>
    <div class="field ai-span-2"><label for="ai-gen-objective">教学目标（推荐填写）</label><textarea id="ai-gen-objective" rows="2" placeholder="学生最终应掌握什么？例如：理解 SVPWM 死区效应及误差补偿方法。"></textarea></div>
-   <div class="field ai-span-2"><label for="ai-gen-material">课程资料 / 教材内容（可选）</label><textarea id="ai-gen-material" rows="5" maxlength="16000" placeholder="可直接粘贴课程大纲、教师讲义、实验任务书或核心知识点。资料越具体，生成的剧本越贴近课程。"></textarea><div class="ai-material-bar"><div class="ai-detail"><button type="button" id="ai-gen-file-trigger" class="btn tiny">⇧ 导入 TXT / Markdown / PDF</button><input id="ai-gen-file" type="file" accept=".txt,.md,.markdown,.pdf,text/plain,application/pdf" hidden /><span id="ai-gen-file-label" class="hint">也可以只输入课程名称生成</span></div><span class="hint" id="ai-gen-material-count">0 / 16000 字符</span></div></div>
+   <div class="field ai-span-2"><label for="ai-gen-material">课程资料 / 教材内容（可选）</label><textarea id="ai-gen-material" rows="5" maxlength="16000" placeholder="可直接粘贴课程大纲、教师讲义、实验任务书或核心知识点。资料越具体，生成的剧本越贴近课程。"></textarea><div class="ai-material-bar"><div class="ai-detail"><label for="ai-gen-file">导入 TXT / Markdown / PDF</label><input id="ai-gen-file" type="file" aria-describedby="ai-gen-file-help ai-gen-file-label" accept=".txt,.md,.markdown,.pdf,text/plain,application/pdf" /><span id="ai-gen-file-help" class="hint">点击“选择文件”。若未弹出窗口，请用 Edge 或 Chrome 打开本页；也可直接粘贴资料文字。</span><span id="ai-gen-file-label" class="hint">也可以只输入课程名称生成</span></div><span class="hint" id="ai-gen-material-count">0 / 16000 字符</span></div></div>
    <div class="field"><label for="ai-gen-count">生成节点数量（至少 2 个）</label><select id="ai-gen-count"><option value="2">2 个阶段</option><option value="3">3 个阶段</option><option value="4">4 个阶段</option><option value="5">5 个阶段</option><option value="6" selected>6 个阶段（推荐）</option><option value="8">8 个阶段</option><option value="10">10 个阶段</option></select></div>
    <div class="field"><label for="ai-gen-level">教学难度</label><select id="ai-gen-level"><option value="本科入门">本科入门</option><option selected value="本科进阶">本科进阶</option><option value="研究生研讨">研究生研讨</option><option value="职业技能实训">职业技能实训</option></select></div>
    <div class="field"><label for="ai-gen-roles">角色配置方式</label><select id="ai-gen-roles"><option value="auto">AI 自动安排角色</option><option value="multi" selected>多角色轮换（推荐）</option><option value="fixed">固定一位导师贯穿</option></select></div>
@@ -446,31 +446,31 @@ button:active:not(:disabled){transform:scale(.985)}
  </div>
 </div>
 
-<script src="./matin-class-ai.js?v=2026.11.01.3"></script>
-<script src="./matin-account.js?v=2026.11.01.3"></script>
-<script src="./matin-class-teaching.js?v=2026.11.01.3"></script>
-<script src="./matin-classes.js?v=2026.11.01.3"></script>
-<script src="./matin-roster-import.js?v=2026.11.01.3"></script>
-<script src="./matin-enrollment.js?v=2026.11.01.3"></script>
-<script src="./matin-report-drafts.js?v=2026.11.01.3"></script>
-<script src="./matin-review-tools.js?v=2026.11.01.3"></script>
+<script src="./matin-class-ai.js?v=2026.11.05.1"></script>
+<script src="./matin-account.js?v=2026.11.05.1"></script>
+<script src="./matin-class-teaching.js?v=2026.11.05.1"></script>
+<script src="./matin-classes.js?v=2026.11.05.1"></script>
+<script src="./matin-roster-import.js?v=2026.11.05.1"></script>
+<script src="./matin-enrollment.js?v=2026.11.05.1"></script>
+<script src="./matin-report-drafts.js?v=2026.11.05.1"></script>
+<script src="./matin-review-tools.js?v=2026.11.05.1"></script>
 <script src="matin-report-files.js?v=20261029"></script>
-<script src="./matin-task-reports.js?v=2026.11.01.3"></script>
-<script src="./matin-tasks.js?v=2026.11.01.3"></script>
-<script src="./matin-task-edit.js?v=2026.11.01.3"></script>
-<script src="./matin-course-outline.js?v=2026.11.01.3"></script>
-<script src="./matin-project-tasks.js?v=2026.11.01.3"></script>
-<script src="./matin-teacher-home.js?v=2026.11.01.3"></script>
-<script src="./matin-review-inbox.js?v=2026.11.01.3"></script>
-<script src="./matin-course-matrix.js?v=2026.11.01.3"></script>
-<script src="./matin-gradebook.js?v=2026.11.01.3"></script>
-<script src="./matin-teaching-plans.js?v=2026.11.01.3"></script>
-<script src="./matin-ai-usage.js?v=2026.11.01.3"></script>
-<script src="./matin-archive-format.js?v=2026.11.01.3"></script>
-<script src="./matin-archive-reader.js?v=2026.11.01.3"></script>
-<script src="./matin-teaching-archive.js?v=2026.11.01.3"></script>
-<script src="./matin-pedagogy.js?v=2026.11.01.3"></script>
-<script src="./matin-long-context.js?v=2026.11.01.3"></script>
+<script src="./matin-task-reports.js?v=2026.11.05.1"></script>
+<script src="./matin-tasks.js?v=2026.11.05.1"></script>
+<script src="./matin-task-edit.js?v=2026.11.05.1"></script>
+<script src="./matin-course-outline.js?v=2026.11.05.1"></script>
+<script src="./matin-project-tasks.js?v=2026.11.05.1"></script>
+<script src="./matin-teacher-home.js?v=2026.11.05.1"></script>
+<script src="./matin-review-inbox.js?v=2026.11.05.1"></script>
+<script src="./matin-course-matrix.js?v=2026.11.05.1"></script>
+<script src="./matin-gradebook.js?v=2026.11.05.1"></script>
+<script src="./matin-teaching-plans.js?v=2026.11.05.1"></script>
+<script src="./matin-ai-usage.js?v=2026.11.05.1"></script>
+<script src="./matin-archive-format.js?v=2026.11.05.1"></script>
+<script src="./matin-archive-reader.js?v=2026.11.05.1"></script>
+<script src="./matin-teaching-archive.js?v=2026.11.05.1"></script>
+<script src="./matin-pedagogy.js?v=2026.11.05.1"></script>
+<script src="./matin-long-context.js?v=2026.11.05.1"></script>
 <script>
 (async () => {
   'use strict';
@@ -1400,8 +1400,7 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
   $('ai-gen-replace').addEventListener('click',()=>applyAiDraft('replace'));
   $('ai-gen-material').addEventListener('input',()=>{aiGenMaterialCount();aiGenHidePreview();});
   ['ai-gen-title-input','ai-gen-category','ai-gen-objective','ai-gen-count','ai-gen-level','ai-gen-roles','ai-gen-role-names','ai-gen-branches'].forEach(id=>$(id).addEventListener('input',aiGenHidePreview));
-  $('ai-gen-file-trigger').addEventListener('click',()=>$('ai-gen-file').click());
-  $('ai-gen-file').addEventListener('change',async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;aiGenStatus('正在读取 '+file.name+' …');try{await importAiMaterial(file);}catch(err){aiGenStatus('读取资料失败：'+err.message,'error');}});
+  $('ai-gen-file').addEventListener('change',async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;$('ai-gen-file-label').textContent='正在读取 '+file.name+' …';aiGenStatus('正在读取 '+file.name+' …');try{await importAiMaterial(file);}catch(err){$('ai-gen-file-label').textContent='读取资料失败：'+err.message;aiGenStatus('读取资料失败：'+err.message,'error');}});
   $('new-project-button').addEventListener('click',newProject);
   $('publish-catalog-button').addEventListener('click',publishCatalog);
   $('project-search').addEventListener('input',e=>{dashboardSearch=e.target.value;renderDashboard();});
@@ -1509,8 +1508,8 @@ ${materials.slice(0,6200)||'未提供参考资料，请采用通用可靠的教�
   store();showView('dashboard');
 })().catch(error=>window.MatinAccount.fatal(error));
 </script>
-<script src="./matin-teacher-sidebar.js?v=2026.11.01.3"></script>
-<script src="./matin-release-info.js?v=2026.11.01.3"></script>
-<script src="./matin-release.js?v=2026.11.01.3"></script>
+<script src="./matin-teacher-sidebar.js?v=2026.11.05.1"></script>
+<script src="./matin-release-info.js?v=2026.11.05.1"></script>
+<script src="./matin-release.js?v=2026.11.05.1"></script>
 </body>
 </html>
