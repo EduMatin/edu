@@ -1,12 +1,12 @@
 {
-  "version": "2026.11.07.2",
+  "version": "2026.11.07.3",
   "backendVersion": "2026.11.07.2",
   "protocol": 1,
   "configuration": "matin-config.js is environment-specific and intentionally excluded",
   "files": [
     {
       "path": "index.html",
-      "sha256": "2bf1359492eab7bcfde058f63272a97b444c0b18a7e8727e2ba1ba2447e99288",
+      "sha256": "6d4b8be79f05050c631e0919805770298ac942c3d6cacc12f0108d890edfc9d8",
       "bytes": 94462
     },
     {
@@ -96,8 +96,8 @@
     },
     {
       "path": "matin-release-info.js",
-      "sha256": "12c5b31ce80146308eb3c7608e1d9ad86c4f7de9ff1c4aed0bfa4c30b53400c7",
-      "bytes": 5544
+      "sha256": "2c6fac857b727929e4f24f4369cdec6d107cdd6fd5641969d03055433402f451",
+      "bytes": 5625
     },
     {
       "path": "matin-release.js",
@@ -181,8 +181,18 @@
     },
     {
       "path": "matin-teacher-admin.js",
-      "sha256": "42047727c48d041110bb038d5037b21af2098fef16f3ec80dd03296f978540f3",
-      "bytes": 7575
+      "sha256": "80e3005fc54b6e11f16d426133502ecf7cb4d3a485a6c7863a790213fd136782",
+      "bytes": 4059
+    },
+    {
+      "path": "matin-teacher-entry.css",
+      "sha256": "86f4c1e2fec2f854b3fb6f61c98cc546702849a69a767bbc6faebe61797e2cb4",
+      "bytes": 2537
+    },
+    {
+      "path": "matin-teacher-entry.js",
+      "sha256": "f469c5fe4ed52f7c6141fd94b41c0e05eb24e5aaa02c672a4335575d4a922a7c",
+      "bytes": 9987
     },
     {
       "path": "matin-teacher-home.js",
@@ -215,13 +225,18 @@
       "bytes": 32280
     },
     {
+      "path": "matin-xlsx.js",
+      "sha256": "0a6cda8047f652726f628a2c9bdb78de26b6835d9917ab87a310a3f1b90bd96b",
+      "bytes": 963360
+    },
+    {
       "path": "teacher.html",
-      "sha256": "149e9bb3eac5caba433503061dc524472cfdb1ea46042151ec42df273ed58ad3",
+      "sha256": "cd8dcbc908977fc1cb9a4bb06e4dc1693758a3142fa8582000a4d807986285ba",
       "bytes": 180264
     },
     {
       "path": "teaching-archive.html",
-      "sha256": "f6e4a2c2202d90784f36aed11bda8fc97e701832c14c2d046b3cf4a51c2564dc",
+      "sha256": "dd6570da3b194ce342154cf50db4ce5044d600abd5839cd9d42d08e2768edc98",
       "bytes": 1290
     }
   ],
