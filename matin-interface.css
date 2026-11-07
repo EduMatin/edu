@@ -1,0 +1,88 @@
+/* Shared visual language; scoped to the two workspaces, not public dialogs or exports. */
+html[data-matin-ui]{--ui-primary:#554cce;--ui-ink:#253454;--ui-muted:#61708a;--ui-line:#e0e6f0;--ui-radius:14px}
+html[data-matin-ui] body{background:#f5f7fb;color:var(--ui-ink)}
+html[data-matin-ui] .btn{border-radius:9px;min-height:40px;box-shadow:none;transition:background .15s,border-color .15s}
+html[data-matin-ui] .btn.primary{background:var(--ui-primary);border-color:var(--ui-primary);color:#fff}
+html[data-matin-ui] .btn.primary:hover{background:#453daf;border-color:#453daf}
+html[data-matin-ui] :is(button,a,input,select,textarea,summary):focus-visible{outline:3px solid #9eabf4;outline-offset:3px}
+html[data-matin-ui] .ui-menu{position:relative;flex-shrink:0;border:0;padding:0;margin:0;background:transparent}
+html[data-matin-ui] .ui-menu>summary{cursor:pointer;list-style:none;padding:9px 13px;min-height:40px;border:1px solid var(--ui-line);border-radius:9px;background:#fff;font-size:13px;font-weight:600;color:#4d5d78;white-space:nowrap}
+html[data-matin-ui] .ui-menu>summary::-webkit-details-marker{display:none}
+html[data-matin-ui] .ui-menu>summary:after{content:'⌄';margin-left:10px}
+html[data-matin-ui] .ui-menu[open]>summary{background:#efedff;border-color:#c2bdf0;color:#4a42b3}
+html[data-matin-ui] .ui-menu-panel{position:absolute;right:0;top:calc(100% + 7px);min-width:208px;max-width:calc(100vw - 32px);background:#fff;border:1px solid var(--ui-line);border-radius:12px;padding:7px;box-shadow:0 12px 30px #23345a22;z-index:90;display:grid;gap:4px}
+html[data-matin-ui] .ui-menu-panel button{display:block;width:100%;text-align:left;border:0!important;background:#fff!important;color:#354565!important;padding:10px 12px!important;white-space:normal;min-height:42px}
+html[data-matin-ui] .ui-menu-panel button:hover{background:#f1f3fc!important}
+html[data-matin-ui=teacher] #teacher-account-bar{justify-content:space-between;background:#fff;border-bottom:1px solid var(--ui-line);padding-top:8px;padding-bottom:8px}
+html[data-matin-ui=teacher] #teacher-account-identity{font-size:13px}
+html[data-matin-ui=teacher] .container{padding-top:24px}
+html[data-matin-ui=teacher] .dash-kicker{margin-bottom:14px;color:#667391;letter-spacing:.08em}
+html[data-matin-ui=teacher] #teacher-todo-home{padding:18px 20px;margin:0 0 18px;border-radius:var(--ui-radius);box-shadow:none}
+html[data-matin-ui=teacher] #teacher-todo-home .th-head h2{font-size:19px}
+html[data-matin-ui=teacher] #teacher-todo-home>.th-hint:not(.th-status){display:none}
+html[data-matin-ui=teacher] #teacher-todo-home .th-metrics{margin-top:12px;gap:10px}
+html[data-matin-ui=teacher] #teacher-todo-home .th-metric{padding:12px 15px;border-radius:10px;background:#f6f6ff}
+html[data-matin-ui=teacher] #teacher-todo-home .th-metric strong{font-size:26px;margin:3px 0}
+html[data-matin-ui=teacher] #teacher-todo-home .th-metric.ui-zero{background:#fafbfe;border-color:#e8edf4}
+html[data-matin-ui=teacher] #teacher-todo-home .th-metric.ui-zero strong{color:#78849a}
+html[data-matin-ui=teacher] #teacher-todo-home .th-metric.th-urgent:not(.ui-zero){background:#fff6ea;border-color:#ebcba3}
+html[data-matin-ui=teacher] #teacher-todo-status{margin:10px 0 0;min-height:0;font-size:12px}
+html[data-matin-ui=teacher] .dashboard-hero{min-height:0;padding:22px 24px;background:linear-gradient(110deg,#f0edff,#eef4ff);border:1px solid #deddf5;border-radius:var(--ui-radius);box-shadow:none;overflow:visible;gap:18px;justify-content:space-between;flex-wrap:wrap}
+html[data-matin-ui=teacher] .dashboard-hero::after{display:none}
+html[data-matin-ui=teacher] .dashboard-hero .hero-copy{max-width:none;z-index:auto}
+html[data-matin-ui=teacher] .dashboard-hero h1{font-size:24px;line-height:1.4;color:#30365c;letter-spacing:0}
+html[data-matin-ui=teacher] .dashboard-hero p{margin:5px 0 0;font-size:13px;color:#5f6b86;max-width:none}
+html[data-matin-ui=teacher] .dashboard-hero .actions{display:flex;gap:9px}
+html[data-matin-ui=teacher] .library-head{margin-top:24px;margin-bottom:8px;gap:16px}
+html[data-matin-ui=teacher] .library-head h2{font-size:23px}
+html[data-matin-ui=teacher] .library-head .small-note{margin-top:6px;font-size:13px;color:var(--ui-muted)}
+html[data-matin-ui=teacher] .library-head .actions{display:flex;flex-wrap:wrap}
+html[data-matin-ui=teacher] #course-folders{gap:16px;margin:16px 0;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr))}
+html[data-matin-ui=teacher] .course-folder-card{padding:20px;border-radius:var(--ui-radius);border:1px solid var(--ui-line);box-shadow:0 3px 12px #283d7206;border-top:3px solid #b5adf0;display:flex;flex-direction:column}
+html[data-matin-ui=teacher] .course-folder-card h3{font-size:19px;line-height:1.5;margin:0 0 8px}
+html[data-matin-ui=teacher] .course-folder-card p{font-size:13px;color:var(--ui-muted)}
+html[data-matin-ui=teacher] .course-folder-card>.actions{padding-top:16px;margin-top:auto}
+html[data-matin-ui=teacher] .course-folder-card>.actions .btn:not(.primary){padding:8px 10px;color:#65728b;background:transparent;border-color:transparent}
+html[data-matin-ui=teacher] .project-card{min-height:0;border-radius:var(--ui-radius);box-shadow:none}
+html[data-matin-ui=teacher] .project-card:hover{transform:none;box-shadow:0 5px 20px #263a6710}
+html[data-matin-ui=teacher] .project-card .project-head{min-height:130px}
+html[data-matin-ui=teacher] .ui-overview{margin:24px 0;color:var(--ui-muted);font-size:13px;border-top:1px solid var(--ui-line);padding-top:15px}
+html[data-matin-ui=teacher] .ui-overview>summary{cursor:pointer;width:fit-content;padding:6px 0}
+html[data-matin-ui=teacher] .ui-overview .stats-grid{margin:14px 0;gap:12px}
+html[data-matin-ui=teacher] .ui-overview .metric-card{min-height:72px;padding:14px;border-radius:12px;box-shadow:none}
+html[data-matin-ui=teacher] .ui-overview .metric-value{font-size:22px}
+html[data-matin-ui=teacher] .ui-overview .metric-foot{display:none}
+html[data-matin-ui=student] .page-intro{margin-bottom:20px}
+html[data-matin-ui=student] .page-intro h1{font-size:28px;letter-spacing:0}
+html[data-matin-ui=student] .hero{min-height:0;padding:24px 28px;border-radius:var(--ui-radius);box-shadow:none}
+html[data-matin-ui=student] .hero h2{font-size:25px;margin:6px 0}
+html[data-matin-ui=student] .hero-art,html[data-matin-ui=student] .hero-badge{display:none}
+html[data-matin-ui=student] .course-card{border:1px solid var(--ui-line);border-radius:var(--ui-radius);box-shadow:none;overflow:hidden}
+html[data-matin-ui=student] .course-card .course-cover{min-height:115px;padding:20px;background:linear-gradient(110deg,#efedff,#eef4ff);color:#303b66}
+html[data-matin-ui=student] .course-cover strong{font-size:20px;line-height:1.5}
+html[data-matin-ui=student] .course-cover .cover-tag{background:#ffffffb3;color:#5e548f}
+html[data-matin-ui=student] .course-body{padding:18px 20px}
+html[data-matin-ui=student] .course-desc{color:var(--ui-muted);font-size:14px}
+html[data-matin-ui=student] #student-home .home-counts{gap:10px;margin:12px 0}
+html[data-matin-ui=student] #student-home .home-counts button{padding:13px 16px;border-radius:12px}
+html[data-matin-ui=student] #student-home .home-counts strong{font-size:26px;margin:3px 0}
+html[data-matin-ui=student] #student-home .home-panel{border-radius:var(--ui-radius);padding:20px}
+html[data-matin-ui=student] #student-home .ui-resume-panel{margin-bottom:18px;border-color:#cfc9f0;background:linear-gradient(110deg,#f6f4ff,#fff)}
+html[data-matin-ui=student] #home-continue{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+html[data-matin-ui=student] #home-continue .home-resume{border:0;padding:12px 16px;background:#fff;border-radius:10px}
+html[data-matin-ui=student] #home-continue .home-empty{grid-column:1/-1;padding:12px 0}
+html[data-matin-ui=student] .home-task-row h4,html[data-matin-ui=student] .home-resume h4{font-size:15px}
+html[data-matin-ui=student] .home-due.overdue{background:#fff3e5;padding:3px 8px;border-radius:5px;width:fit-content}
+html[data-matin-ui=student] .student-task-card{border-radius:var(--ui-radius);border-color:var(--ui-line);box-shadow:none;border-left:3px solid #aaa4e4}
+html[data-matin-ui=student] .student-task-card[data-review-state=revision_required]{border-left-color:#cc8737}
+html[data-matin-ui=student] .student-task-card[data-review-state=passed]{border-left-color:#369474}
+html[data-matin-ui=student] .student-task-card h3{font-size:18px;line-height:1.5}
+html[data-matin-ui=student] .student-task-source{color:var(--ui-muted)}
+html[data-matin-ui=student] .student-task-actions .btn:not(.primary){background:#f7f8fc;color:#52607d}
+html[data-matin-ui=student] .student-task-counts button{border-radius:12px;padding:13px 16px}
+@media(max-width:800px){html[data-matin-ui=teacher] .dashboard-hero{padding:18px}html[data-matin-ui=student] #home-continue{grid-template-columns:1fr}html[data-matin-ui=student] .home-aside{grid-template-columns:1fr}}
+@media(max-width:600px){html[data-matin-ui] .btn{min-height:44px}html[data-matin-ui] .ui-menu>summary{min-height:44px;padding:11px 12px}html[data-matin-ui=teacher] #teacher-account-bar{padding:10px 14px;gap:8px}html[data-matin-ui=teacher] #teacher-account-identity{flex-basis:100%}html[data-matin-ui=teacher] #teacher-account-menu{margin-left:auto}html[data-matin-ui=teacher] #teacher-todo-home{padding:14px}html[data-matin-ui=teacher] #teacher-todo-home .th-metric{padding:10px}html[data-matin-ui=teacher] #teacher-todo-home .th-metric small{font-size:11px}html[data-matin-ui=teacher] .dashboard-hero h1{font-size:21px}html[data-matin-ui=teacher] .dashboard-hero .actions{width:100%;gap:8px}html[data-matin-ui=teacher] .dashboard-hero .actions>.primary{width:100%}html[data-matin-ui=teacher] .library-head .actions{width:100%}html[data-matin-ui=teacher] .search-box{width:100%;min-width:0}html[data-matin-ui=teacher] .course-folder-card{padding:18px}html[data-matin-ui=student] #student-home .home-panel{padding:16px}html[data-matin-ui=student] #student-home .home-counts button{padding:11px 12px}html[data-matin-ui=student] .student-task-counts button{padding:10px 6px}html[data-matin-ui=student] .student-task-actions{gap:8px}html[data-matin-ui=student] .student-task-actions .primary{flex:1}html[data-matin-ui=student] .page-intro h1{font-size:25px}}
+@media(prefers-reduced-motion:reduce){html[data-matin-ui] .btn,html[data-matin-ui] .project-card,html[data-matin-ui] .course-card{transition:none;transform:none}}
+
+html[data-matin-ui] .btn:hover{transform:none}html[data-matin-ui=student] .course-card:hover{transform:none}
+@media(max-width:600px){html[data-matin-ui=student] .page-intro .eyebrow{display:none}html[data-matin-ui=student] .container{padding-top:16px}html[data-matin-ui=student] .page-intro{margin-bottom:14px}html[data-matin-ui=student] #student-home .home-heading h2{font-size:18px}html[data-matin-ui=student] #student-home .home-heading-actions{gap:8px}}

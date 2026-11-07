@@ -133,7 +133,7 @@
   for(const t of tasks){
    const reports=studentState().reports_version===1;
    if(pendingOnly&&(t.class_ended_at||t.status==='submitted'||!reports&&t.status==='completed'))continue;
-   const card=document.createElement('article');card.className='student-task-card'+(compact?' student-task-compact':'');card.dataset.taskId=t.id;
+   const card=document.createElement('article');card.className='student-task-card'+(compact?' student-task-compact':'');card.dataset.taskId=t.id;card.dataset.reviewState=t.review_status||t.status;
    const tag=document.createElement('span');tag.className='student-task-tag';tag.textContent=t.class_ended_at?'已结束教学 · 只读档案':'班级任务';
    const h=document.createElement('h3');h.textContent=t.title;
    const source=document.createElement('p');source.className='student-task-source';

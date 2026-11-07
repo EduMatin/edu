@@ -1,13 +1,13 @@
 {
-  "version": "2026.11.07.5",
+  "version": "2026.11.07.6",
   "backendVersion": "2026.11.07.5",
   "protocol": 1,
   "configuration": "matin-config.js is environment-specific and intentionally excluded",
   "files": [
     {
       "path": "index.html",
-      "sha256": "9ccf6c7bbabdfd82112de53350a93ff9ba1608f39b9f52b381b46f7d1a4a3ea6",
-      "bytes": 94462
+      "sha256": "bbb3de503ef048db2504361fbf74425909f59ad339ccbdc8b7e3846e7cd9f8a2",
+      "bytes": 94620
     },
     {
       "path": "matin-account.js",
@@ -51,8 +51,8 @@
     },
     {
       "path": "matin-course-outline.js",
-      "sha256": "e39ea028ee8bcce5b01e8082b0c858ef79a346adb576fe96e7fc5e8a655c22e7",
-      "bytes": 11627
+      "sha256": "8ccd3bd668ca539ae82b54cc560e14866efb74fa25c6e28070c4f69b92213be7",
+      "bytes": 11671
     },
     {
       "path": "matin-enrollment.js",
@@ -68,6 +68,16 @@
       "path": "matin-gradebook.js",
       "sha256": "153923ffae4042b5862735e46981d0b3131e81c5a7dc9b4819b80ed1ed6af418",
       "bytes": 29581
+    },
+    {
+      "path": "matin-interface.css",
+      "sha256": "91c91088a0e648c333b4bdc652fdc6eaa09b33b28e67f92c6da26fba56c82fd3",
+      "bytes": 10906
+    },
+    {
+      "path": "matin-interface.js",
+      "sha256": "0a59e45184c797a2e65b2052944ee6d9c7ff00e39cdfe0b665f036710c320d19",
+      "bytes": 1849
     },
     {
       "path": "matin-learning-sync.js",
@@ -96,8 +106,8 @@
     },
     {
       "path": "matin-release-info.js",
-      "sha256": "cebd31966bf52982cf30779b9137807b2eb5cac05cc0c6ffda869b9455364869",
-      "bytes": 5714
+      "sha256": "91313a8c56e011b2d57cbe638507eb316a23acc2808b63a2703b73b05344fc8b",
+      "bytes": 5766
     },
     {
       "path": "matin-release.js",
@@ -141,8 +151,8 @@
     },
     {
       "path": "matin-student-home.js",
-      "sha256": "1f1324760f5242853b57f4bfe8201a7de345e78ea58766e3ea9da0ff5b0abae7",
-      "bytes": 22437
+      "sha256": "04adf4be3e60329fe65de5df28c5d798b1936dd98fde39b643abc9ce374352c3",
+      "bytes": 22598
     },
     {
       "path": "matin-student-notifications.js",
@@ -176,8 +186,8 @@
     },
     {
       "path": "matin-tasks.js",
-      "sha256": "d304b68b9939776116602cfedc58041af5f618536f831b2205cd397e9cf68616",
-      "bytes": 42287
+      "sha256": "ceb07cea0a5ac3520148a363472797991d9285b0e1ae84bc617d01c7183b3a6c",
+      "bytes": 42338
     },
     {
       "path": "matin-teacher-admin.js",
@@ -231,12 +241,12 @@
     },
     {
       "path": "teacher.html",
-      "sha256": "e992040afb1b3c2bde3795d06b7813a26a4ad8401c318a3c251f650edd0451f9",
-      "bytes": 180459
+      "sha256": "150750319fd1a48affabc83f6f109199aaa91f5ffe88d1ee77f88c1307d9ea69",
+      "bytes": 179802
     },
     {
       "path": "teaching-archive.html",
-      "sha256": "d173d5882534aaa445a5a1544701f2ecde0b5838f8e2b533c16f849ca13395b7",
+      "sha256": "cabc4d9e930e9a1d087f3da5c794ebf53d472c85af67331369ef77c2a563a4f4",
       "bytes": 1290
     }
   ],

@@ -14,6 +14,7 @@
  <div class="home-aside"><section class="home-panel" aria-labelledby="home-continue-title"><h3 id="home-continue-title" tabindex="-1">继续学习</h3><p class="home-footnote">最近学习或需修改重交的班级任务</p><div id="home-continue"></div></section>
  <section class="home-panel" aria-labelledby="home-review-title"><div class="home-panel-title"><h3 id="home-review-title" tabindex="-1">班级与入班状态</h3><button type="button" class="home-link" id="home-classes">我的班级 ↗</button></div><div id="home-reviews"></div><button type="button" class="home-link" id="home-more-reviews" hidden>展开全部班级</button></section></div></div>`;
  document.querySelector('#screen-courses .page-intro').after(root);
+ const resumePanel=root.querySelector('.home-aside>section');resumePanel.classList.add('ui-resume-panel');root.querySelector('#home-status').after(resumePanel);
  const style=document.createElement('style');style.textContent=`
  #student-home[hidden]{display:none!important}#student-home{margin:0 0 26px;scroll-margin-top:92px}#student-home h2{font-size:23px;margin:0 0 5px}#student-home h3{font-size:17px;margin:0}#student-home p{line-height:1.65}#student-home button{font:inherit}#student-home button:disabled{cursor:not-allowed}
  .home-heading,.home-panel-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.home-heading-actions{display:flex;flex-wrap:wrap;gap:10px}.home-heading p{margin:0;color:#71809b;font-size:13px}#home-status{font-size:13px;color:#536b91;margin:10px 0;min-height:21px}#home-status.home-error{color:#944b13}
