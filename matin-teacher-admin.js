@@ -28,7 +28,9 @@
   const api=(op,data={})=>window.MatinAccount.api({action:'teacher_admin',op,data});
   let me;try{me=await api('me');}catch{return;}if(!me.is_admin)return;
   const open=node('button','教师管理');open.type='button';open.className='btn';open.id='teacher-admin-open';document.querySelector('.nav').append(open);
-  window.MatinTeacherEntry.mount(open,api);
+  // Keep the entry actionable even if a deployment omitted its UI dependency.
+  open.onclick=()=>alert('教师管理文件未加载完整，请刷新页面；如仍失败，请运行部署检查并核对上传文件。');
+  if(window.MatinTeacherEntry?.mount)window.MatinTeacherEntry.mount(open,api);
  }
  window.MatinTeacherAdmin={loginHelp,install};
 })();
