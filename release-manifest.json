@@ -1,12 +1,12 @@
 {
-  "version": "2026.11.07.6",
+  "version": "2026.11.08.1",
   "backendVersion": "2026.11.07.5",
   "protocol": 1,
   "configuration": "matin-config.js is environment-specific and intentionally excluded",
   "files": [
     {
       "path": "index.html",
-      "sha256": "bbb3de503ef048db2504361fbf74425909f59ad339ccbdc8b7e3846e7cd9f8a2",
+      "sha256": "0c63476a3f6a97cace2c8263118d3060751c6f50707b24d7b9d903602c7158d3",
       "bytes": 94620
     },
     {
@@ -106,8 +106,8 @@
     },
     {
       "path": "matin-release-info.js",
-      "sha256": "91313a8c56e011b2d57cbe638507eb316a23acc2808b63a2703b73b05344fc8b",
-      "bytes": 5766
+      "sha256": "1079e109d150726c9f12d1d0db794b354e0c12e464fe58359af16ce516163136",
+      "bytes": 5837
     },
     {
       "path": "matin-release.js",
@@ -216,8 +216,18 @@
     },
     {
       "path": "matin-teacher-sidebar.js",
-      "sha256": "a4e79288d847a91504059b705b9df2255dbd9b37d2e46f4a4ac25d5a28234f1f",
-      "bytes": 6809
+      "sha256": "76a738d1868024013b6bb8a45eed94277f37b5482fba608b54061c4177f3a032",
+      "bytes": 6926
+    },
+    {
+      "path": "matin-teaching-analytics.css",
+      "sha256": "098d6cb03b17180d74c5672beebcd893aead1346c0b0a37a98468be07dff49ee",
+      "bytes": 3421
+    },
+    {
+      "path": "matin-teaching-analytics.js",
+      "sha256": "ec6906b235c0dcb86054d58ff4a542b550459699f2d2cc6ab43b21bf85f95001",
+      "bytes": 14674
     },
     {
       "path": "matin-teaching-archive.js",
@@ -241,12 +251,12 @@
     },
     {
       "path": "teacher.html",
-      "sha256": "150750319fd1a48affabc83f6f109199aaa91f5ffe88d1ee77f88c1307d9ea69",
-      "bytes": 179802
+      "sha256": "0ae8372ba968a14bbb8d05ab9f704607d20d402fdf5670790cfb64570f00dff0",
+      "bytes": 180018
     },
     {
       "path": "teaching-archive.html",
-      "sha256": "cabc4d9e930e9a1d087f3da5c794ebf53d472c85af67331369ef77c2a563a4f4",
+      "sha256": "7660a8b27a3eb7423307d1e8855bdd0c26645c1c585a2a315ff8677d1e559d4c",
       "bytes": 1290
     }
   ],
