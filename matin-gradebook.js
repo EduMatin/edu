@@ -96,5 +96,5 @@
  const entry=document.createElement('button');entry.id='student-grades-open';entry.className='btn';entry.textContent='我的成绩';entry.onclick=()=>open();
  function mountStudent(){const bar=document.getElementById('student-bar');if(identity(false)&&bar)bar.insertBefore(entry,document.getElementById('student-logout'));else entry.remove();if(current&&!valid(current))dismiss(true);}
  for(const event of ['matin-student-auth-changed','matin-student-navigation-rendered','hashchange'])window.addEventListener(event,mountStudent);
- window.MatinGradebook={init(opts){if(!opts.account)return;account=window.MatinAccount;beforeOpen=opts.beforeOpen;const nav=document.createElement('button');nav.id='course-gradebook-open';nav.className='btn';nav.textContent='课程成绩册';nav.onclick=()=>open({teacher:true});document.querySelector('.nav')?.append(nav);},open:opts=>open({...opts,teacher:true})};
+ window.MatinGradebook={openStudent:()=>open(),init(opts){if(!opts.account)return;account=window.MatinAccount;beforeOpen=opts.beforeOpen;const nav=document.createElement('button');nav.id='course-gradebook-open';nav.className='btn';nav.textContent='课程成绩册';nav.onclick=()=>open({teacher:true});document.querySelector('.nav')?.append(nav);},open:opts=>open({...opts,teacher:true})};
 })();

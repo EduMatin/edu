@@ -57,9 +57,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
  .chat-shell>.chat-form{padding:12px}
 }
 </style>
-<meta name="matin-release" content="2026.11.08.1">
-<link rel="stylesheet" href="./matin-interface.css?v=2026.11.08.1">
-<script defer src="./matin-interface.js?v=2026.11.08.1"></script>
+<meta name="matin-release" content="2026.11.08.2">
+<link rel="stylesheet" href="./matin-interface.css?v=2026.11.08.2">
+<script defer src="./matin-interface.js?v=2026.11.08.2"></script>
 </head>
 <body>
 <header class="header"><a href="./index.html" class="brand"><div class="brand-icon">M</div><div><strong>Matin <small>AI Studio</small></strong><div class="brand-sub">学生学习中心 · STUDENT CAMPUS</div></div></a><div class="header-right"><span class="header-note">发现学科 · 探索实训 · AI 引导</span><button class="btn" type="button" id="settings-open">✦ AI 模型设置</button></div></header>
@@ -79,26 +79,28 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 <div id="settings-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title"><div class="modal"><h2 id="settings-title">✦ 连接 AI 导师</h2><p>登录并通过入班审核后，可自动使用班级 AI。也可选择个人模型，或使用离线剧本。</p><div class="field"><label for="provider">选择 AI 服务</label><select id="provider"><option value="offline">离线剧本（免费，不调用 AI）</option><option value="gemini">Google Gemini · 自带 API Key</option><option value="deepseek">DeepSeek · 自带 API Key</option><option value="qwen">通义千问 · 自带 API Key</option><option value="classroom_auto">班级 AI · 按账号自动接入（推荐）</option><option value="classroom">独立旧版后台 · 访问码（高级）</option><option value="custom">自定义 OpenAI 兼容接口</option></select></div><div id="api-fields"><div class="field"><label for="api-model">模型名称</label><input id="api-model" type="text" placeholder="gemini-3.5-flash-lite" /></div><div class="field"><label for="api-key">临时 API Key（不会持久存储）</label><input id="api-key" type="password" autocomplete="off" placeholder="粘贴你自己的密钥" /></div><div class="field hidden" id="custom-wrap"><label for="custom-url">API Base URL</label><input id="custom-url" type="url" placeholder="https://provider.example/v1" /></div></div><p id="class-auto-note" class="hidden">在班级任务中自动确认使用权限，无需填写地址、访问码或个人密钥。请先完成邮箱验证及入班审核；结课后停止接入。公开项目须属于已加入的教学中班级；多个班级时按班级名称优先归入首个符合条件的班级。</p><div id="class-fields" class="hidden"><div class="field"><label for="class-url">教师后台地址</label><input id="class-url" type="url" placeholder="https://your-matin-api.onrender.com" /></div><div class="field"><label for="class-code">课堂访问码</label><input id="class-code" type="password" autocomplete="off" placeholder="向教师索取" /></div></div><div class="modal-footer"><button type="button" class="btn" id="settings-cancel">取消</button><button type="button" class="btn" id="settings-test">测试连接</button><button type="button" class="btn primary" id="settings-save">保存设置</button></div></div></div>
 <div id="toast" class="toast hidden" role="status"></div>
 <script src="./matin-config.js"></script>
-<script src="./matin-math.js?v=2026.11.08.1"></script>
-<script src="./matin-pedagogy.js?v=2026.11.08.1"></script>
-<script src="./matin-long-context.js?v=2026.11.08.1"></script>
-<script src="./matin-stage-feedback.js?v=2026.11.08.1"></script>
-<script src="./matin-formula-input.js?v=2026.11.08.1"></script>
-<script src="./matin-class-ai.js?v=2026.11.08.1"></script>
-<script src="./matin-teaching-files.js?v=2026.11.08.1"></script>
-<script src="./matin-student.js?v=2026.11.08.1"></script>
-<script src="./matin-student-account.js?v=2026.11.08.1"></script>
-<script src="./matin-report-drafts.js?v=2026.11.08.1"></script>
+<script src="./matin-math.js?v=2026.11.08.2"></script>
+<script src="./matin-pedagogy.js?v=2026.11.08.2"></script>
+<script src="./matin-long-context.js?v=2026.11.08.2"></script>
+<script src="./matin-stage-feedback.js?v=2026.11.08.2"></script>
+<script src="./matin-formula-input.js?v=2026.11.08.2"></script>
+<script src="./matin-class-ai.js?v=2026.11.08.2"></script>
+<script src="./matin-teaching-files.js?v=2026.11.08.2"></script>
+<script src="./matin-student.js?v=2026.11.08.2"></script>
+<script src="./matin-student-account.js?v=2026.11.08.2"></script>
+<script src="./matin-report-drafts.js?v=2026.11.08.2"></script>
 <script src="matin-report-files.js?v=20261029"></script>
-<script src="./matin-task-reports.js?v=2026.11.08.1"></script>
-<script src="./matin-tasks.js?v=2026.11.08.1"></script>
-<script src="./matin-student-review-notice.js?v=2026.11.08.1"></script>
-<script src="./matin-task-edit.js?v=2026.11.08.1"></script>
-<script src="./matin-learning-sync.js?v=2026.11.08.1"></script>
-<script src="./matin-student-home.js?v=2026.11.08.1"></script>
-<script src="./matin-student-pages.js?v=2026.11.08.1"></script>
-<script src="./matin-student-notifications.js?v=2026.11.08.1"></script>
-<script src="./matin-gradebook.js?v=2026.11.08.1"></script>
+<script src="./matin-task-reports.js?v=2026.11.08.2"></script>
+<script src="./matin-tasks.js?v=2026.11.08.2"></script>
+<script src="./matin-student-review-notice.js?v=2026.11.08.2"></script>
+<script src="./matin-task-edit.js?v=2026.11.08.2"></script>
+<script src="./matin-learning-sync.js?v=2026.11.08.2"></script>
+<script src="./matin-student-home.js?v=2026.11.08.2"></script>
+<script src="./matin-student-pages.js?v=2026.11.08.2"></script>
+<script src="./matin-student-notifications.js?v=2026.11.08.2"></script>
+<script src="./matin-gradebook.js?v=2026.11.08.2"></script>
+<link rel="stylesheet" href="./matin-student-growth.css?v=2026.11.08.2">
+<script src="./matin-student-growth.js?v=2026.11.08.2"></script>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -447,7 +449,7 @@ window.MatinStudentHome?.configure({refresh:()=>loadCatalog({refreshMembership:t
 Promise.resolve(window.MatinStudent?.ready(studentRefresh)).then(loadCatalog).catch(e=>notify('学生账号初始化失败：'+e.message));
 })();
 </script>
-<script src="./matin-release-info.js?v=2026.11.08.1"></script>
-<script src="./matin-release.js?v=2026.11.08.1"></script>
+<script src="./matin-release-info.js?v=2026.11.08.2"></script>
+<script src="./matin-release.js?v=2026.11.08.2"></script>
 </body>
 </html>
