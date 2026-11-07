@@ -7,6 +7,9 @@
   const dialog=el('dialog',undefined,'teacher-entry');dialog.id='teacher-admin-dialog';dialog.setAttribute('aria-label','教师管理');document.body.append(dialog);
   const head=el('header'),close=button('关闭',()=>dialog.close());head.append(el('h2','教师管理'),close);
   const intro=el('p','逐条填写教师信息，或从 Excel 批量导入。核对名单后发送邀请，老师通过邮件设置密码。','te-muted');
+  const scope=el('p','平台管理员可管理教师账号；课程、班级和报告仍按各教师账号独立保存。','te-muted');
+  const stats=el('div',undefined,'te-stats');stats.setAttribute('aria-label','教师账号统计');stats.setAttribute('aria-live','polite');stats.textContent='正在加载教师统计…';
+  const statsHelp=el('p','总数包含管理员；待激活包含过期邀请，已停用包含已取消的邀请。','te-muted');
   const toolbar=el('div',undefined,'te-toolbar');
   const add=button('新增一行',()=>{if(rows.length>=MAX){status.textContent='每份名单最多200位，请分开录入。';return;}rows.push({email:'',name:'',department:''});render();queue.lastElementChild.querySelector('input').focus();});
   const template=button('下载 Excel 模板',()=>{try{const wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet([['邮箱','姓名','专业']]);ws['!cols']=[{wch:36},{wch:18},{wch:24}];XLSX.utils.book_append_sheet(wb,ws,'教师名单');XLSX.writeFile(wb,'教师录入模板.xlsx');}catch{status.textContent='模板生成失败，请刷新页面后重试。';}});
@@ -19,7 +22,7 @@
   const check=button('检查名单',()=>{validate();status.textContent='已检查，请查看每行结果；可以直接修改错误信息。';});
   const actions=el('div',undefined,'te-toolbar');actions.append(check,send);
   const listHead=el('div',undefined,'te-list-head'),refresh=button('刷新教师状态',()=>run(load));listHead.append(el('h3','已有教师'),refresh);
-  const list=el('div',undefined,'te-directory');dialog.append(head,intro,toolbar,help,queue,summary,actions,status,listHead,list);
+  const list=el('div',undefined,'te-directory');dialog.append(head,scope,stats,statsHelp,intro,toolbar,help,queue,summary,actions,status,listHead,list);
   let rows=[{email:'',name:'',department:''}],directory=[],busy=false,loaded=false;
   function button(text,fn){const b=el('button',text,'te-button');b.type='button';b.onclick=fn;return b;}
   function hasData(row){return ['email','name','department'].some(k=>row[k].trim());}
@@ -47,10 +50,13 @@
   function lock(){dialog.querySelectorAll('button,input').forEach(n=>n.disabled=busy);rows.filter(r=>r.sent).forEach(r=>r.feedback.closest('.te-row').querySelectorAll('input').forEach(n=>n.disabled=true));}
   async function run(fn){if(busy)return;busy=true;lock();try{await fn();}catch(e){status.textContent=e.message||'操作失败，请重试。';}finally{busy=false;lock();}}
   dialog.addEventListener('cancel',e=>{if(busy)e.preventDefault();});
-  async function load(){const result=await api('list');directory=result.rows||[];loaded=true;list.replaceChildren();if(!directory.length)list.append(el('p','暂无教师。'));
+  async function load(){let result;try{result=await api('list');}catch(e){stats.textContent='教师统计刷新失败，请重试。';throw e;}directory=result.rows||[];loaded=true;list.replaceChildren();stats.replaceChildren();
+   for(const [title,state]of [['教师总数',null],['已激活','active'],['待激活','pending'],['已停用','disabled']]){const card=el('div',undefined,'te-stat');card.append(el('span',title),el('strong',String(state?directory.filter(r=>r.state===state).length:directory.length)));stats.append(card);}
+   if(!directory.length)list.append(el('p','暂无教师。'));
    for(const r of directory){const item=el('div',undefined,'te-person'),info=el('div');const expired=r.state==='pending'&&Date.parse(r.expires_at)<Date.now();info.append(el('strong',(r.display_name||'未填写姓名')+' · '+r.email),el('p',(r.department||'未填写专业')+' · '+(expired?'邀请已过期':{pending:'待激活',active:'已激活',disabled:'已停用 / 邀请已取消'}[r.state])));item.append(info);
     function action(label,op){item.append(button(label,()=>run(async()=>{if(!confirm(label+'：'+r.email+'？'))return;const result=await api(op,{email:r.email,name:r.display_name,department:r.department});status.textContent=result.message||'操作完成。';await load();})));}
-    if(r.state==='pending'||(r.state==='disabled'&&!r.user_id))action('重新邀请','invite');if(r.state!=='disabled')action(r.state==='pending'?'取消邀请':'停用','disable');else if(r.user_id)action('恢复使用','enable');list.append(item);
+    if(r.user_id&&r.user_id===window.MatinAccount?.userId){item.append(el('span','平台管理员 · 当前账号','te-admin-tag'));}
+    else{if(r.state==='pending'||(r.state==='disabled'&&!r.user_id))action('重新邀请','invite');if(r.state!=='disabled')action(r.state==='pending'?'取消邀请':'停用','disable');else if(r.user_id)action('恢复使用','enable');}list.append(item);
    }validate();
   }
   async function sendBatch(){if(!loaded)await load();const {valid,invalid}=validate();if(invalid)throw Error('请先修改或移除标红的记录，再发送邀请。');if(!valid)throw Error('请先填写或导入教师名单。');

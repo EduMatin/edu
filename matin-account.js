@@ -34,7 +34,7 @@
     if(document.getElementById('account-screen'))return;
     const style=document.createElement('style');style.textContent=`.account-locked body>*:not(#account-screen):not(script):not(style){display:none!important}#account-screen{min-height:100vh;display:grid;place-items:center;background:#f3f6fb;padding:24px}#account-form{width:min(430px,100%);background:white;border:1px solid #dce3f1;border-radius:24px;padding:34px;box-shadow:0 20px 60px #24386512}#account-form h1{color:#203255;font-size:27px}#account-form label{display:block;margin:18px 0 8px}#account-form input{width:100%;padding:13px;border:1px solid #ccd5e7;border-radius:10px}#account-form button{margin-top:20px;width:100%;padding:13px;background:#4e55dc;color:white;border:0;border-radius:10px}#account-status{white-space:pre-wrap;color:#a43b42;line-height:1.7}#teacher-account-bar{margin-left:244px;display:flex;gap:12px;align-items:center;padding:10px 24px;background:#eef2ff;flex-wrap:wrap}@media(max-width:1200px){#teacher-account-bar{margin-left:0}}#teacher-account-bar button{padding:7px 12px;border:1px solid #cdd6f0;background:white;border-radius:8px}`;
     document.head.append(style);
-    const root=document.createElement('div');root.id='account-screen';root.innerHTML=`<form id="account-form"><h1>登录教师工作台</h1><p>登录后查看和编辑自己的云端课程。</p><label for="teacher-email">邮箱</label><input id="teacher-email" type="email" autocomplete="username" required><label for="teacher-password">密码</label><input id="teacher-password" type="password" autocomplete="current-password" required><button id="teacher-login" type="submit">登录</button><p id="account-status" role="status"></p><small>账号由平台管理员邀请开通。首次使用请从邀请邮件设置密码。</small></form>`;document.body.append(root);
+    const root=document.createElement('div');root.id='account-screen';root.innerHTML=`<form id="account-form"><h1>登录教师工作台</h1><p>教师与管理员统一登录，登录后按账号权限进入工作台。</p><label for="teacher-email">邮箱</label><input id="teacher-email" type="email" autocomplete="username" required><label for="teacher-password">密码</label><input id="teacher-password" type="password" autocomplete="current-password" required><button id="teacher-login" type="submit">登录</button><p id="account-status" role="status"></p><small>账号由平台管理员邀请开通。首次使用请从邀请邮件设置密码。</small></form>`;document.body.append(root);
   }
   async function ready(){
     if(!enabled)return null;
@@ -50,7 +50,7 @@
   function unlock(){
     document.getElementById('account-screen').remove();document.documentElement.classList.remove('account-locked');
     const bar=document.createElement('div');bar.id='teacher-account-bar';
-    const name=document.createElement('span');name.textContent='教师账号：'+session.user.email;
+    const name=document.createElement('span');name.id='teacher-account-identity';name.textContent='教师 · '+session.user.email;
     const refresh=document.createElement('button');refresh.textContent='重新加载云端';refresh.onclick=()=>{if(window.MatinAccount.canLeave())location.reload();};
     const out=document.createElement('button');out.textContent='退出账号';out.onclick=async()=>{if(!window.MatinAccount.canLeave())return;out.disabled=true;
       const access=session?.access_token;persist(null);try{await fetch(base+'/auth/v1/logout',{method:'POST',headers:{apikey:cfg.publishableKey,Authorization:'Bearer '+access},signal:AbortSignal.timeout(5000)});}catch{}location.reload();};

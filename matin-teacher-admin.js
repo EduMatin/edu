@@ -27,6 +27,7 @@
  async function install(){
   const api=(op,data={})=>window.MatinAccount.api({action:'teacher_admin',op,data});
   let me;try{me=await api('me');}catch{return;}if(!me.is_admin)return;
+  const identity=document.getElementById('teacher-account-identity');if(identity){const email=identity.textContent.replace(/^教师 · /,'');identity.replaceChildren(node('strong','平台管理员'),document.createTextNode(' · '+email));identity.classList.add('account-admin-identity');}
   const open=node('button','教师管理');open.type='button';open.className='btn';open.id='teacher-admin-open';document.querySelector('.nav').append(open);
   // Keep the entry actionable even if a deployment omitted its UI dependency.
   open.onclick=()=>alert('教师管理文件未加载完整，请刷新页面；如仍失败，请运行部署检查并核对上传文件。');

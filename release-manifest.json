@@ -1,18 +1,18 @@
 {
-  "version": "2026.11.07.4",
-  "backendVersion": "2026.11.07.2",
+  "version": "2026.11.07.5",
+  "backendVersion": "2026.11.07.5",
   "protocol": 1,
   "configuration": "matin-config.js is environment-specific and intentionally excluded",
   "files": [
     {
       "path": "index.html",
-      "sha256": "4ba11e2468c19a4c24f5a9d5b94dbf2c09cc6640e3b3365e21222e1ee016c073",
+      "sha256": "9ccf6c7bbabdfd82112de53350a93ff9ba1608f39b9f52b381b46f7d1a4a3ea6",
       "bytes": 94462
     },
     {
       "path": "matin-account.js",
-      "sha256": "da93de0464e86d28cd05ddeffcb24ec679df51fbff423108a19df49136ce4893",
-      "bytes": 8367
+      "sha256": "c241966988c601085b92eee8889ae7ad8beca8b452042b6089644d54fdd23c80",
+      "bytes": 8424
     },
     {
       "path": "matin-ai-usage.js",
@@ -96,8 +96,8 @@
     },
     {
       "path": "matin-release-info.js",
-      "sha256": "3b36e6db19439192a662dc3392e826a2c0d0e87e2914458866837a71a37906c7",
-      "bytes": 5625
+      "sha256": "cebd31966bf52982cf30779b9137807b2eb5cac05cc0c6ffda869b9455364869",
+      "bytes": 5714
     },
     {
       "path": "matin-release.js",
@@ -181,18 +181,18 @@
     },
     {
       "path": "matin-teacher-admin.js",
-      "sha256": "bb142e2d2422b6dd17e6948f687beccb87ec6f09843bfba30e8c5e2f5984d13d",
-      "bytes": 4317
+      "sha256": "27778d48c5d0900dfd276fc33fb103fe40f2d2bb069f0d84f2c6a824a09881a5",
+      "bytes": 4606
     },
     {
       "path": "matin-teacher-entry.css",
-      "sha256": "86f4c1e2fec2f854b3fb6f61c98cc546702849a69a767bbc6faebe61797e2cb4",
-      "bytes": 2537
+      "sha256": "b952eb88f78674c86d956f6fd7b571c5a0415fd8338d554155da1114d15a1e57",
+      "bytes": 3196
     },
     {
       "path": "matin-teacher-entry.js",
-      "sha256": "f469c5fe4ed52f7c6141fd94b41c0e05eb24e5aaa02c672a4335575d4a922a7c",
-      "bytes": 9987
+      "sha256": "13f2b2787b168cc4889624517b2ffb89438a3940a2cb3703364a8e0e8f2ecdfc",
+      "bytes": 11027
     },
     {
       "path": "matin-teacher-home.js",
@@ -206,8 +206,8 @@
     },
     {
       "path": "matin-teacher-sidebar.js",
-      "sha256": "a2bb4ee857017020c4e68b241d206d93cc2e3cf07561f078492ef381de510d55",
-      "bytes": 6647
+      "sha256": "a4e79288d847a91504059b705b9df2255dbd9b37d2e46f4a4ac25d5a28234f1f",
+      "bytes": 6809
     },
     {
       "path": "matin-teaching-archive.js",
@@ -231,12 +231,12 @@
     },
     {
       "path": "teacher.html",
-      "sha256": "fdaeaedd6eb158cf1abc0f05df200436739430b670f54ace2213ce9aaa1a900c",
+      "sha256": "e992040afb1b3c2bde3795d06b7813a26a4ad8401c318a3c251f650edd0451f9",
       "bytes": 180459
     },
     {
       "path": "teaching-archive.html",
-      "sha256": "1bf7c8c99e10cd264dbf52aa20ac6c917388dc1c067e7c91a9d78149daec5ea2",
+      "sha256": "d173d5882534aaa445a5a1544701f2ecde0b5838f8e2b533c16f849ca13395b7",
       "bytes": 1290
     }
   ],
@@ -244,27 +244,27 @@
     {
       "name": "matin-courses",
       "path": "supabase/functions/matin-courses/index.ts",
-      "sha256": "a97a0fd87506c5b99869b77210d862341f75c3afa93381c1a7a31912d87b70b7"
+      "sha256": "78184d3141b921fda620023b16992939a4df4fce47f421cbd6a739979613fe48"
     },
     {
       "name": "matin-chat",
       "path": "supabase/functions/matin-chat/index.ts",
-      "sha256": "0e851399762168e6d3d486df2d54ecbb579e3383a639b1a187a81e0e22aab564"
+      "sha256": "2d9411f3498d957d6c8f75b53852259d218ae730eef09e4c6cf857eb2d3d59ac"
     },
     {
       "name": "matin-attachments",
       "path": "supabase/functions/matin-attachments/index.ts",
-      "sha256": "94279b79d684332bad0c9779e4b4b9135a7afe5d5518d9f196f1d0a7965b8ec6"
+      "sha256": "b77e644648303ace6c13ba8c211d61e85e098741531b93bff0179710a80ab955"
     }
   ],
   "sql": [
     {
       "path": "supabase/teacher-admin.sql",
-      "sha256": "71e7dfb731fc9f9008c4d8b60f9da8ed7e1f22a9a8363cc3b87fd28f45786e1c"
+      "sha256": "290533555853fc2d9a18b061e4b552bb99ad9f0026b9c61a714cd3256081fba2"
     },
     {
       "path": "supabase/deployment-check.sql",
-      "sha256": "fe24e33d4e82654819334a1017807402054aec7b7f91b1850d9d0f5f539915a0"
+      "sha256": "6f9c36580a3f26ee228a2817b708d96ba450856bbb13a75cfe48d192166cb70f"
     }
   ]
 }
