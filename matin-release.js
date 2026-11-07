@@ -46,9 +46,10 @@
   const db=d.database,versionOk=db?.version===backendVersion&&db?.protocol===release.protocol;
   add('数据库检查接口',versionOk,versionOk?'检查协议匹配；以下逐项核对实际对象。':db?.error==='probe_missing'?'尚未安装 deployment-check.sql，或数据库接口缓存未更新。':'未取得匹配的检查接口；核对 SQL、云函数配置及数据库连接。');
   if(!versionOk)return;
-  const count=release.capabilities.filter(c=>db.checks?.[c.id]===true).length+(db.checks?.private_word_bucket===true?1:0),total=release.capabilities.length+1;
+  const count=release.capabilities.filter(c=>db.checks?.[c.id]===true).length+(db.checks?.private_word_bucket===true?1:0)+(db.checks?.private_teaching_bucket===true?1:0),total=release.capabilities.length+2;
   const row=el('li'),details=el('details'),summary=el('summary','数据库关键能力：'+count+' / '+total+' 项匹配（展开查看）'),items=el('ul');details.open=count!==total;details.append(summary,items);row.append(details);list.append(row);
   for(const c of release.capabilities)add(c.label,db.checks?.[c.id]===true,db.checks?.[c.id]===true?'关键接口/版本特征已存在。':'缺失或版本特征不符；参照升级说明核对 '+c.sql+'，不要直接重跑旧SQL。',items);
+  add('私有教学资料桶',db.checks?.private_teaching_bucket===true,db.checks?.private_teaching_bucket===true?'私有属性、20MB上限及PDF/TXT类型匹配。':'请运行 teaching-files.sql 并核对 Storage 设置。',items);
   add('私有Word附件桶',db.checks?.private_word_bucket===true,db.checks?.private_word_bucket===true?'私有属性、文件上限及Word类型匹配。':'核对 teacher-latest-report.sql 与 Storage 桶设置。',items);
  }
  check.onclick=async()=>{
