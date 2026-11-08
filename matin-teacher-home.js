@@ -92,7 +92,7 @@
   new MutationObserver(()=>{if(work.hidden||work.inert)return;if(pendingDraw){pendingDraw=false;if(data)draw(data);else drawError();}if(!work.contains(document.activeElement))dismiss.focus({preventScroll:true});}).observe(work,{attributes:true,attributeFilter:['inert']});
   function autoRefresh(){if(document.visibilityState==='visible'&&root.getClientRects().length&&Date.now()-last>15000&&!writing)void refresh();}
   window.addEventListener('focus',autoRefresh);document.addEventListener('visibilitychange',autoRefresh);setInterval(autoRefresh,60000);
-  for(const event of ['matin-membership-reviewed','matin-teacher-tasks-changed'])window.addEventListener(event,()=>{if(!writing)void refresh();});
+  for(const event of ['matin-membership-reviewed','matin-membership-roster-loaded','matin-teacher-tasks-changed','matin-class-teaching-changed'])window.addEventListener(event,()=>{if(!writing)void refresh({manual:true});});
   void refresh();return {refresh};
  }};
 })();

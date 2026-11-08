@@ -40,6 +40,7 @@
   $('enrollment-summary').textContent=(active.class_ended_at?'已结束教学 · 只读名单 · ':'')+'已加入 '+data.members.filter(m=>m.status==='approved').length+' 人 · 待审核 '+data.members.filter(m=>m.status==='pending').length+' 人 · 待账号关联 '+imports.filter(m=>m.status==='awaiting_account').length+' 人';
   const rank={pending:0,approved:1,awaiting_account:2};
   roster=[...data.members,...imports.map(m=>({...m,imported:true}))].sort((a,b)=>(rank[a.status]??3)-(rank[b.status]??3)||String(a.student_no).localeCompare(String(b.student_no),'zh-CN',{numeric:true})||String(a.student_id||a.id).localeCompare(String(b.student_id||b.id)));selected.clear();render();
+  window.dispatchEvent(new CustomEvent('matin-membership-roster-loaded'));
  }
  function render(){
   const list=$('enrollment-list');list.replaceChildren();const query=$('enrollment-search').value.trim().toLocaleLowerCase(),filter=$('enrollment-filter').value;

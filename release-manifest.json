@@ -1,12 +1,12 @@
 {
-  "version": "2026.11.08.3",
+  "version": "2026.11.08.4",
   "backendVersion": "2026.11.07.5",
   "protocol": 1,
   "configuration": "matin-config.js is environment-specific and intentionally excluded",
   "files": [
     {
       "path": "index.html",
-      "sha256": "f993e41dfa88d5fb66be515e1712126684ffe2c0c5b2b75f049f7da524fe36c2",
+      "sha256": "ebe24ddd35a3b9ed3fa9fb4ac19e77330d14e6c7e6d9f197bf2798070570afcb",
       "bytes": 94760
     },
     {
@@ -56,8 +56,8 @@
     },
     {
       "path": "matin-enrollment.js",
-      "sha256": "c920771c30abc656de016d81b9b611904e01edfd86174181e80b4617d5a16985",
-      "bytes": 15832
+      "sha256": "036515a94ef56a9584810103e055fda89d0fd30ace1ca4f7003d9dfbe0d9d854",
+      "bytes": 15907
     },
     {
       "path": "matin-formula-input.js",
@@ -106,7 +106,7 @@
     },
     {
       "path": "matin-release-info.js",
-      "sha256": "09d0c657d3bca78b7bc690098a3c329435a939a2f59287a5ac1e8cbe42dbe621",
+      "sha256": "2981f74885049d929ea3e8901e838d766f830a2e849c009e2d7ec0bb497dc762",
       "bytes": 5900
     },
     {
@@ -216,8 +216,8 @@
     },
     {
       "path": "matin-teacher-home.js",
-      "sha256": "3168d50f94521205b3c5eeb01a07f82ac9054bd6e8eab22a0b586861b6547776",
-      "bytes": 17027
+      "sha256": "fc888062b7757d3a570f15ce3dd36575a22a567abe627c0babd90879a6abf21e",
+      "bytes": 17104
     },
     {
       "path": "matin-teacher-sidebar.css",
@@ -261,12 +261,12 @@
     },
     {
       "path": "teacher.html",
-      "sha256": "03d81ff71fbdba2cba2f9bd9b60b19d7113465177b17b1e26c87c1b2fca7e478",
+      "sha256": "1f9012a401681f3ae579a5385a597c3e3edd8c9c7c6b01f4572295be6c3abcc0",
       "bytes": 183044
     },
     {
       "path": "teaching-archive.html",
-      "sha256": "3ffdac7efea6833eac473a398e65f58957e3c5f7443700079fba382f60e0e8ec",
+      "sha256": "4946864d3c761ad4b2f93354cea22c94c3ba8cfb0a2f5f5b88998be0dd59f52e",
       "bytes": 1290
     }
   ],
