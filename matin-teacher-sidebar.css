@@ -32,3 +32,12 @@
  #teacher-sidebar.side-expanded .nav{margin-top:20px;gap:16px}
  body>.container{margin-left:0;width:100%}body>#teacher-account-bar{margin-left:0}
 }
+
+#teacher-sidebar .side-editor-main,#teacher-sidebar .side-editor-project{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#teacher-sidebar .side-editor-project{font-size:11px;font-weight:400;color:#a7b6d4;line-height:18px}
+#teacher-sidebar .side-editor-project[hidden]{display:none}
+#view-studio .toolbar .left{min-width:0;max-width:100%}
+#view-studio .toolbar .left>div{min-width:0;overflow-wrap:anywhere}
+#view-studio #editor-back{flex-shrink:0}
+#view-studio .editor-version-notice{padding:12px 16px;background:#eef1ff;border:1px solid #dfe5fa;border-radius:10px;line-height:1.7;color:#4d5d80}
+#editor-save-state{color:#405b78}

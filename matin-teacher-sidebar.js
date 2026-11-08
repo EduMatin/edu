@@ -14,7 +14,7 @@
  function collapse(){side.classList.remove('side-expanded');toggle.setAttribute('aria-expanded','false');}
  toggle.onclick=()=>{const open=side.classList.toggle('side-expanded');toggle.setAttribute('aria-expanded',String(open));};
  side.addEventListener('keydown',e=>{if(e.key==='Escape'){if(compact()){collapse();toggle.focus();}}});
- const entries=[['[data-nav="dashboard"]',overview,'教师工作台','home'],['[data-nav="studio"]',preparation,'剧本编辑','edit'],['#teaching-plans-open',preparation,'教学计划','plan'],['#classes-open',teaching,'班级管理','classes'],['#teacher-review-open',teaching,'报告批阅','review'],['#course-matrix-open',teaching,'学习进度','chart'],['#teaching-analytics-open',teaching,'教学分析','chart'],['#course-gradebook-open',teaching,'课程成绩册','grade'],['#teaching-archive-open',resources,'教学档案','archive'],['#ai-usage-open',resources,'AI 使用量','usage'],['#settings-open',resources,'AI 模型设置','settings'],['#teacher-admin-open',management,'教师管理','classes']];
+ const entries=[['[data-nav="dashboard"]',overview,'教师工作台','home'],['[data-nav="studio"]',preparation,'选择项目编辑','edit'],['#teaching-plans-open',preparation,'教学计划','plan'],['#classes-open',teaching,'班级管理','classes'],['#teacher-review-open',teaching,'报告批阅','review'],['#course-matrix-open',teaching,'学习进度','chart'],['#teaching-analytics-open',teaching,'教学分析','chart'],['#course-gradebook-open',teaching,'课程成绩册','grade'],['#teaching-archive-open',resources,'教学档案','archive'],['#ai-usage-open',resources,'AI 使用量','usage'],['#settings-open',resources,'AI 模型设置','settings'],['#teacher-admin-open',management,'教师管理','classes']];
  const dialogs=[['teaching-analytics-modal','#teaching-analytics-open'],['teacher-admin-dialog','#teacher-admin-open'],['classes-modal','#classes-open'],['teaching-plans-modal','#teaching-plans-open'],['teacher-review-center','#teacher-review-open'],['course-matrix-modal','#course-matrix-open'],['course-gradebook-modal','#course-gradebook-open'],['teaching-archive-dialog','#teaching-archive-open'],['ai-usage-dialog','#ai-usage-open'],['settings-modal','#settings-open']];
  const visible=e=>e&&!e.hidden&&!e.classList.contains('hidden')&&(e.tagName!=='DIALOG'||e.open);
  function syncCurrent(){
@@ -37,12 +37,23 @@
    if(badge==='!'){b.append(make('span','side-warning','!'));b.title='待批阅数量读取失败，请打开后重试';}else if(b.id==='teacher-review-open')b.title='查看和批阅学生报告';
    b.classList.add('side-control');
  }
+ function syncEditorLabel(){
+   const b=side.querySelector('[data-nav="studio"]'),label=b?.querySelector('.side-label');if(!label)return;
+   const title=b.dataset.editorTitle||'',text=title?'继续编辑':'选择项目编辑';
+   let main=label.querySelector('.side-editor-main'),sub=label.querySelector('.side-editor-project');
+   if(!main){main=make('span','side-editor-main');sub=make('small','side-editor-project');label.replaceChildren(main,sub);}
+   if(main.textContent!==text)main.textContent=text;
+   if(sub.textContent!==title)sub.textContent=title;
+   sub.hidden=!title;
+   const hint=title?'继续编辑：'+title:'进入课程后选择要编辑的项目';if(b.title!==hint)b.title=hint;
+ }
+ window.addEventListener('matin-editor-context-changed',syncEditorLabel);
  function arrange(){
    for(const [selector,parent,label,kind]of entries){const b=side.querySelector(selector);if(!b)continue;if(b.parentElement!==parent)parent.append(b);decorate(b,label,kind);}
    // Stable order also when authenticated modules finish loading later.
    for(const parent of [overview,preparation,teaching,resources,management]){const ordered=entries.filter(x=>x[1]===parent).map(x=>side.querySelector(x[0])).filter(Boolean);ordered.forEach((b,i)=>{if(parent.children[i]!==b)parent.insertBefore(b,parent.children[i]||null);});}
    for(const parent of [preparation,teaching,resources,management])parent.parentElement.hidden=!parent.children.length;
-   syncCurrent();
+   syncEditorLabel();syncCurrent();
  }
  const student=side.querySelector('#student-entry');student.classList.add('side-control');student.replaceChildren(icon('external'),make('span','side-label','打开学生学习中心'));
  footer.prepend(student);

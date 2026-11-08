@@ -314,10 +314,10 @@ button:active:not(:disabled){transform:scale(.985)}
 
 #teacher-home-modal p{margin:12px 0;line-height:1.8;color:#596a8b}#teacher-home-modal .actions{gap:8px;margin-top:12px;flex-wrap:wrap}#teacher-home-modal .modal{max-width:600px}
 </style>
-<link rel="stylesheet" href="./matin-teacher-sidebar.css?v=2026.11.08.2" />
-<meta name="matin-release" content="2026.11.08.2">
-<link rel="stylesheet" href="./matin-interface.css?v=2026.11.08.2">
-<script defer src="./matin-interface.js?v=2026.11.08.2"></script>
+<link rel="stylesheet" href="./matin-teacher-sidebar.css?v=2026.11.08.3" />
+<meta name="matin-release" content="2026.11.08.3">
+<link rel="stylesheet" href="./matin-interface.css?v=2026.11.08.3">
+<script defer src="./matin-interface.js?v=2026.11.08.3"></script>
 </head>
 <body>
 <header class="topbar" id="teacher-sidebar">
@@ -327,7 +327,7 @@ button:active:not(:disabled){transform:scale(.985)}
   </div>
   <nav class="nav" aria-label="主要导航">
     <button type="button" data-nav="dashboard" class="active"><span class="nav-icon">▦</span> 教师工作台</button>
-    <button type="button" data-nav="studio"><span class="nav-icon">⌘</span> 剧本编辑器</button>
+    <button type="button" data-nav="studio"><span class="nav-icon">⌘</span> 选择项目编辑</button>
     <button type="button" id="classes-open"><span class="nav-icon">▤</span> 班级管理</button>
 
   </nav>
@@ -352,9 +352,10 @@ button:active:not(:disabled){transform:scale(.985)}
 
   <section id="view-studio" class="hidden">
     <div class="panel toolbar">
-      <div class="left"><button type="button" class="btn back-strong" id="editor-back" aria-label="返回教师工作台">← 返回工作台</button><div><h2 id="studio-heading">剧本编辑器</h2><p class="small-note">亲自编写剧本 · 保存状态见侧栏提示</p></div></div>
+      <div class="left"><button type="button" class="btn back-strong" id="editor-back" aria-label="返回教师工作台">← 返回工作台</button><div><h2 id="studio-heading">剧本编辑器</h2><p id="editor-breadcrumb" class="small-note" aria-label="当前编辑位置"></p><p id="editor-save-state" class="small-note" role="status"></p></div></div>
       <div class="actions"><button type="button" class="btn ai-generate" id="ai-generate-open">✦ AI 一键生成剧本</button><button type="button" class="btn" id="export-project-button">⇩ 导出剧本</button><button type="button" class="btn" id="save-project-button">✓ 保存草稿</button><button type="button" class="btn primary" id="publish-editor-button">☁ 开启公开分享</button><button type="button" class="btn primary" id="preview-project-button">▷ 预览实训</button></div>
     </div>
+    <p id="editor-version-notice" class="small-note editor-version-notice">正在编辑项目草稿。保存后可用于新布置的任务；已布置的班级任务仍使用布置时的版本，公开分享内容需单独更新。</p>
     <div class="editor-grid">
       <aside class="stage-list">
         <div class="section-caption">项目与任务阶段</div>
@@ -404,7 +405,7 @@ button:active:not(:disabled){transform:scale(.985)}
 <input id="import-file" type="file" accept="application/json,.json" hidden />
 <div id="toast" class="hidden" role="status"></div>
 <script src="./matin-config.js"></script>
-<script src="./matin-math.js?v=2026.11.08.2"></script>
+<script src="./matin-math.js?v=2026.11.08.3"></script>
 
 <div id="teacher-home-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="teacher-home-title">
  <div class="modal">
@@ -449,38 +450,38 @@ button:active:not(:disabled){transform:scale(.985)}
  </div>
 </div>
 
-<script src="./matin-class-ai.js?v=2026.11.08.2"></script>
-<script src="./matin-teaching-files.js?v=2026.11.08.2"></script>
-<link rel="stylesheet" href="./matin-teacher-entry.css?v=2026.11.08.2">
-<script src="./matin-xlsx.js?v=2026.11.08.2"></script>
-<script src="./matin-teacher-entry.js?v=2026.11.08.2"></script>
-<script src="./matin-teacher-admin.js?v=2026.11.08.2"></script>
-<script src="./matin-account.js?v=2026.11.08.2"></script>
-<script src="./matin-class-teaching.js?v=2026.11.08.2"></script>
-<script src="./matin-classes.js?v=2026.11.08.2"></script>
-<script src="./matin-roster-import.js?v=2026.11.08.2"></script>
-<script src="./matin-enrollment.js?v=2026.11.08.2"></script>
-<script src="./matin-report-drafts.js?v=2026.11.08.2"></script>
-<script src="./matin-review-tools.js?v=2026.11.08.2"></script>
+<script src="./matin-class-ai.js?v=2026.11.08.3"></script>
+<script src="./matin-teaching-files.js?v=2026.11.08.3"></script>
+<link rel="stylesheet" href="./matin-teacher-entry.css?v=2026.11.08.3">
+<script src="./matin-xlsx.js?v=2026.11.08.3"></script>
+<script src="./matin-teacher-entry.js?v=2026.11.08.3"></script>
+<script src="./matin-teacher-admin.js?v=2026.11.08.3"></script>
+<script src="./matin-account.js?v=2026.11.08.3"></script>
+<script src="./matin-class-teaching.js?v=2026.11.08.3"></script>
+<script src="./matin-classes.js?v=2026.11.08.3"></script>
+<script src="./matin-roster-import.js?v=2026.11.08.3"></script>
+<script src="./matin-enrollment.js?v=2026.11.08.3"></script>
+<script src="./matin-report-drafts.js?v=2026.11.08.3"></script>
+<script src="./matin-review-tools.js?v=2026.11.08.3"></script>
 <script src="matin-report-files.js?v=20261029"></script>
-<script src="./matin-task-reports.js?v=2026.11.08.2"></script>
-<script src="./matin-tasks.js?v=2026.11.08.2"></script>
-<script src="./matin-task-edit.js?v=2026.11.08.2"></script>
-<script src="./matin-course-outline.js?v=2026.11.08.2"></script>
-<script src="./matin-project-tasks.js?v=2026.11.08.2"></script>
-<script src="./matin-teacher-home.js?v=2026.11.08.2"></script>
-<script src="./matin-review-inbox.js?v=2026.11.08.2"></script>
-<link rel="stylesheet" href="./matin-teaching-analytics.css?v=2026.11.08.2">
-<script src="./matin-teaching-analytics.js?v=2026.11.08.2"></script>
-<script src="./matin-course-matrix.js?v=2026.11.08.2"></script>
-<script src="./matin-gradebook.js?v=2026.11.08.2"></script>
-<script src="./matin-teaching-plans.js?v=2026.11.08.2"></script>
-<script src="./matin-ai-usage.js?v=2026.11.08.2"></script>
-<script src="./matin-archive-format.js?v=2026.11.08.2"></script>
-<script src="./matin-archive-reader.js?v=2026.11.08.2"></script>
-<script src="./matin-teaching-archive.js?v=2026.11.08.2"></script>
-<script src="./matin-pedagogy.js?v=2026.11.08.2"></script>
-<script src="./matin-long-context.js?v=2026.11.08.2"></script>
+<script src="./matin-task-reports.js?v=2026.11.08.3"></script>
+<script src="./matin-tasks.js?v=2026.11.08.3"></script>
+<script src="./matin-task-edit.js?v=2026.11.08.3"></script>
+<script src="./matin-course-outline.js?v=2026.11.08.3"></script>
+<script src="./matin-project-tasks.js?v=2026.11.08.3"></script>
+<script src="./matin-teacher-home.js?v=2026.11.08.3"></script>
+<script src="./matin-review-inbox.js?v=2026.11.08.3"></script>
+<link rel="stylesheet" href="./matin-teaching-analytics.css?v=2026.11.08.3">
+<script src="./matin-teaching-analytics.js?v=2026.11.08.3"></script>
+<script src="./matin-course-matrix.js?v=2026.11.08.3"></script>
+<script src="./matin-gradebook.js?v=2026.11.08.3"></script>
+<script src="./matin-teaching-plans.js?v=2026.11.08.3"></script>
+<script src="./matin-ai-usage.js?v=2026.11.08.3"></script>
+<script src="./matin-archive-format.js?v=2026.11.08.3"></script>
+<script src="./matin-archive-reader.js?v=2026.11.08.3"></script>
+<script src="./matin-teaching-archive.js?v=2026.11.08.3"></script>
+<script src="./matin-pedagogy.js?v=2026.11.08.3"></script>
+<script src="./matin-long-context.js?v=2026.11.08.3"></script>
 <script>
 (async () => {
   'use strict';
@@ -558,8 +559,11 @@ button:active:not(:disabled){transform:scale(.985)}
     return demoProjects().map(p=>normalizeProject(p));
   };
   let projects = loadProjects();
-  let projectId = projects[0]?.id;
-  let selectedNodeId = projects[0]?.nodes[0]?.id;
+  const editorMemoryKey='matin_teacher_editor_v1:'+String(window.MATIN_CLOUD?.supabaseUrl||'offline')+':'+(account?.id||'offline');
+  let resumeProjectId=null;
+  try{const remembered=sessionStorage.getItem(editorMemoryKey);if(projects.some(p=>p.id===remembered))resumeProjectId=remembered;else sessionStorage.removeItem(editorMemoryKey);}catch{}
+  let projectId = resumeProjectId;
+  let selectedNodeId = projects.find(p=>p.id===projectId)?.nodes[0]?.id;
   let selectedEdgeId = null;
   let linkSourceId = null;
   let flowDrag = null;
@@ -582,23 +586,49 @@ button:active:not(:disabled){transform:scale(.985)}
   const providers = ['classroom_auto','classroom','offline','deepseek','qwen','zhipu','kimi','gemini','custom'];
   const config = {provider:account?'classroom_auto':'offline',model:'',url:'',key:'',classroomUrl:'',classroomCode:''};
   try { const saved=JSON.parse(localStorage.getItem(PREF_KEY) || '{}'); if (providers.includes(saved.provider)) config.provider=saved.provider==='classroom'&&!saved.legacyClassroom&&account?'classroom_auto':saved.provider; if(typeof saved.model==='string') config.model=saved.model; if(typeof saved.url==='string') config.url=saved.url; if(typeof saved.classroomUrl==='string') config.classroomUrl=saved.classroomUrl; } catch {}
-  const currentProject = () => projects.find(p=>p.id===projectId) || projects[0];
+  const currentProject = () => projects.find(p=>p.id===projectId);
   const currentNode = () => currentProject()?.nodes.find(n=>n.id===selectedNodeId) || currentProject()?.nodes[0];
   const store = () => { if(account)return saveCloud(); try {localStorage.setItem(STORE_KEY,JSON.stringify(projects)); $('save-status').textContent='✓ 已保存在本机'; return true;} catch(e) {$('save-status').textContent='⚠ 本机存储失败';notify('浏览器保存失败，请立即导出 JSON 备份。');return false;} };
   let storeTimer;
   const scheduleSave = () => { $('save-status').textContent='保存中…'; clearTimeout(storeTimer);storeTimer=setTimeout(store,230); };
   const flushSave = () => {clearTimeout(storeTimer);storeTimer=null;return store();};
   const updateProject = () => {const p=currentProject();if(p){p.updatedAt=stamp();scheduleSave();}};
+  const syncEditorContext=()=>{
+    const resumed=projects.find(p=>p.id===resumeProjectId),p=currentProject();
+    if(!resumed)resumeProjectId=null;
+    try{if(resumeProjectId)sessionStorage.setItem(editorMemoryKey,resumeProjectId);else sessionStorage.removeItem(editorMemoryKey);}catch{}
+    const button=document.querySelector('[data-nav="studio"]');button.dataset.editorTitle=resumed?(resumed.title||'未命名项目'):'';
+    window.dispatchEvent(new Event('matin-editor-context-changed'));
+    if(p){$('studio-heading').textContent=p.title||'未命名项目';$('editor-breadcrumb').textContent=(window.MatinCourseOutline.controller?.name(p.id)||'未归类项目')+' › '+(p.title||'未命名项目')+' › 剧本编辑';}
+  };
+  const mirrorSaveState=()=>{$('editor-save-state').textContent='草稿：'+$('save-status').textContent;};
+  new MutationObserver(mirrorSaveState).observe($('save-status'),{childList:true,subtree:true,characterData:true});mirrorSaveState();
+  let navigating=false;
+  const saveBeforeNavigation=async action=>{
+    if(navigating)return false;
+    navigating=true;
+    const panels=['view-dashboard','view-studio','view-runtime'].map($),previous=panels.map(p=>p.inert);
+    const focused=document.activeElement;let completed=false;
+    panels.forEach(p=>p.inert=true);
+    try{
+      if(!await flushSave()||(account&&dirty())){notify('更改尚未保存，已留在当前页面。请重试保存，或先导出备份。');return false;}
+      await action();completed=true;return true;
+    }catch(e){notify('操作未完成：'+e.message);return false;}
+    finally{panels.forEach((p,i)=>p.inert=previous[i]);navigating=false;if(!completed&&focused?.isConnected&&focused.closest('#view-'+view))focused.focus({preventScroll:true});}
+  };
+  const chooseEditorProject=()=>{showView('dashboard');window.MatinCourseOutline.controller?.enter(null);notify('请进入课程，选择项目后点击“编辑剧本”。');$('project-search').focus({preventScroll:true});};
   const cancelPending = () => { runtimeGeneration++; abortRequest?.abort(); abortRequest=null;sending=false;evaluationBusy=false; $('send-button').disabled=false; $('send-button').textContent='发送 ↗'; };
   const showView = next => {
     if(next!=='runtime') cancelPending();
     if(next==='studio' && !currentProject()) return showView('dashboard');
     if(next==='runtime' && !currentProject()) return showView('dashboard');
+    if(next==='studio')resumeProjectId=projectId;
     view=next;
     ['dashboard','studio','runtime'].forEach(v => { $('view-'+v).classList.toggle('hidden',v!==next);const b=document.querySelector(`[data-nav="${v}"]`);if(b)b.classList.toggle('active',v===next); });
     if(next==='dashboard') renderDashboard();
     if(next==='studio') renderStudio();
     if(next==='runtime') renderRuntime();
+    syncEditorContext();
     window.scrollTo(0,0);
   };
 
@@ -713,6 +743,7 @@ button:active:not(:disabled){transform:scale(.985)}
   };
 
   const renderDashboard = () => {
+    syncEditorContext();
     $('metric-projects').textContent=String(projects.length);
     $('metric-nodes').textContent=String(projects.reduce((sum,p)=>sum+p.nodes.length,0));
     $('metric-branches').textContent=String(projects.reduce((sum,p)=>sum+(p.edges||[]).length,0));
@@ -790,7 +821,7 @@ button:active:not(:disabled){transform:scale(.985)}
     if(!currentProject()) return;
     if(!currentProject().nodes.some(n=>n.id===selectedNodeId)) selectedNodeId=currentProject().nodes[0].id;
     if(editorMode==='edge'&&!currentProject().edges.some(e=>e.id===selectedEdgeId))editorMode='node';
-    $('studio-heading').textContent=currentProject().title;
+    syncEditorContext();
     $('editor-folder-info').dataset.projectFolder=currentProject().id;
     $('editor-folder-info').textContent='所属课程：'+(window.MatinCourseOutline.controller?.name(currentProject().id)||'未归类项目');
     $('editor-class-info').dataset.courseClasses=currentProject().id;
@@ -805,18 +836,18 @@ button:active:not(:disabled){transform:scale(.985)}
   const nameSafe = s=> (s||'Matin-剧本').replace(/[\\/:*?"<>|\r\n]/g,'_').slice(0,60);
   const exportProject = () => {flushSave();const p=currentProject();if(p)downloadText(nameSafe(p.title)+'.json',JSON.stringify({format:'matin-studio',version:5,project:p},null,2));};
   const exportAll = () => {flushSave();downloadText('Matin-Studio-全部剧本备份.json',JSON.stringify({format:'matin-studio',version:5,projects},null,2));};
-  const newProject = async () => {
+  const newProject = () => saveBeforeNavigation(async () => {
     const target=window.MatinCourseOutline.controller?.current();
     const p=normalizeProject({title:'新建实训项目',desc:'请在项目设置里编写项目介绍。',category:'自定义',objective:'',published:false,nodes:[makeNode({name:'阶段一：开始实训',context:'',studentTask:'',greeting:'你好，欢迎开始实训。'})]});
     projects.unshift(p);projectId=p.id;selectedNodeId=p.nodes[0].id;editorMode='project';selectedEdgeId=null;linkSourceId=null;const saved=await flushSave();const grouped=saved&&await window.MatinCourseOutline.controller?.created(p.id,target);showView('studio');if(saved&&grouped!==false)notify('新项目已创建，可从右侧开始编写。');
-  };
-  const selectProject = (id,target) => {const p=projects.find(x=>x.id===id);if(!p)return; projectId=p.id;selectedNodeId=p.nodes[0].id;editorMode='node';selectedEdgeId=null;linkSourceId=null;if(target==='studio') showView('studio');else startRuntime();};
-  const copyProject = async id => {const src=projects.find(p=>p.id===id);if(!src)return;const target=window.MatinCourseOutline.controller?.current();const copy=normalizeProject(src);copy.title+='（副本）';copy.published=false;projects.unshift(copy);projectId=copy.id;selectedNodeId=copy.nodes[0].id;const saved=await flushSave();const grouped=saved&&await window.MatinCourseOutline.controller?.created(copy.id,target);renderDashboard();if(saved&&grouped!==false)notify('项目已复制。');};
-  const deleteProject = async id => {
+  });
+  const selectProject = (id,target) => saveBeforeNavigation(()=>{const p=projects.find(x=>x.id===id);if(!p)return chooseEditorProject();const changed=projectId!==id;projectId=p.id;if(changed){selectedNodeId=p.nodes[0].id;editorMode='node';selectedEdgeId=null;linkSourceId=null;}if(target==='studio')showView('studio');else startRuntime();});
+  const copyProject = id => saveBeforeNavigation(async()=>{const src=projects.find(p=>p.id===id);if(!src)return;const target=window.MatinCourseOutline.controller?.current();const copy=normalizeProject(src);copy.title+='（副本）';copy.published=false;projects.unshift(copy);const saved=await flushSave();const grouped=saved&&await window.MatinCourseOutline.controller?.created(copy.id,target);renderDashboard();if(saved&&grouped!==false)notify('项目已复制。');});
+  const deleteProject = id => saveBeforeNavigation(async()=>{
     const p=projects.find(x=>x.id===id);if(!p||!confirm(`删除「${p.title}」及其学生发布版本？请先导出备份。`))return;
     if(account){deleting.add(id);try{await runCloud(async()=>{const r=remoteRows.get(id);if(r)await window.MatinAccount.api({action:'delete',id,revision:r.revision});});}catch(e){deleting.delete(id);notify(e.message);return;}deleting.delete(id);remoteRows.delete(id);savedDrafts.delete(id);delete syncMeta[id];}
-    projects=projects.filter(x=>x.id!==id);if(!projects.length&&!account)projects=demoProjects();projectId=projects[0]?.id;selectedNodeId=projects[0]?.nodes[0]?.id;flushSave();renderDashboard();notify('项目已删除。');
-  };
+    projects=projects.filter(x=>x.id!==id);if(projectId===id){projectId=null;selectedNodeId=null;}if(resumeProjectId===id)resumeProjectId=null;await flushSave();renderDashboard();notify('项目已删除。');
+  });
   const processNodeAction = (action,id) => {
     const p=currentProject();const i=p.nodes.findIndex(n=>n.id===id);if(i<0)return;
     if(action==='select'){selectedNodeId=id;selectedEdgeId=null;editorMode='node';renderStudio();return;}
@@ -904,7 +935,7 @@ button:active:not(:disabled){transform:scale(.985)}
   };
   const startRuntime = () => {
     cancelPending();runComplete=false;runVisited=[];chatHistory=[];visitStartHistoryIndex=0;runEvaluations=[];runVisitSerial=0;
-    const p=currentProject();const n=graphNode(p.startNodeId)||p.nodes[0];
+    const p=currentProject();if(!p)return chooseEditorProject();const n=graphNode(p.startNodeId)||p.nodes[0];
     runIndex=p.nodes.findIndex(x=>x.id===n.id);runVisited.push(n.id);
     showView('runtime');say('assistant',n.greeting,n.roleName);
   };
@@ -1386,8 +1417,8 @@ ${materials||'未提供参考资料，请采用通用可靠的教学知识；不
 
   // Delegated actions prevent user-authored project data from becoming inline JavaScript.
   document.querySelectorAll('[data-nav]').forEach(b=>b.addEventListener('click',()=>{
-    if(b.dataset.nav==='runtime'){if(view==='runtime'){showView('runtime');}else startRuntime();}
-    else {if(view==='studio')flushSave();showView(b.dataset.nav);}
+    if(b.dataset.nav==='studio'){if(resumeProjectId)selectProject(resumeProjectId,'studio');else saveBeforeNavigation(chooseEditorProject);}
+    else saveBeforeNavigation(()=>{if(b.dataset.nav==='runtime'&&view!=='runtime')startRuntime();else showView(b.dataset.nav);});
   }));
   $('cloud-help-button').addEventListener('click',()=>alert('登录账号后自动保存云端草稿。\n班级任务：进入课程，选择班级，点击“管理本班任务”进行布置。学生从班级任务入口学习并提交报告。\n公开分享：在项目卡片开启后，可复制链接供学生自主学习；不会代替班级任务。\n其他电脑登录同一账号可继续编辑；编辑前请重新加载云端。'));
   $('cloud-close').addEventListener('click',closeCloudPublish);
@@ -1396,9 +1427,9 @@ ${materials||'未提供参考资料，请采用通用可靠的教学知识；不
   $('copy-student-link').onclick=async()=>{try{await navigator.clipboard.writeText($('student-share-link').value);cloudNotice('链接已复制。');}catch{$('student-share-link').select();cloudNotice('请按 Ctrl+C 复制链接。');}};
   $('rotate-student-link').onclick=()=>{const id=projects.find(p=>shareLink(p.id)===$('student-share-link').value)?.id;if(id)openCloudPublish(id,'rotate');};
   $('cloud-publish-modal').addEventListener('click',e=>{if(e.target===$('cloud-publish-modal'))closeCloudPublish();});
-  $('publish-editor-button').addEventListener('click',()=>{flushSave();openCloudPublish(currentProject().id,'publish');});
-  $('preview-to-dashboard').addEventListener('click',()=>{flushSave();showView('dashboard');});
-  $('preview-to-studio').addEventListener('click',()=>{showView('studio');});
+  $('publish-editor-button').addEventListener('click',()=>saveBeforeNavigation(()=>openCloudPublish(currentProject().id,'publish')));
+  $('preview-to-dashboard').addEventListener('click',()=>saveBeforeNavigation(()=>showView('dashboard')));
+  $('preview-to-studio').addEventListener('click',()=>saveBeforeNavigation(()=>showView('studio')));
   $('ai-generate-open').addEventListener('click',aiGenOpen);
   $('ai-generate-side').addEventListener('click',aiGenOpen);
   $('ai-gen-close').addEventListener('click',aiGenClose);
@@ -1425,21 +1456,21 @@ ${materials||'未提供参考资料，请采用通用可靠的教学知识；不
     else if(action==='copy')copyProject(id);
     else if(action==='delete')deleteProject(id);
   });
-  $('editor-back').addEventListener('click',()=>{flushSave();showView('dashboard');});
+  $('editor-back').addEventListener('click',()=>saveBeforeNavigation(()=>showView('dashboard')));
   $('editor-project-settings').addEventListener('click',()=>{editorMode='project';selectedEdgeId=null;renderStudio();});
   $('add-node-button').addEventListener('click',addNode);
   $('stage-items').addEventListener('click',e=>{const btn=e.target.closest('button[data-node-action]');if(btn)processNodeAction(btn.dataset.nodeAction,btn.dataset.id);});
   $('editor-fields').addEventListener('input',e=>{
     const f=e.target.dataset.field,pf=e.target.dataset.projectField;
     if(f && fields.includes(f)){currentNode()[f]=e.target.value;if(f==='name'||f==='roleName'){renderStageList();renderGraph();}refreshPromptPreview();updateProject();}
-    else if(pf && projectFields.includes(pf)){currentProject()[pf]=e.target.value;if(pf==='title')$('studio-heading').textContent=e.target.value;updateProject();}
+    else if(pf && projectFields.includes(pf)){currentProject()[pf]=e.target.value;if(pf==='title')syncEditorContext();updateProject();}
   });
   $('editor-fields').addEventListener('click',e=>{const chip=e.target.closest('[data-subject-pick]');if(chip){const subject=chip.dataset.subjectPick;currentProject().category=subject;const field=$('project-category');if(field)field.value=subject;rememberSubject(subject);renderSubjectPills();updateProject();}if(e.target.closest('[data-go-node]')){editorMode='node';renderStudio();}if(e.target.closest('[data-edge-delete]'))deleteEdge(selectedEdgeId);if(e.target.closest('[data-set-start]')){currentProject().startNodeId=selectedNodeId;updateProject();renderGraph();notify('已设置为实训入口。');}});
   $('editor-fields').addEventListener('change',e=>{if(e.target.id==='project-published'){currentProject().published=e.target.checked;updateProject();notify(e.target.checked?'已允许公开分享；还需点击「开启公开分享」':'已取消公开分享资格；若之前已开启，请手动关闭公开分享');return;}if(e.target.dataset.projectField==='category'){const subject=e.target.value.trim();if(subject){currentProject().category=subject;rememberSubject(subject);updateProject();renderSubjectPills();}else notify('学科名称不可为空');return;}const field=e.target.dataset.edgeField;if(!field)return; updateEdgeProperty(field,e.target.value);});
   $('save-project-button').addEventListener('click',async()=>{if(await flushSave())notify(account?'草稿已保存到云端，可在其他电脑登录继续编辑。':'剧本已保存到当前浏览器。');});
   $('export-project-button').addEventListener('click',exportProject);
-  $('preview-project-button').addEventListener('click',()=>{flushSave();startRuntime();});
-  $('runtime-to-editor').addEventListener('click',()=>{editorMode='node';selectedEdgeId=null;showView('studio');});
+  $('preview-project-button').addEventListener('click',()=>saveBeforeNavigation(startRuntime));
+  $('runtime-to-editor').addEventListener('click',()=>saveBeforeNavigation(()=>{editorMode='node';selectedEdgeId=null;showView('studio');}));
   $('restart-button').addEventListener('click',()=>{if(confirm('重新开始会清空当前预览对话，是否继续？'))startRuntime();});
   $('teacher-next-button').addEventListener('click',advanceNode);
   $('run-branches').addEventListener('click',e=>{const button=e.target.closest('[data-branch]');if(button)takeBranch(button.dataset.branch);});
@@ -1504,7 +1535,7 @@ ${materials||'未提供参考资料，请采用通用可靠的教学知识；不
   $('import-file').addEventListener('change',async e=>{
     const file=e.target.files[0];e.target.value='';if(!file)return;
     if(file.size>1024*1024)return notify('文件大于 1MB，请拆分导入。');
-    try{const parsed=JSON.parse(await file.text());let raw=Array.isArray(parsed.projects)?parsed.projects:parsed.project?[parsed.project]:[parsed];if(!raw.length||raw.length>100)throw new Error('项目数量应为 1～100');const imported=raw.map(p=>normalizeProject(p));projects=[...imported,...projects].slice(0,100);projectId=imported[0].id;selectedNodeId=imported[0].nodes[0].id;flushSave();renderDashboard();notify(`成功导入 ${imported.length} 个项目。`);}catch(err){notify(`导入失败：${err.message}`);}
+    await saveBeforeNavigation(async()=>{try{const parsed=JSON.parse(await file.text());let raw=Array.isArray(parsed.projects)?parsed.projects:parsed.project?[parsed.project]:[parsed];if(!raw.length||raw.length>100)throw new Error('项目数量应为 1～100');const imported=raw.map(p=>normalizeProject(p));projects=[...imported,...projects].slice(0,100);const saved=await flushSave();renderDashboard();if(saved)notify(`成功导入 ${imported.length} 个项目。`);}catch(err){notify(`导入失败：${err.message}`);}});
   });
   window.addEventListener('beforeunload',e=>{if(account&&(dirty()||cloudPending)){e.preventDefault();e.returnValue='';}else if(!account&&storeTimer)store();});
   window.MatinClasses.init({account,getCourses:()=>projects,beforeOpen:flushSave});
@@ -1518,8 +1549,8 @@ ${materials||'未提供参考资料，请采用通用可靠的教学知识；不
   store();showView('dashboard');
 })().catch(error=>window.MatinAccount.fatal(error));
 </script>
-<script src="./matin-teacher-sidebar.js?v=2026.11.08.2"></script>
-<script src="./matin-release-info.js?v=2026.11.08.2"></script>
-<script src="./matin-release.js?v=2026.11.08.2"></script>
+<script src="./matin-teacher-sidebar.js?v=2026.11.08.3"></script>
+<script src="./matin-release-info.js?v=2026.11.08.3"></script>
+<script src="./matin-release.js?v=2026.11.08.3"></script>
 </body>
 </html>
