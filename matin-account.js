@@ -56,8 +56,14 @@
       const access=session?.access_token;persist(null);try{await fetch(base+'/auth/v1/logout',{method:'POST',headers:{apikey:cfg.publishableKey,Authorization:'Bearer '+access},signal:AbortSignal.timeout(5000)});}catch{}location.reload();};
     bar.append(name,refresh,out);document.body.prepend(bar);window.MatinTeacherAdmin?.install();return session.user;
   }
-  async function fileRequest(body){
+  async function fileRequest(body,onProgress){
   const access=await token(),form=body instanceof FormData;
+  if(form&&typeof onProgress==='function')return await new Promise((resolve,reject)=>{
+   const xhr=new XMLHttpRequest();xhr.open('POST',base+'/functions/v1/matin-attachments');xhr.timeout=180000;xhr.setRequestHeader('apikey',cfg.publishableKey);xhr.setRequestHeader('Authorization','Bearer '+access);
+   xhr.upload.onprogress=e=>{if(e.lengthComputable)onProgress(Math.floor(e.loaded/e.total*100));};
+   xhr.onerror=()=>reject(Error('上传网络中断，请重新选择同一文件重试'));xhr.ontimeout=()=>reject(Error('上传超时，请重新选择同一文件重试'));
+   xhr.onload=()=>{const res=new Response(xhr.responseText,{status:xhr.status,headers:{'Content-Type':'application/json'}});if(xhr.status>=200&&xhr.status<300)resolve(res);else{let message='上传未完成，请重试';try{message=JSON.parse(xhr.responseText).error||message;}catch{}reject(Error(message));}};xhr.send(body);
+  });
   const r=await fetch(base+'/functions/v1/matin-attachments',{method:'POST',headers:{apikey:cfg.publishableKey,Authorization:'Bearer '+access,...(form?{}:{'Content-Type':'application/json'})},body:form?body:JSON.stringify(body),cache:'no-store',signal:AbortSignal.timeout(90000)});
   if(!r.ok){const d=await r.json().catch(()=>({}));throw Object.assign(Error(d.error||'附件服务暂不可用，请保留原文件并重试。'),{status:r.status});}return r;
  }

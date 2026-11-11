@@ -283,6 +283,7 @@
    const count=el('td',(ctx.reports?(t.submitted_count||0):(t.completed_count||0))+' 人');count.dataset.label=ctx.reports?'已提交报告':'自报完成';
    if(t.review_counts)count.append(el('p','待批阅 '+t.review_counts.pending_review+' · 需修改 '+t.review_counts.revision_required+' · 已通过 '+t.review_counts.passed));
    const actions=document.createElement('td'),detail=el('button','完成明细','btn tasks-detail-button');detail.type='button';detail.onclick=()=>window.MatinTaskReports.teacher(t);actions.append(detail);
+   const materials=el('button','资料学习情况','btn tasks-detail-button');materials.type='button';materials.onclick=()=>MatinMaterialLearning.teacher(t);actions.append(materials);
    if(window.MatinTaskEdit){if(t.active&&!t.class_ended_at){const edit=el('button','编辑 / 延期','btn tasks-detail-button');edit.type='button';edit.onclick=()=>MatinTaskEdit.edit(t,()=>load(ctx));actions.append(edit);}const history=el('button','修改记录','btn tasks-detail-button');history.type='button';history.onclick=()=>MatinTaskEdit.history(t,true);actions.append(history);}
    row.append(name,date,state,count,actions);body.append(row);
   }

@@ -314,10 +314,10 @@ button:active:not(:disabled){transform:scale(.985)}
 
 #teacher-home-modal p{margin:12px 0;line-height:1.8;color:#596a8b}#teacher-home-modal .actions{gap:8px;margin-top:12px;flex-wrap:wrap}#teacher-home-modal .modal{max-width:600px}
 </style>
-<link rel="stylesheet" href="./matin-teacher-sidebar.css?v=2026.11.08.4" />
-<meta name="matin-release" content="2026.11.08.4">
-<link rel="stylesheet" href="./matin-interface.css?v=2026.11.08.4">
-<script defer src="./matin-interface.js?v=2026.11.08.4"></script>
+<link rel="stylesheet" href="./matin-teacher-sidebar.css?v=2026.11.11.2" />
+<meta name="matin-release" content="2026.11.11.2">
+<link rel="stylesheet" href="./matin-interface.css?v=2026.11.11.2">
+<script defer src="./matin-interface.js?v=2026.11.11.2"></script>
 </head>
 <body>
 <header class="topbar" id="teacher-sidebar">
@@ -405,7 +405,7 @@ button:active:not(:disabled){transform:scale(.985)}
 <input id="import-file" type="file" accept="application/json,.json" hidden />
 <div id="toast" class="hidden" role="status"></div>
 <script src="./matin-config.js"></script>
-<script src="./matin-math.js?v=2026.11.08.4"></script>
+<script src="./matin-math.js?v=2026.11.11.2"></script>
 
 <div id="teacher-home-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="teacher-home-title">
  <div class="modal">
@@ -436,7 +436,7 @@ button:active:not(:disabled){transform:scale(.985)}
    <div class="field"><label for="ai-gen-title-input">课程 / 项目名称 *</label><input id="ai-gen-title-input" maxlength="140" placeholder="如：高阶控制算法实训助教" /></div>
    <div class="field"><label for="ai-gen-category">学科分类</label><input id="ai-gen-category" maxlength="80" placeholder="如：自动化/控制" /></div>
    <div class="field ai-span-2"><label for="ai-gen-objective">教学目标（推荐填写）</label><textarea id="ai-gen-objective" rows="2" placeholder="学生最终应掌握什么？例如：理解 SVPWM 死区效应及误差补偿方法。"></textarea></div>
-   <div class="field ai-span-2"><label for="ai-gen-material">补充说明 / 教材要点（可选）</label><textarea id="ai-gen-material" rows="5" maxlength="16000" placeholder="可直接粘贴课程大纲、教师讲义、实验任务书或核心知识点。资料越具体，生成的剧本越贴近课程。"></textarea><div class="ai-material-bar"><div class="ai-detail"><label for="ai-gen-file">上传教学资料（PDF / TXT / Markdown）</label><input id="ai-gen-file" type="file" aria-describedby="ai-gen-file-help ai-gen-file-label" accept=".txt,.md,.markdown,.pdf,text/plain,application/pdf" /><span id="ai-gen-file-help" class="hint">原文件供学生下载，每个项目最多5份、单文件20MB。AI读取PDF前15页文字，每份最多16000字符、合计24000字符；图表和扫描页请补充说明。</span><span id="ai-gen-file-label" class="hint" role="status" aria-live="polite">也可以只输入课程名称生成</span></div><span class="hint" id="ai-gen-material-count">0 / 16000 字符</span></div></div>
+   <div class="field ai-span-2"><label for="ai-gen-material">补充说明 / 教材要点（可选）</label><textarea id="ai-gen-material" rows="5" maxlength="16000" placeholder="可直接粘贴课程大纲、教师讲义、实验任务书或核心知识点。资料越具体，生成的剧本越贴近课程。"></textarea><div class="ai-material-bar"><div class="ai-detail"><label for="ai-gen-file">上传教学资料（PDF / TXT / Markdown / MP4）</label><input id="ai-gen-file" type="file" aria-describedby="ai-gen-file-help ai-gen-file-label" accept=".txt,.md,.markdown,.pdf,.mp4,text/plain,application/pdf,video/mp4" /><span id="ai-gen-file-help" class="hint">原文件供学生下载，每个项目最多5份，PDF/文字20MB、MP4视频500MB，支持失败续传。AI读取PDF前15页文字，每份最多16000字符、合计24000字符；图表和扫描页请补充说明。</span><span id="ai-gen-file-label" class="hint" role="status" aria-live="polite">也可以只输入课程名称生成</span></div><span class="hint" id="ai-gen-material-count">0 / 16000 字符</span></div></div>
    <div id="ai-gen-teaching-files" class="ai-span-2"></div><div class="field"><label for="ai-gen-count">生成节点数量（至少 2 个）</label><select id="ai-gen-count"><option value="2">2 个阶段</option><option value="3">3 个阶段</option><option value="4">4 个阶段</option><option value="5">5 个阶段</option><option value="6" selected>6 个阶段（推荐）</option><option value="8">8 个阶段</option><option value="10">10 个阶段</option></select></div>
    <div class="field"><label for="ai-gen-level">教学难度</label><select id="ai-gen-level"><option value="本科入门">本科入门</option><option selected value="本科进阶">本科进阶</option><option value="研究生研讨">研究生研讨</option><option value="职业技能实训">职业技能实训</option></select></div>
    <div class="field"><label for="ai-gen-roles">角色配置方式</label><select id="ai-gen-roles"><option value="auto">AI 自动安排角色</option><option value="multi" selected>多角色轮换（推荐）</option><option value="fixed">固定一位导师贯穿</option></select></div>
@@ -450,38 +450,40 @@ button:active:not(:disabled){transform:scale(.985)}
  </div>
 </div>
 
-<script src="./matin-class-ai.js?v=2026.11.08.4"></script>
-<script src="./matin-teaching-files.js?v=2026.11.08.4"></script>
-<link rel="stylesheet" href="./matin-teacher-entry.css?v=2026.11.08.4">
-<script src="./matin-xlsx.js?v=2026.11.08.4"></script>
-<script src="./matin-teacher-entry.js?v=2026.11.08.4"></script>
-<script src="./matin-teacher-admin.js?v=2026.11.08.4"></script>
-<script src="./matin-account.js?v=2026.11.08.4"></script>
-<script src="./matin-class-teaching.js?v=2026.11.08.4"></script>
-<script src="./matin-classes.js?v=2026.11.08.4"></script>
-<script src="./matin-roster-import.js?v=2026.11.08.4"></script>
-<script src="./matin-enrollment.js?v=2026.11.08.4"></script>
-<script src="./matin-report-drafts.js?v=2026.11.08.4"></script>
-<script src="./matin-review-tools.js?v=2026.11.08.4"></script>
+<script src="./matin-class-ai.js?v=2026.11.11.2"></script>
+<script src="./matin-material-learning.js?v=2026.11.11.2"></script>
+<script src="./matin-video-upload.js?v=2026.11.11.2"></script>
+<script src="./matin-teaching-files.js?v=2026.11.11.2"></script>
+<link rel="stylesheet" href="./matin-teacher-entry.css?v=2026.11.11.2">
+<script src="./matin-xlsx.js?v=2026.11.11.2"></script>
+<script src="./matin-teacher-entry.js?v=2026.11.11.2"></script>
+<script src="./matin-teacher-admin.js?v=2026.11.11.2"></script>
+<script src="./matin-account.js?v=2026.11.11.2"></script>
+<script src="./matin-class-teaching.js?v=2026.11.11.2"></script>
+<script src="./matin-classes.js?v=2026.11.11.2"></script>
+<script src="./matin-roster-import.js?v=2026.11.11.2"></script>
+<script src="./matin-enrollment.js?v=2026.11.11.2"></script>
+<script src="./matin-report-drafts.js?v=2026.11.11.2"></script>
+<script src="./matin-review-tools.js?v=2026.11.11.2"></script>
 <script src="matin-report-files.js?v=20261029"></script>
-<script src="./matin-task-reports.js?v=2026.11.08.4"></script>
-<script src="./matin-tasks.js?v=2026.11.08.4"></script>
-<script src="./matin-task-edit.js?v=2026.11.08.4"></script>
-<script src="./matin-course-outline.js?v=2026.11.08.4"></script>
-<script src="./matin-project-tasks.js?v=2026.11.08.4"></script>
-<script src="./matin-teacher-home.js?v=2026.11.08.4"></script>
-<script src="./matin-review-inbox.js?v=2026.11.08.4"></script>
-<link rel="stylesheet" href="./matin-teaching-analytics.css?v=2026.11.08.4">
-<script src="./matin-teaching-analytics.js?v=2026.11.08.4"></script>
-<script src="./matin-course-matrix.js?v=2026.11.08.4"></script>
-<script src="./matin-gradebook.js?v=2026.11.08.4"></script>
-<script src="./matin-teaching-plans.js?v=2026.11.08.4"></script>
-<script src="./matin-ai-usage.js?v=2026.11.08.4"></script>
-<script src="./matin-archive-format.js?v=2026.11.08.4"></script>
-<script src="./matin-archive-reader.js?v=2026.11.08.4"></script>
-<script src="./matin-teaching-archive.js?v=2026.11.08.4"></script>
-<script src="./matin-pedagogy.js?v=2026.11.08.4"></script>
-<script src="./matin-long-context.js?v=2026.11.08.4"></script>
+<script src="./matin-task-reports.js?v=2026.11.11.2"></script>
+<script src="./matin-tasks.js?v=2026.11.11.2"></script>
+<script src="./matin-task-edit.js?v=2026.11.11.2"></script>
+<script src="./matin-course-outline.js?v=2026.11.11.2"></script>
+<script src="./matin-project-tasks.js?v=2026.11.11.2"></script>
+<script src="./matin-teacher-home.js?v=2026.11.11.2"></script>
+<script src="./matin-review-inbox.js?v=2026.11.11.2"></script>
+<link rel="stylesheet" href="./matin-teaching-analytics.css?v=2026.11.11.2">
+<script src="./matin-teaching-analytics.js?v=2026.11.11.2"></script>
+<script src="./matin-course-matrix.js?v=2026.11.11.2"></script>
+<script src="./matin-gradebook.js?v=2026.11.11.2"></script>
+<script src="./matin-teaching-plans.js?v=2026.11.11.2"></script>
+<script src="./matin-ai-usage.js?v=2026.11.11.2"></script>
+<script src="./matin-archive-format.js?v=2026.11.11.2"></script>
+<script src="./matin-archive-reader.js?v=2026.11.11.2"></script>
+<script src="./matin-teaching-archive.js?v=2026.11.11.2"></script>
+<script src="./matin-pedagogy.js?v=2026.11.11.2"></script>
+<script src="./matin-long-context.js?v=2026.11.11.2"></script>
 <script>
 (async () => {
   'use strict';
@@ -522,7 +524,7 @@ button:active:not(:disabled){transform:scale(.985)}
     const idMap=new Map();
     const nodes=original.map((n,i)=>{
       if(!n || typeof n!=='object') throw new Error('节点格式错误');
-      const clean=makeNode(); fields.forEach(f=>clean[f]=tf(n[f],clean[f]));clean.learningMode=MatinPedagogy.mode(clean);clean.passScore=String(MatinPedagogy.threshold(n));
+      const clean=makeNode(); fields.forEach(f=>clean[f]=tf(n[f],clean[f]));if(n.materials?.length)clean.materials=MatinMaterialLearning.normalize(n.materials);clean.learningMode=MatinPedagogy.mode(clean);clean.passScore=String(MatinPedagogy.threshold(n));
       clean.x=Number.isFinite(n.x)?Math.max(20,Math.min(3800,n.x)):70+(i%4)*315;
       clean.y=Number.isFinite(n.y)?Math.max(20,Math.min(2800,n.y)):120+Math.floor(i/4)*235;
       if(typeof n.id==='string' && preserveIds && n.id.length<=100)clean.id=n.id;
@@ -814,6 +816,7 @@ button:active:not(:disabled){transform:scale(.985)}
       ${inputField('未匹配时的引导话术（离线模式）','hints',n.hints,{rows:2})}
       ${inputField('离线剧本台词规则（每行：触发词=>回复）','scriptRules',n.scriptRules,{rows:5,placeholder:'安全=>请你展开解释安全检查流程。\n温度=>你会如何检查温度测量是否准确？',hint:'从上往下匹配第一条规则；没有命中时使用关键词提醒。纯文本匹配，不会执行代码，也不会代替教师评分。'})}
       </div><div class="group"><div class="group-title"><span class="dot">04</span> 调试与预览</div><details id="prompt-details"><summary>展开查看发送给真实 AI 的角色提示词</summary><pre id="prompt-preview"></pre></details><p class="hint" style="margin-top:12px">真实 AI 模式将使用项目目标、角色人设、任务背景和考核标准生成引导式回答；模型反馈仅供参考，不自动授予通过资格。</p></div>`;
+    MatinMaterialLearning.editor($('editor-fields'),currentProject(),n,async()=>{currentProject().updatedAt=stamp();return await flushSave();});
     refreshPromptPreview();
   };
   let editorMode = 'node';
@@ -997,8 +1000,8 @@ button:active:not(:disabled){transform:scale(.985)}
   const renderTeachingFiles=()=>MatinTeachingFiles.render($('ai-gen-teaching-files'),currentProject()?.teachingFiles,{teacher:true,disabled:materialBusy||aiGenerateBusy,context:{project_id:currentProject()?.id},onRemove:async id=>{
     if(materialBusy||aiGenerateBusy)return;
     if(!confirm('从当前项目移除此资料？已布置任务中的原文件仍可下载。'))return;
-    const p=currentProject(),old=p.teachingFiles;p.teachingFiles=MatinTeachingFiles.normalize(old).filter(f=>f.id!==id);p.updatedAt=stamp();
-    if(!await flushSave()){p.teachingFiles=old;aiGenStatus('移除未保存，请重试。','error');}else {aiGenHidePreview();aiGenStatus('已从项目移除。已布置的任务不变。','success');}renderTeachingFiles();
+    const p=currentProject(),old=p.teachingFiles,oldMaterials=p.nodes.map(n=>n.materials);p.nodes.forEach(n=>{if(n.materials)n.materials=n.materials.filter(r=>r.fileId!==id);});p.teachingFiles=MatinTeachingFiles.normalize(old).filter(f=>f.id!==id);p.updatedAt=stamp();
+    if(!await flushSave()){p.teachingFiles=old;p.nodes.forEach((n,i)=>n.materials=oldMaterials[i]);aiGenStatus('移除未保存，请重试。','error');}else {aiGenHidePreview();aiGenStatus('已从项目移除。已布置的任务不变。','success');}renderTeachingFiles();
   }});
   const importAiMaterial = async file => {
     if(!file||materialBusy||aiGenerateBusy)return;
@@ -1006,7 +1009,7 @@ button:active:not(:disabled){transform:scale(.985)}
     const p=currentProject();
     try{
       if(!await flushSave())throw Error('请先保存当前项目到云端，再上传资料。');
-      const item=await MatinTeachingFiles.upload(file,p);
+      const item=await MatinTeachingFiles.upload(file,p,(n,message)=>$('ai-gen-file-label').textContent=message||(n<100?'上传中：'+n+'%':'文件已传送，正在保存…'));
       p.teachingFiles=[...MatinTeachingFiles.normalize(p.teachingFiles),item];p.teachingNotes=$('ai-gen-material').value;p.updatedAt=stamp();
       renderTeachingFiles();$('ai-gen-file-label').textContent='原件已上传，正在提取AI参考文字…';
       const reference=await MatinTeachingFiles.read(file);
@@ -1014,7 +1017,7 @@ button:active:not(:disabled){transform:scale(.985)}
       Object.assign(item,reference);if(item.text.length>room){item.text=item.text.slice(0,room);item.readStatus+='；受合计字数限制，本文件仅使用'+room+'字符';}
       p.updatedAt=stamp();if(!await flushSave())throw Error('原件已上传，但项目关联保存失败。请保留本窗口，恢复网络后重新保存项目。');
       $('ai-gen-file-label').textContent='已保存 '+file.name+'；布置班级任务或更新公开课程后，学生可下载原件。';
-      aiGenHidePreview();aiGenStatus(item.text?'资料已保存，AI会结合题目、教学目标、补充说明和已读取资料安排节点。':'原文件已保存供下载，但未取得AI参考文字，请填写补充说明。',item.text?'success':'error');
+      aiGenHidePreview();aiGenStatus(item.text?'资料已保存，AI会结合题目、教学目标、补充说明和已读取资料安排节点。':'原文件已保存供下载，但未取得AI参考文字，请填写补充说明。',item.text||/\.mp4$/i.test(file.name)?'success':'error');
     }finally{materialBusy=false;$('ai-gen-file').disabled=false;$('ai-gen-run').disabled=false;renderTeachingFiles();}
   };
   const requestAiScenario = async (instruction,signal,recovery) => {
@@ -1549,8 +1552,8 @@ ${materials||'未提供参考资料，请采用通用可靠的教学知识；不
   store();showView('dashboard');
 })().catch(error=>window.MatinAccount.fatal(error));
 </script>
-<script src="./matin-teacher-sidebar.js?v=2026.11.08.4"></script>
-<script src="./matin-release-info.js?v=2026.11.08.4"></script>
-<script src="./matin-release.js?v=2026.11.08.4"></script>
+<script src="./matin-teacher-sidebar.js?v=2026.11.11.2"></script>
+<script src="./matin-release-info.js?v=2026.11.11.2"></script>
+<script src="./matin-release.js?v=2026.11.11.2"></script>
 </body>
 </html>

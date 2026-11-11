@@ -1,18 +1,18 @@
 {
-  "version": "2026.11.08.4",
-  "backendVersion": "2026.11.07.5",
+  "version": "2026.11.11.2",
+  "backendVersion": "2026.11.11.2",
   "protocol": 1,
   "configuration": "matin-config.js is environment-specific and intentionally excluded",
   "files": [
     {
       "path": "index.html",
-      "sha256": "ebe24ddd35a3b9ed3fa9fb4ac19e77330d14e6c7e6d9f197bf2798070570afcb",
-      "bytes": 94760
+      "sha256": "6fc24dee87204a74b89d9e23bde1822c646781cdae2eac9086306510be71d236",
+      "bytes": 95894
     },
     {
       "path": "matin-account.js",
-      "sha256": "c241966988c601085b92eee8889ae7ad8beca8b452042b6089644d54fdd23c80",
-      "bytes": 8424
+      "sha256": "ab5eef68ed50df677e952fc0ef0b42b206d56d5134f007b4e405cb5a25ef3874",
+      "bytes": 9343
     },
     {
       "path": "matin-ai-usage.js",
@@ -90,6 +90,11 @@
       "bytes": 15787
     },
     {
+      "path": "matin-material-learning.js",
+      "sha256": "fd4b71619bc6e7ef9525e60e08e6e5f6045024fddae495b569bc5cc13fc6ea83",
+      "bytes": 17844
+    },
+    {
       "path": "matin-math.js",
       "sha256": "c35f810c5a4d2a7690da88d197eb3c497d1b37d485bbb069716b6c711cace5f5",
       "bytes": 277074
@@ -106,8 +111,8 @@
     },
     {
       "path": "matin-release-info.js",
-      "sha256": "2981f74885049d929ea3e8901e838d766f830a2e849c009e2d7ec0bb497dc762",
-      "bytes": 5900
+      "sha256": "8d8f56549630781cd001f09877dd17ff4e890c318a8f8a72e51ae4dfeed01118",
+      "bytes": 6681
     },
     {
       "path": "matin-release.js",
@@ -196,8 +201,8 @@
     },
     {
       "path": "matin-tasks.js",
-      "sha256": "ceb07cea0a5ac3520148a363472797991d9285b0e1ae84bc617d01c7183b3a6c",
-      "bytes": 42338
+      "sha256": "3cc88c46a9998985ec93247051d0bf09907f9ebff89c71a51ea9ced3937e8521",
+      "bytes": 42523
     },
     {
       "path": "matin-teacher-admin.js",
@@ -246,13 +251,23 @@
     },
     {
       "path": "matin-teaching-files.js",
-      "sha256": "f1c1d07cd65379dd2aa0ad656770fea80380eab7587ac3328a1d28a0c74b66e4",
-      "bytes": 7247
+      "sha256": "9141087ba8f9d0ef370025199fe0184e67b688dcb2a907c4c5dda2171e307e94",
+      "bytes": 8282
     },
     {
       "path": "matin-teaching-plans.js",
       "sha256": "3a61255a10de8a1022a86b1d550bbdd38288fd242915b5deb0070f91013d8173",
       "bytes": 32280
+    },
+    {
+      "path": "matin-upload-vendor.js",
+      "sha256": "e94123e528d1fe6c649eb3c939d179d4c05bc646397e8b309ad0e90fad41819c",
+      "bytes": 108212
+    },
+    {
+      "path": "matin-video-upload.js",
+      "sha256": "0124d150bc5f8329c5dc4b4be079dda21166b7afff22065087f0dae8cb63ac41",
+      "bytes": 4935
     },
     {
       "path": "matin-xlsx.js",
@@ -261,12 +276,12 @@
     },
     {
       "path": "teacher.html",
-      "sha256": "1f9012a401681f3ae579a5385a597c3e3edd8c9c7c6b01f4572295be6c3abcc0",
-      "bytes": 183044
+      "sha256": "99d7665f5519bad5e7f3b9ee6f2dea308ccdffeb67d9c63690d67c0fe4cfa100",
+      "bytes": 182316
     },
     {
       "path": "teaching-archive.html",
-      "sha256": "4946864d3c761ad4b2f93354cea22c94c3ba8cfb0a2f5f5b88998be0dd59f52e",
+      "sha256": "398823fe6fe22f7da28b459c0402b10319a2f1fe453858eb5952158db8af7c5c",
       "bytes": 1290
     }
   ],
@@ -274,27 +289,31 @@
     {
       "name": "matin-courses",
       "path": "supabase/functions/matin-courses/index.ts",
-      "sha256": "78184d3141b921fda620023b16992939a4df4fce47f421cbd6a739979613fe48"
+      "sha256": "96e9cdb97a7a4d4bfa57b4db5c4c1946c4e49496dc6a84b10697847d8000c32a"
     },
     {
       "name": "matin-chat",
       "path": "supabase/functions/matin-chat/index.ts",
-      "sha256": "2d9411f3498d957d6c8f75b53852259d218ae730eef09e4c6cf857eb2d3d59ac"
+      "sha256": "cf84cbfb3a1084c5a7a72531d9d40b17f62da3f2229b84a4d6e447705da5bd56"
     },
     {
       "name": "matin-attachments",
       "path": "supabase/functions/matin-attachments/index.ts",
-      "sha256": "b77e644648303ace6c13ba8c211d61e85e098741531b93bff0179710a80ab955"
+      "sha256": "5af1cc4d642a1c0e1b14f4359bffeedd70aba6cb5eb9c816881318a083bdffc4"
     }
   ],
   "sql": [
     {
-      "path": "supabase/teacher-admin.sql",
-      "sha256": "290533555853fc2d9a18b061e4b552bb99ad9f0026b9c61a714cd3256081fba2"
+      "path": "supabase/teaching-files.sql",
+      "sha256": "8a056b0d49de095a630ea3c85b8b646b78ecf6ccd8b1c35e98143105433b3df9"
+    },
+    {
+      "path": "supabase/material-learning.sql",
+      "sha256": "f8feb0f0ad8245d9c771f7f6b84b99ef7d5282c7ef92c153f86937b45e1fe744"
     },
     {
       "path": "supabase/deployment-check.sql",
-      "sha256": "6f9c36580a3f26ee228a2817b708d96ba450856bbb13a75cfe48d192166cb70f"
+      "sha256": "db601a3e92f203dc399ff82c2316129ae96e48cdb478a220d69caa76d0868e97"
     }
   ]
 }
